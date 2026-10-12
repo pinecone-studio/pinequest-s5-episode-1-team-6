@@ -39,3 +39,7 @@ test('google sign-in errors say what to do', () => {
   assert(authErrorText('auth/unauthorized-domain').includes('Authorized domains'));
   assert(authErrorText('auth/operation-not-allowed').includes('Sign-in method'));
 });
+
+test('guest sign-in error says how to turn it on', () => {
+  assert(authErrorText('auth/admin-restricted-operation').includes('Anonymous'));
+});
