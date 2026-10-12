@@ -33,3 +33,9 @@ test('auth errors use plain sentences', () => {
   assertEqual(authErrorText('auth/something-else'), 'Something went wrong. Try again.');
   assert(authErrorText('auth/configuration-not-found').includes('Email/Password'));
 });
+
+test('google sign-in errors say what to do', () => {
+  assert(authErrorText('auth/popup-blocked').includes('pop-ups'));
+  assert(authErrorText('auth/unauthorized-domain').includes('Authorized domains'));
+  assert(authErrorText('auth/operation-not-allowed').includes('Sign-in method'));
+});

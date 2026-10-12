@@ -49,7 +49,8 @@
 
 ## Hosting
 - Vercel (Hobby), repo private; Vercel builds the Next.js app. Tests: `npm test`.
-- Sign-in: Firebase Authentication (email and password) in the browser. The public
+- Sign-in: Firebase Authentication (email and password, or Google) in the browser. Google on the
+  live site needs the Vercel domain in Firebase → Authentication → Settings → Authorized domains. The public
   `NEXT_PUBLIC_FIREBASE_*` values are committed in `.env`, so Vercel needs no extra settings.
 
 ## Migration to Next.js (2026-10-12)

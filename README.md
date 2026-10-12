@@ -25,7 +25,8 @@ npm install
 npm run dev
 ```
 
-The first screen is **Sign in** / **Create account** (Firebase Authentication, email and password).
+The first screen is **Sign in** / **Create account** (Firebase Authentication, email and password)
+or **Continue with Google**.
 The camera stays off until you are signed in. The Firebase web settings are public and committed in
 `.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
 
@@ -112,7 +113,7 @@ components/
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
-  AuthGate.tsx               email sign-in / create account (Firebase Auth) in front of every page
+  AuthGate.tsx               email or Google sign-in (Firebase Auth) in front of every page
   tools/                     the three developer tools
 lib/
   firebase/                  Firebase web config check and browser Auth client

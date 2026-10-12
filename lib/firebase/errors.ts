@@ -10,7 +10,12 @@ const MESSAGES: Record<string, string> = {
   'auth/too-many-requests': 'Too many tries. Wait a minute and try again.',
   'auth/network-request-failed': 'Could not reach the sign-in service. Check your internet and try again.',
   'auth/configuration-not-found': 'Sign-in is turned off. Turn on Email/Password under Authentication in the Firebase console.',
-  'auth/operation-not-allowed': 'Sign-in is turned off. Turn on Email/Password under Authentication in the Firebase console.',
+  'auth/operation-not-allowed': 'This way of signing in is turned off. Turn it on under Authentication → Sign-in method in the Firebase console.',
+  'auth/popup-closed-by-user': 'The Google window was closed before you finished. Try again.',
+  'auth/cancelled-popup-request': 'The Google window was closed before you finished. Try again.',
+  'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups for this site and try again.',
+  'auth/unauthorized-domain': 'Google sign-in is not allowed on this website yet. Add it under Authentication → Settings → Authorized domains.',
+  'auth/account-exists-with-different-credential': 'That email already has an account. Sign in with email and password.',
 };
 
 export function authErrorText(code: string): string {
