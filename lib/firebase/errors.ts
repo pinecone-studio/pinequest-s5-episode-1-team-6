@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups for this site and try again.',
   'auth/unauthorized-domain': 'Google sign-in is not allowed on this website yet. Add it under Authentication → Settings → Authorized domains.',
   'auth/account-exists-with-different-credential': 'That email already has an account. Sign in with email and password.',
+  'auth/admin-restricted-operation': 'Trying without an account is turned off. Turn on Anonymous under Authentication → Sign-in method in the Firebase console.',
 };
 
 export function authErrorText(code: string): string {

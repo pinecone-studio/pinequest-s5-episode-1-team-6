@@ -1,12 +1,13 @@
 'use client';
 
-// Sign-in in front of the app (email or Google). The camera stays off until someone is signed in.
+// Sign-in in front of the app (email, Google or guest). The camera stays off until someone is signed in.
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -47,7 +48,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   return (
     <>
       <div className="flex flex-wrap items-center justify-end gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-2.5 print:hidden">
-        <p className={`${smallText} min-w-0 truncate`}>Signed in as {user.displayName ?? user.email}</p>
+        <p className={`${smallText} min-w-0 truncate`}>
+          {user.isAnonymous ? 'Trying as a guest' : `Signed in as ${user.displayName ?? user.email}`}
+        </p>
         <button type="button" className={ghostButton} onClick={() => void signOut(getClientAuth())}>
           Sign out
         </button>
@@ -114,6 +117,18 @@ function AuthForm() {
     }
   }
 
+  async function onGuest() {
+    setError(null);
+    setBusy(true);
+    try {
+      await signInAnonymously(getClientAuth());
+    } catch (err) {
+      setError(authErrorText(firebaseErrorCode(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="mx-auto grid max-w-md gap-4 px-[clamp(16px,4vw,40px)] pt-16 pb-12">
       <div>
@@ -157,6 +172,9 @@ function AuthForm() {
         <p className="m-0 text-center text-sm text-muted">or</p>
         <button className={secondaryButton} type="button" disabled={busy} onClick={() => void onGoogle()}>
           Continue with Google
+        </button>
+        <button className={ghostButton} type="button" disabled={busy} onClick={() => void onGuest()}>
+          Try without an account
         </button>
       </form>
       <button
