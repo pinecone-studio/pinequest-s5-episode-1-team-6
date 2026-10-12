@@ -51,6 +51,7 @@ interface JudgePanelProps {
 
 export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport, hidden }: JudgePanelProps) {
   const newestFirst = [...events].reverse();
+  const checked = events.filter((e) => e.reviewed).length;
   const field = (key: keyof JudgeForm, label: string, extra: { max?: number; step: number }) => (
     <label className="grid gap-1 text-sm font-semibold">
       {label}
@@ -96,7 +97,14 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
           {field('extraE', 'Extra execution points lost', { step: 0.1 })}
         </div>
       </details>
-      <h2 className="m-0 text-xl leading-tight font-bold">Moves</h2>
+      <div className="flex items-baseline justify-between gap-2.5">
+        <h2 className="m-0 text-xl leading-tight font-bold">Moves</h2>
+        {events.length > 0 && (
+          <span className={`text-sm font-semibold ${checked === events.length ? 'text-good' : 'text-muted'}`}>
+            {checked} of {events.length} checked
+          </span>
+        )}
+      </div>
       <ol className="m-0 grid list-none gap-2.5 p-0">
         {newestFirst.length
           ? newestFirst.map((e) => <MoveRow key={e.id} event={e} status={r.status.get(e.id)} forJudge onReject={onReject} />)

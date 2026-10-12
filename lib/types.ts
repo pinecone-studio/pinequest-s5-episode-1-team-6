@@ -56,5 +56,6 @@ export interface ElementEvent {
 /** An event stored in the scoreboard. */
 export interface StoredEvent extends ElementEvent {
   id: number;
-  rejected: boolean;
+  rejected: boolean; // the judge disagreed: the move counts for nothing
+  reviewed: boolean; // the judge pressed Agree or Disagree (not reviewed moves still count)
 }

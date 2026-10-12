@@ -74,6 +74,11 @@ function ReportBody({ report, mode, details }: { report: Report; mode: Tab; deta
               </div>
             ))}
           </div>
+          {s.notReviewed > 0 && (
+            <p className="m-0 text-[15px] font-semibold text-warn">
+              {`${s.notReviewed} move${s.notReviewed === 1 ? '' : 's'} not checked by a judge yet. Press Agree or Disagree on each move in the Judge tab.`}
+            </p>
+          )}
           {(s.penalties > 0 || s.judgeDeduction > 0) && (
             <p className={smallText}>
               Includes judge entries: penalties −{s.penalties.toFixed(2)}, extra execution −{s.judgeDeduction.toFixed(2)}.

@@ -31,6 +31,7 @@ export interface ReportMove {
   totalDeduction: number;
   clean: boolean;
   rejected: boolean;
+  reviewed: boolean;
   notes: { text: string; rule: RuleText | null }[];
   flatFoot: boolean;
   lowConfidence: boolean;
@@ -44,6 +45,7 @@ export interface Report {
     moves: number;
     cleanMoves: number;
     movesWithDeductions: number;
+    notReviewed: number; // moves no judge has agreed or disagreed with yet
     totalDeduction: number;
     judgeDeduction: number;
     penalties: number;
@@ -81,6 +83,7 @@ export function buildReport(
       totalDeduction: round2(deductions.reduce((sum, d) => sum + d.value, 0)),
       clean: !e.rejected && deductions.length === 0,
       rejected: e.rejected,
+      reviewed: e.reviewed,
       notes: e.warnings.map((w) => ({ text: w, rule: ruleTextFor(w) })),
       flatFoot: Boolean(e.flatFoot),
       lowConfidence: Boolean(e.lowConfidence),
@@ -96,6 +99,7 @@ export function buildReport(
       moves: moves.length,
       cleanMoves: judged.filter((m) => m.clean).length,
       movesWithDeductions: judged.filter((m) => !m.clean).length,
+      notReviewed: moves.filter((m) => !m.reviewed).length,
       totalDeduction: scores.breakdown.autoE, // automated execution deductions
       judgeDeduction: scores.breakdown.extraE,
       penalties: scores.breakdown.penalties,

@@ -50,6 +50,19 @@ test('judge rejects an event: it gives no D and no E penalty', () => {
   assertEqual(r.status.get(e.id), 'rejected');
 });
 
+test('a new event is not reviewed and still counts; Agree or Disagree marks it reviewed', () => {
+  const sb = new Scoreboard();
+  const a = sb.add(ev('1.2103', 0.3));
+  const b = sb.add(ev('2.101', 0.1));
+  assert(!a.reviewed && !b.reviewed);
+  assertEqual(sb.compute().D, 0.4); // not reviewed moves count
+  sb.setRejected(a.id, false); // Agree
+  sb.setRejected(b.id, true); // Disagree
+  assert(a.reviewed && !a.rejected);
+  assert(b.reviewed && b.rejected);
+  assertEqual(sb.compute().D, 0.3);
+});
+
 test('invalid DB adds nothing to D but keeps its E penalty', () => {
   const sb = new Scoreboard();
   sb.add(ev('1.2103', 0, [0.5], false));
