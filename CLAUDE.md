@@ -75,6 +75,10 @@ Known limits (be honest in the UI and README):
 8. **Simple UI (judges' review, 2026-10-09):** "too professional, hard to understand". The main screens
    use plain words only (no codes, no D/E/A jargon in Practice); two tabs, Practice and Judge; one main
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
+9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, in the browser
+   (`firebase` client SDK, no backend). The app stays behind `components/AuthGate.tsx` until someone
+   is signed in. Public web settings live in `.env.local` (`NEXT_PUBLIC_FIREBASE_*`, see `.env.example`);
+   never commit them. Turn on Email/Password in the Firebase console.
 
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare

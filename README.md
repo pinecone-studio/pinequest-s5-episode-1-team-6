@@ -22,8 +22,13 @@ the browser keeps it afterwards). If the video looks slow, choose "Faster" under
 
 ```sh
 npm install
+cp .env.example .env.local
 npm run dev
 ```
+
+Fill `.env.local` with the Firebase web app settings (console → Project settings → Your apps), and
+turn on **Authentication → Sign-in method → Email/Password**. Restart `npm run dev` after saving the
+file. The first screen is **Sign in** / **Create account**. The camera stays off until you are signed in.
 
 Open <http://localhost:3000>, then:
 
@@ -108,8 +113,10 @@ components/
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
+  AuthGate.tsx               email sign-in / create account (Firebase Auth) in front of every page
   tools/                     the three developer tools
 lib/
+  firebase/                  Firebase web config check and browser Auth client
   session.ts                 wiring: video -> pose -> smoothing -> detectors -> scoreboard (browser)
   pose.ts                    MediaPipe Pose Landmarker (pretrained, pinned version)
   geometry.ts                angles on landmarks (split, thigh elevation, leg foreshortening)
