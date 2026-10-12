@@ -56,7 +56,8 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
       pose library is byte-identical), tests to vitest, docs, CLAUDE.md, PLAN.md
 - [x] Step 2: UI as React components (Practice / Judge tabs, video + overlay, results, Settings, Teach poses),
       Tailwind. Checked with the team's front split video: same 2 judged moves as before
-- [ ] Step 3: developer tools as `/tools/*` pages, README, CI test workflow
+- [x] Step 3: developer tools as `/tools/*` pages, README, CI test workflow. Checked: the video tool gives
+      the same 2 back-split moves as before; image check gives identical output to the old tool on 5 photos
 - [ ] Regenerate `bun.lock` (`bun install`): packages were added with npm because bun wasn't installed. **Owner: team**
 
 ## Later (not in the 2-week scope)
