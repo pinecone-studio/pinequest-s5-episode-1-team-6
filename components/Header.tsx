@@ -1,3 +1,4 @@
+import { AccountButton } from './AuthGate';
 import { ghostButton } from './ui';
 
 export type Tab = 'practice' | 'judge';
@@ -7,7 +8,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'judge', label: 'Judge' },
 ];
 
-/** Name, the Practice / Judge tabs and the Settings button. */
+/** Name, the Practice / Judge tabs, the account and the Settings button. */
 export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab) => void; onSettings: () => void }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5 border-b border-line px-[clamp(16px,4vw,40px)] py-[18px] print:hidden">
@@ -32,7 +33,10 @@ export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab)
           </button>
         ))}
       </div>
-      <button className={ghostButton} aria-controls="settings" onClick={onSettings}>Settings</button>
+      <div className="flex min-w-0 items-center gap-2.5">
+        <AccountButton />
+        <button className={ghostButton} aria-controls="settings" onClick={onSettings}>Settings</button>
+      </div>
     </header>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
 // Sign-in in front of the app (email, Google or guest). The camera stays off until someone is signed in.
+// The signed-in person is shared through a context; <AccountButton /> shows it in a page header.
 
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -19,6 +20,8 @@ import { getClientAuth } from '@/lib/firebase/client';
 import { ghostButton, input, primaryButton, secondaryButton, smallText } from './ui';
 
 type Mode = 'sign-in' | 'sign-up';
+
+const AccountContext = createContext<User | null>(null);
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const setup = firebaseConfigFromProcessEnv();
@@ -45,18 +48,21 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }
   if (!user) return <AuthForm />;
 
+  return <AccountContext.Provider value={user}>{children}</AccountContext.Provider>;
+}
+
+/** Who is signed in, and Sign out. For page headers inside <AuthGate>. */
+export function AccountButton() {
+  const user = useContext(AccountContext);
+  if (!user) return null;
+  const who = user.isAnonymous ? 'Guest' : user.displayName ?? user.email;
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-end gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-2.5 print:hidden">
-        <p className={`${smallText} min-w-0 truncate`}>
-          {user.isAnonymous ? 'Trying as a guest' : `Signed in as ${user.displayName ?? user.email}`}
-        </p>
-        <button type="button" className={ghostButton} onClick={() => void signOut(getClientAuth())}>
-          Sign out
-        </button>
-      </div>
-      {children}
-    </>
+    <div className="flex min-w-0 items-center gap-2.5">
+      <span className={`${smallText} max-w-[200px] truncate max-sm:hidden`} title={who ?? undefined}>{who}</span>
+      <button type="button" className={ghostButton} onClick={() => void signOut(getClientAuth())}>
+        Sign out
+      </button>
+    </div>
   );
 }
 
