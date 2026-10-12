@@ -194,7 +194,7 @@ export class JudgingSession {
   private async ensureTracker(): Promise<void> {
     const variant = this.state.model;
     if (this.tracker && this.trackerVariant === variant) return;
-    this.setMessage('Getting the camera ready…', variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
+    this.setMessage('Getting ready…',variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
     // Take the old model out of the frame loop before closing it: a closed model must never be called.
     const old = this.tracker;
     this.tracker = null;
@@ -251,6 +251,7 @@ export class JudgingSession {
 
   async loadFile(file: File): Promise<void> {
     const video = this.video!;
+    this.set({ busy: true }); // the model can take a while to load the first time
     try {
       this.stopSource();
       await this.ensureTracker();
@@ -259,15 +260,25 @@ export class JudgingSession {
       video.controls = true;
       this.fileName = file.name;
       this.set({ source: 'file' });
-      await new Promise((resolve) => { video.onloadeddata = resolve; });
+      await firstFrameReady(video);
       this.onSourceReady();
       this.newRoutine();
       this.setJudging(true); // judge the clip from the start
       await video.play();
     } catch (err) {
       console.error(err);
+      this.stopSource(); // don't leave a broken clip on the screen
       this.setMessage('The video could not be opened', errorText(err));
     }
+    this.set({ busy: false });
+  }
+
+  /** "Try again" on a video: judge the clip again from the start. */
+  private replayFile(): void {
+    const video = this.video;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
   }
 
   private stopSource(): void {
@@ -426,6 +437,7 @@ export class JudgingSession {
     else if (!judging && finished) {
       this.newRoutine();
       this.setJudging(true);
+      if (source === 'file') this.replayFile();
     } else this.setJudging(!judging);
   }
 
@@ -435,6 +447,7 @@ export class JudgingSession {
       this.passe.flush(); // judge a balance still being held
       this.balance.flush();
       this.stoppedAt = this.currentTimeMs();
+      if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
     }
     const patch: Partial<SessionState> = { judging: on };
     if (on) {
@@ -529,6 +542,26 @@ export class JudgingSession {
     });
     downloadFile(`rhymnast-record-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, JSON.stringify(audit, null, 2), 'application/json');
   }
+}
+
+/** Waits for the first frame of a clip. Fails if the browser can't play the file. */
+function firstFrameReady(video: HTMLVideoElement): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const stopListening = () => {
+      video.removeEventListener('loadeddata', onLoaded);
+      video.removeEventListener('error', onError);
+    };
+    const onLoaded = () => {
+      stopListening();
+      resolve();
+    };
+    const onError = () => {
+      stopListening();
+      reject(new Error('This browser cannot play this video file. Try an MP4 file'));
+    };
+    video.addEventListener('loadeddata', onLoaded);
+    video.addEventListener('error', onError);
+  });
 }
 
 function errorText(err: unknown): string {
