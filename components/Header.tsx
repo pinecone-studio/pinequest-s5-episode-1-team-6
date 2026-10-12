@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react';
 import { AccountButton } from './AuthGate';
 import { ghostButton } from './ui';
 
@@ -10,6 +11,17 @@ const TABS: { id: Tab; label: string }[] = [
 
 /** Name, the Practice / Judge tabs, the account and the Settings button. */
 export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab) => void; onSettings: () => void }) {
+  // Arrow keys move between the tabs (WAI-ARIA tabs pattern); only the selected tab is in the Tab order.
+  const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
+    const i = TABS.findIndex((t) => t.id === tab);
+    const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: TABS.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    const id = TABS[(next + TABS.length) % TABS.length].id;
+    onTab(id);
+    document.getElementById(`tab-${id}`)?.focus();
+  };
+
   return (
     <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5 border-b border-line px-[clamp(16px,4vw,40px)] py-[18px] print:hidden">
       <div>
@@ -24,7 +36,9 @@ export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab)
             id={`tab-${t.id}`}
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
+            tabIndex={tab === t.id ? 0 : -1}
             onClick={() => onTab(t.id)}
+            onKeyDown={onTabKey}
             className={`inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-full px-[22px] text-base font-semibold sm:flex-none ${
               tab === t.id ? 'bg-bg text-ink shadow-[0_1px_4px_rgba(29,36,51,0.15)]' : 'bg-transparent text-muted'
             }`}

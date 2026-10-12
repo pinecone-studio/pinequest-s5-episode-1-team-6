@@ -29,7 +29,7 @@ export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchC
           <input
             type="file"
             accept="video/*"
-            hidden
+            className="sr-only"
             disabled={busy}
             onChange={(e) => {
               const file = e.target.files?.[0];

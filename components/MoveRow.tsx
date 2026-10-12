@@ -35,8 +35,8 @@ export function MoveRow({ event: e, status, forJudge, onReject }: MoveRowProps) 
       {d.notes.slice(0, 1).map((n) => <p key={n} className="m-0 text-sm text-warn">{n}</p>)}
       {forJudge && onReject && (
         <div className="flex flex-wrap items-center gap-2">
-          <button className={`${ghostButton} min-h-9 px-3.5 text-sm ${pressed}`} aria-pressed={e.reviewed && !e.rejected} onClick={() => onReject(e.id, false)}>Agree</button>
-          <button className={`${ghostButton} min-h-9 px-3.5 text-sm ${pressed}`} aria-pressed={e.rejected} onClick={() => onReject(e.id, true)}>Disagree</button>
+          <button className={`${ghostButton} min-h-9 px-3.5 text-sm ${pressed}`} aria-pressed={e.reviewed && !e.rejected} aria-label={`Agree: ${d.name}`} onClick={() => onReject(e.id, false)}>Agree</button>
+          <button className={`${ghostButton} min-h-9 px-3.5 text-sm ${pressed}`} aria-pressed={e.rejected} aria-label={`Disagree: ${d.name}`} onClick={() => onReject(e.id, true)}>Disagree</button>
           {!e.reviewed && <span className="text-sm font-semibold text-warn">Not checked yet</span>}
         </div>
       )}

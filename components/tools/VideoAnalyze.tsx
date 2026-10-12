@@ -49,7 +49,7 @@ export function VideoAnalyze() {
           <input
             type="file"
             accept="video/*"
-            hidden
+            className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (!f) return;
