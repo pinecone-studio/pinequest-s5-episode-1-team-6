@@ -23,6 +23,9 @@ import type { ElementEvent } from './types';
 
 export type Source = 'camera' | 'file' | null;
 
+/** Front camera ('user') or back camera ('environment', for filming someone else with a phone or tablet). */
+export type CameraFacing = 'user' | 'environment';
+
 /** Big message in the middle of the video. */
 export interface StageMessage {
   title: string;
@@ -60,6 +63,8 @@ export interface SessionState {
   judging: boolean;
   finished: boolean;
   busy: boolean; // the camera / model is loading
+  facing: CameraFacing;
+  cameraCount: number; // cameras on this device (the switch button needs 2 or more)
   message: StageMessage | null;
   live: LiveView | null;
   cards: MoveCardData[];
@@ -88,6 +93,8 @@ export class JudgingSession {
     judging: false,
     finished: false,
     busy: false,
+    facing: 'user',
+    cameraCount: 0,
     message: START_MESSAGE,
     live: null,
     cards: [],
@@ -232,13 +239,13 @@ export class JudgingSession {
       this.stopSource();
       await this.ensureTracker();
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: this.state.facing },
         audio: false,
       });
       video.srcObject = stream;
       video.controls = false;
       await video.play();
-      this.set({ source: 'camera' });
+      this.set({ source: 'camera', cameraCount: await countCameras() });
       this.onSourceReady();
     } catch (err) {
       console.error(err);
@@ -247,6 +254,13 @@ export class JudgingSession {
         blocked ? 'Allow camera access in your browser, then press the button again.' : errorText(err));
     }
     this.set({ busy: false });
+  }
+
+  /** Front <-> back camera. Restarts the camera; not while judging. */
+  async switchCamera(): Promise<void> {
+    if (this.state.source !== 'camera' || this.state.judging) return;
+    this.set({ facing: this.state.facing === 'user' ? 'environment' : 'user' });
+    await this.startCamera();
   }
 
   async loadFile(file: File): Promise<void> {
@@ -541,6 +555,16 @@ export class JudgingSession {
       poseModel: `MediaPipe Pose Landmarker (${this.trackerVariant}, ${this.tracker?.delegate})`,
     });
     downloadFile(`rhymnast-record-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, JSON.stringify(audit, null, 2), 'application/json');
+  }
+}
+
+/** Number of cameras (labels and ids need permission, but the count is known once the camera runs). */
+async function countCameras(): Promise<number> {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === 'videoinput').length;
+  } catch {
+    return 1;
   }
 }
 
