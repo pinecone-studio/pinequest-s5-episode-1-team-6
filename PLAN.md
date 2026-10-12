@@ -54,7 +54,8 @@
 Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScript repo, in steps:
 - [x] Step 1: judging logic to `lib/` (TypeScript, same behaviour: the 108 tests pass and the rebuilt
       pose library is byte-identical), tests to vitest, docs, CLAUDE.md, PLAN.md
-- [ ] Step 2: UI as React components (Practice / Judge tabs, video + overlay, results, Settings, Teach poses), Tailwind
+- [x] Step 2: UI as React components (Practice / Judge tabs, video + overlay, results, Settings, Teach poses),
+      Tailwind. Checked with the team's front split video: same 2 judged moves as before
 - [ ] Step 3: developer tools as `/tools/*` pages, README, CI test workflow
 - [ ] Regenerate `bun.lock` (`bun install`): packages were added with npm because bun wasn't installed. **Owner: team**
 
