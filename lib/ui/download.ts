@@ -5,5 +5,6 @@ export function downloadFile(name: string, content: string, type = 'application/
   a.href = URL.createObjectURL(new Blob([content], { type }));
   a.download = name;
   a.click();
-  URL.revokeObjectURL(a.href);
+  // Free the file a moment later: revoking at once can cancel the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
