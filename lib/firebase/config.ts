@@ -1,5 +1,5 @@
 // Public Firebase web settings. These are safe to ship in the browser (Firebase's own rules).
-// Real values live in .env.local, never in git. See .env.example.
+// Values live in .env (committed); .env.local overrides them on one computer.
 
 export interface FirebaseWebConfig {
   apiKey: string;

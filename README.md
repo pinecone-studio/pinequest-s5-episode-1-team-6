@@ -22,13 +22,12 @@ the browser keeps it afterwards). If the video looks slow, choose "Faster" under
 
 ```sh
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
-Fill `.env.local` with the Firebase web app settings (console → Project settings → Your apps), and
-turn on **Authentication → Sign-in method → Email/Password**. Restart `npm run dev` after saving the
-file. The first screen is **Sign in** / **Create account**. The camera stays off until you are signed in.
+The first screen is **Sign in** / **Create account** (Firebase Authentication, email and password).
+The camera stays off until you are signed in. The Firebase web settings are public and committed in
+`.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
 
 Open <http://localhost:3000>, then:
 

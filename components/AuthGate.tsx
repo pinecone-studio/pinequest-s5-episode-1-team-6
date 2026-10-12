@@ -61,8 +61,8 @@ function SetupNeeded({ missing }: { missing: FirebasePublicKey[] }) {
       <h1 className="m-0 text-[26px] leading-tight font-bold text-accent">Rhymnast</h1>
       <p className="m-0">Sign-in is not set up on this computer yet.</p>
       <p className={smallText}>
-        Copy <code>.env.example</code> to <code>.env.local</code> and fill in the Firebase web app
-        settings. Then turn on Email/Password under Authentication in         the Firebase console, and restart <code>npm run dev</code>.
+        The Firebase web app settings are missing from <code>.env</code>. Add them, turn on
+        Email/Password under Authentication in the Firebase console, and restart <code>npm run dev</code>.
       </p>
       <ul className="m-0 grid gap-1 pl-5 text-sm text-muted">
         {missing.map((key) => (

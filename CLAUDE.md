@@ -77,8 +77,10 @@ Known limits (be honest in the UI and README):
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
 9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, in the browser
    (`firebase` client SDK, no backend). The app stays behind `components/AuthGate.tsx` until someone
-   is signed in. Public web settings live in `.env.local` (`NEXT_PUBLIC_FIREBASE_*`, see `.env.example`);
-   never commit them. Turn on Email/Password in the Firebase console.
+   is signed in. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
+   (user, 2026-10-12): the browser receives them anyway, and local dev and Vercel then need no setup.
+   `.env.local` (not committed) overrides them on one computer. Never commit server secrets
+   (service account keys, `firebase-admin`). Email/Password is on in the Firebase console.
 
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare
