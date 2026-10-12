@@ -59,8 +59,9 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
           <label htmlFor="model-select"><b>Camera accuracy</b></label>
           <select
             id="model-select"
-            className={input}
+            className={`${input} disabled:opacity-60`}
             value={state.model}
+            disabled={state.busy}
             onChange={(e) => void session.setModel(e.target.value as ModelVariant)}
           >
             <option value="heavy">Best for splits (slower to load)</option>

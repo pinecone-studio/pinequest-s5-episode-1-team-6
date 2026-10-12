@@ -195,15 +195,28 @@ export class JudgingSession {
     const variant = this.state.model;
     if (this.tracker && this.trackerVariant === variant) return;
     this.setMessage('Getting the camera ready…', variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
-    this.tracker?.close();
+    // Take the old model out of the frame loop before closing it: a closed model must never be called.
+    const old = this.tracker;
+    this.tracker = null;
+    this.trackerVariant = null;
+    old?.close();
     this.tracker = await createPoseTracker(variant);
     this.trackerVariant = variant;
     this.setMessage(null);
   }
 
+  /** Settings → Camera accuracy. Loads the new model at once if a camera or video is running. */
   async setModel(model: ModelVariant): Promise<void> {
     this.set({ model });
-    if (this.state.source) await this.ensureTracker();
+    if (!this.state.source) return;
+    this.set({ busy: true });
+    try {
+      await this.ensureTracker();
+    } catch (err) {
+      console.error(err);
+      this.setMessage('The camera accuracy could not be changed', `${errorText(err)}. Try another setting.`);
+    }
+    this.set({ busy: false });
   }
 
   setFocusOnly(focusOnly: boolean): void {
