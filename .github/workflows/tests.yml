@@ -1,0 +1,24 @@
+# Runs the type check, lint and unit tests on every push and pull request.
+# Deployment is done by Vercel, not by this workflow.
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test

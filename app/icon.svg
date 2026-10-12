@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Rhymnast</title>
+  <!-- Blue tile with a white gymnast in a front split balance, ribbon swirling from the hand. -->
+  <rect width="64" height="64" rx="14" fill="#2f6fed"/>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ribbon -->
+    <path d="M22 25 C 12 22, 8 32, 15 36 S 24 46, 12 52" stroke-width="2.5" opacity="0.85"/>
+    <!-- support leg -->
+    <path d="M31 37 L 33 57" stroke-width="5"/>
+    <!-- raised leg (front split) -->
+    <path d="M31 37 L 46 8" stroke-width="5"/>
+    <!-- body -->
+    <path d="M31 37 L 27 22" stroke-width="5"/>
+    <!-- arm toward the ribbon -->
+    <path d="M28 25 L 22 25" stroke-width="4"/>
+  </g>
+  <circle cx="25" cy="15" r="4.5" fill="#ffffff"/>
+</svg>

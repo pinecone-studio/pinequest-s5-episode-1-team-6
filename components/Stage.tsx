@@ -1,0 +1,83 @@
+'use client';
+
+// The video with everything drawn on top of it: skeleton, message, "Watching" badge,
+// the live box (which balance, hold dots, one tip) and a card after every move.
+
+import type { RefObject } from 'react';
+import type { LiveView, MoveCardData, StageMessage } from '@/lib/session';
+import { describeMove } from '@/lib/ui/plain';
+import { toneBorder, toneText } from './ui';
+
+interface StageProps {
+  stageRef: RefObject<HTMLDivElement | null>;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  canvasRef: RefObject<HTMLCanvasElement | null>;
+  message: StageMessage | null;
+  judging: boolean;
+  live: LiveView | null;
+  cards: MoveCardData[];
+}
+
+export function Stage({ stageRef, videoRef, canvasRef, message, judging, live, cards }: StageProps) {
+  return (
+    <div ref={stageRef} className="relative aspect-video max-w-full overflow-hidden rounded-card bg-ink">
+      <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-contain" />
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" />
+
+      {message && (
+        <div className="absolute inset-0 grid place-content-center gap-2 p-6 text-center text-white">
+          <b className="text-[clamp(20px,2.6vw,28px)]">{message.title}</b>
+          <span className="text-stage-text">{message.detail}</span>
+        </div>
+      )}
+
+      {judging && (
+        <div className="absolute top-3 left-3 rounded-full bg-bad px-3 py-1.5 text-sm font-semibold text-white">● Watching</div>
+      )}
+
+      {live && <LiveBox live={live} />}
+
+      <div className="pointer-events-none absolute bottom-3 left-3 grid w-[min(340px,calc(100%-24px))] gap-2" aria-live="polite">
+        {cards.map((card) => <MoveCard key={card.id} card={card} />)}
+      </div>
+    </div>
+  );
+}
+
+/** What the app sees right now. */
+function LiveBox({ live }: { live: LiveView }) {
+  return (
+    <div
+      className={`absolute top-3 right-3 w-[min(340px,calc(100%-24px))] rounded-xl border-l-[6px] bg-white/95 px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.18)] ${toneBorder[live.tone]}`}
+      aria-live="polite"
+    >
+      <div className="flex items-center justify-between gap-2.5">
+        <b className="text-lg">{live.pose}</b>
+        {live.showDots && (
+          <span className="flex gap-[5px]" title="Hold for 1 second">
+            {[0, 1, 2, 3].map((i) => (
+              <i key={i} className={`h-3 w-3 rounded-full ${i < live.dots ? 'bg-good' : 'bg-line'}`} />
+            ))}
+          </span>
+        )}
+      </div>
+      <p className="mt-1 mb-0 text-base">{live.text}</p>
+    </div>
+  );
+}
+
+/** A card after every judged move ("Attitude · 0.30 points lost · Lift the knee…"). */
+function MoveCard({ card }: { card: MoveCardData }) {
+  const m = describeMove(card.event);
+  return (
+    <div
+      className={`animate-card-in rounded-xl border-l-[6px] bg-white px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.2)] transition-[opacity,transform] duration-500 motion-reduce:animate-none motion-reduce:transition-none ${toneBorder[m.tone]} ${
+        card.leaving ? 'translate-y-1.5 opacity-0' : ''
+      }`}
+    >
+      <b className="block text-[17px]">{m.name}</b>
+      <span className={`font-bold ${toneText[m.tone]}`}>{m.result}</span>
+      <div className="text-sm text-muted">{m.reasons[0]?.tip ?? 'Well done!'}</div>
+    </div>
+  );
+}
