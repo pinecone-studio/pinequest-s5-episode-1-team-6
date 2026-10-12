@@ -49,6 +49,8 @@
 
 ## Hosting
 - Vercel (Hobby), repo private; Vercel builds the Next.js app. Tests: `npm test`.
+- Sign-in: Firebase Authentication (email and password) in the browser. The public
+  `NEXT_PUBLIC_FIREBASE_*` values are committed in `.env`, so Vercel needs no extra settings.
 
 ## Migration to Next.js (2026-10-12)
 Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScript repo, in steps:
