@@ -7,7 +7,7 @@
 //     width, trunk lean and relevé, plus random measurement noise;
 //   - "not these" poses the app must reject (standing, passé, arabesque, ring, back split with help,
 //     trunk-forward and trunk-back splits, leg forward at the horizontal);
-//   - the real competition photos in tests/fixtures/real-balances.json.
+//   - the real competition photos in lib/library/examples/real-balances.json.
 
 import { PoseLibrary, type PoseLabel } from '../lib/library/recognizer';
 import type { Landmarks } from '../lib/geometry';
@@ -16,8 +16,8 @@ import { balanceFrame } from '../lib/elements/balanceFrame';
 import { shapeFromKey } from '../lib/elements/balances';
 import {
   standing, passePose, frontSplitBalance, backSplitBalance, arabesqueBalance, attitudeBalance,
-} from '../tests/poses';
-import realPhotos from '../tests/fixtures/real-balances.json';
+} from '../lib/library/examples/poses';
+import realPhotos from '../lib/library/examples/real-balances.json';
 
 /** Small seeded random generator, so the library is the same every time it's built. */
 function makeRandom(seed: number) {

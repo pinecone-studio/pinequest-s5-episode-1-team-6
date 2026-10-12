@@ -57,5 +57,5 @@ How to take them:
   are what test the deductions. At least 10 photos per element, from several people.
 
 Run them through <http://localhost:3000/tools/validate> (nothing is uploaded). It can export the
-body-point numbers (no images) as `tests/fixtures/real-balances.json`, which turns every photo into
+body-point numbers (no images) as `lib/library/examples/real-balances.json`, which turns every photo into
 a permanent unit test.

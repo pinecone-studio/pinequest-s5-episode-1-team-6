@@ -2,7 +2,7 @@ import { test, assert, assertEqual } from './harness';
 import { PasseDetector } from '../lib/elements/passe';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
-import { standing, passePose, splitPose, frames, repeat } from './poses';
+import { standing, passePose, splitPose, frames, repeat } from '../lib/library/examples/poses';
 
 function run(seq: Landmarks[]) {
   const events: ElementEvent[] = [];

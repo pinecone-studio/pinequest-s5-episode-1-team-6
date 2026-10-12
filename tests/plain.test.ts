@@ -3,7 +3,7 @@ import { describeMove, explainPenalty, liveMessage, plainHint } from '../lib/ui/
 import { BalanceDetector } from '../lib/elements/balances';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
-import { standing, frontSplitBalance, attitudeBalance, frames, repeat } from './poses';
+import { standing, frontSplitBalance, attitudeBalance, frames, repeat } from '../lib/library/examples/poses';
 
 function judged(make: () => Landmarks, n = 40) {
   const events: ElementEvent[] = [];

@@ -1,5 +1,5 @@
 // Regenerates lib/library/defaultLibrary.json (the pose examples shipped with the app).
-// Run after changing lib/library/signature.ts, lib/elements/balanceFrame.ts or tests/poses.ts:
+// Run after changing lib/library/signature.ts, lib/elements/balanceFrame.ts or lib/library/examples/poses.ts:
 //   npm run build-library
 // Pose signatures only (numbers): no images, no names.
 

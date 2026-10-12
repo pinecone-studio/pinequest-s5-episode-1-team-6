@@ -20,7 +20,7 @@
       whole foot above the head (2.1005), attitude (2.1202). `lib/elements/balances.ts`
 - [x] Execution deductions per element, with values from the Code of Points
 - [x] Difficulty values per element (focus balances: ⚠️ still to confirm, see Phase 4)
-- [~] Unit tests on real keypoints: 9 competition photos as fixtures (`tests/fixtures/`); video clips not yet
+- [~] Unit tests on real keypoints: 9 competition photos as fixtures (`lib/library/examples/real-balances.json`); video clips not yet
 
 ## Phase 3 - Scoring + judge panel (Days 10-11)
 - [x] Scoring engine: Final = D + A + E − penalties, top 8 DB, repetitions by box, judge reject
@@ -58,7 +58,8 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
       Tailwind. Checked with the team's front split video: same 2 judged moves as before
 - [x] Step 3: developer tools as `/tools/*` pages, README, CI test workflow. Checked: the video tool gives
       the same 2 back-split moves as before; image check gives identical output to the old tool on 5 photos
-- [ ] Regenerate `bun.lock` (`bun install`): packages were added with npm because bun wasn't installed. **Owner: team**
+- [x] One package manager: npm (`package-lock.json`). `bun.lock` was out of date and removed; CI already used npm
+- [x] Example poses and real-photo fixtures moved from `tests/` to `lib/library/examples/` (they also build the shipped library)
 
 ## Later (not in the 2-week scope)
 - Arabesque and side split balances; back split with help; pivots in the focus shapes

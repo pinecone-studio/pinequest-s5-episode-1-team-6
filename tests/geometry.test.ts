@@ -2,7 +2,7 @@ import { test, assertClose, assert } from './harness';
 import { LM, splitAngle, thighElevation, jointAngle, bodyWidthRatio } from '../lib/geometry';
 import { OneEuroFilter } from '../lib/oneEuro';
 import { deviationBand } from '../lib/rules';
-import { standing, splitPose } from './poses';
+import { standing, splitPose } from '../lib/library/examples/poses';
 
 test('splitAngle: 180° split reads 180', () => {
   assertClose(splitAngle(splitPose(180)), 180, 0.5);

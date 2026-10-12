@@ -10,7 +10,7 @@ import type { Landmarks } from '../lib/geometry';
 import {
   standing, passePose, frontSplitBalance, backSplitBalance, arabesqueBalance, attitudeBalance,
   frames, repeat,
-} from './poses';
+} from '../lib/library/examples/poses';
 
 const library = PoseLibrary.fromJSON(defaultLibraryData as LibraryJSON);
 const sig = (lm: Landmarks) => poseSignature(balanceFrame(lm)!);

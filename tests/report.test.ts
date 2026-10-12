@@ -3,7 +3,7 @@ import { buildReport } from '../lib/report';
 import { Scoreboard } from '../lib/scoring';
 import { BalanceDetector } from '../lib/elements/balances';
 import type { ElementEvent } from '../lib/types';
-import { standing, frontSplitBalance, attitudeBalance, frames, repeat } from './poses';
+import { standing, frontSplitBalance, attitudeBalance, frames, repeat } from '../lib/library/examples/poses';
 
 /** One routine: clean front split, attitude with 2 faults, short repeat of the front split. */
 function routine() {

@@ -4,7 +4,7 @@
 // Checked twice: with the fixed rules, and with the pose library minus that photo's own example
 // (leave-one-out), so a photo can't be recognized just because it is in the library.
 import { test, assertEqual } from './harness';
-import fixtures from './fixtures/real-balances.json';
+import fixtures from '../lib/library/examples/real-balances.json';
 import { analyzeLandmarks } from '../lib/tools/analyzeImage';
 import { PoseLibrary } from '../lib/library/recognizer';
 import defaultLibraryData from '../lib/library/defaultLibrary.json';

@@ -119,11 +119,13 @@ lib/
   elements/passe.ts          passé balance (1 s hold, relevé) and pivot (rotation count)
   elements/balances.ts       the 3 focus balances: recognition + rulebook deductions
   library/                   pose signature, nearest-neighbour library, default examples (JSON)
+  library/examples/          synthetic skeletons + real-photo landmarks: used by the tests AND
+                             to build the default library (changing them changes the app)
   scoring.ts                 D / E / A / final, top-8, repetitions, judge overrides, audit export
   report.ts                  end-of-routine deduction report (data)
   ui/plain.ts                plain-language texts and tips (keep new UI text in this style)
   tools/                     photo / video analysis used by the developer tools
-tests/                       unit tests (vitest) + synthetic skeletons + real-photo fixtures
+tests/                       unit tests (vitest)
 scripts/build-library.ts     regenerates lib/library/defaultLibrary.json
 docs/rules.md                rules we automate, quoted from the Code with page numbers
 data/README.md               where to get clips and datasets (nothing in data/ is committed)
@@ -143,7 +145,7 @@ To check a rule on a real photo, open <http://localhost:3000/tools/image-check> 
 To check many labeled photos at once (e.g. a teammate's attitudes), follow "Validation photos" in
 `data/README.md` and open <http://localhost:3000/tools/validate>. Nothing is trained: the photos
 show whether the rules agree with a judge, and their landmarks (no images) become unit tests: save
-"Export keypoints (tests)" as `tests/fixtures/real-balances.json`, then run `npm run build-library`.
+"Export keypoints (tests)" as `lib/library/examples/real-balances.json`, then run `npm run build-library`.
 
 To see what the app recognizes in a recorded routine, frame by frame, open
 <http://localhost:3000/tools/video-analyze>.

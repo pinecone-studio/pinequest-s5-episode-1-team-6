@@ -6,7 +6,7 @@ import type { Landmarks } from '../lib/geometry';
 import {
   standing, passePose, splitPose, frontSplitBalance, backSplitBalance, arabesqueBalance,
   attitudeBalance, frames, repeat,
-} from './poses';
+} from '../lib/library/examples/poses';
 
 function run(seq: (Landmarks | null)[], opts: { airborne?: boolean } = {}) {
   const events: ElementEvent[] = [];

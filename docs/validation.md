@@ -26,8 +26,8 @@ Not yet checked on real photos: **attitude** and **back split without help (foot
 suitable Commons photo found. Both are covered by synthetic unit tests only. Next: record 5-10 side-on
 clips of each balance and compare with a judge.
 
-Re-run with `web/tools/validate.html` and a `labels.csv`: 10 / 10 photos match their label. Their
-landmarks are now unit tests in `web/tests/fixtures/real-balances.js` (numbers only, no images).
+Re-run with /tools/validate and a `labels.csv`: 10 / 10 photos match their label. Their
+landmarks are now unit tests in `lib/library/examples/real-balances.json` (numbers only, no images).
 
 Live check: the front-split photo fed as a camera for 1.5 s gave "Front split balance with help,
 DB 0.30, counted"; a second 0.6 s hold gave "repeat, E −0.30 not held 1 second".

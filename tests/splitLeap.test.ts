@@ -1,7 +1,7 @@
 import { test, assert, assertEqual, assertClose } from './harness';
 import { SplitLeapDetector } from '../lib/elements/splitLeap';
 import type { ElementEvent } from '../lib/types';
-import { standing, splitPose, foreshortenLeg, frames, repeat } from './poses';
+import { standing, splitPose, foreshortenLeg, frames, repeat } from '../lib/library/examples/poses';
 
 /** Stand, leap with the given split, land. Returns detector events. */
 function leap(splitDeg: number, { flightFrames = 12, width = 0.15, foreshorten = 1 } = {}) {

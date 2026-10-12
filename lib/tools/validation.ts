@@ -144,7 +144,7 @@ export interface Fixture {
 }
 
 /**
- * Landmarks only (no images, anonymous ids) in the format of tests/fixtures/real-balances.json.
+ * Landmarks only (no images, anonymous ids) in the format of lib/library/examples/real-balances.json.
  * Only labeled photos where a person was found are exported.
  */
 export function fixturesJson(rows: ValidationRow[]): string {

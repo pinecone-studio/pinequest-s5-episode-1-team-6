@@ -1,9 +1,10 @@
-// Synthetic skeletons with exactly known angles, for testing the rules without video.
+// Synthetic skeletons with exactly known angles. Used by the unit tests and as default examples for
+// the pose library (scripts/buildDefaultLibrary.ts), so changing them changes what the app ships.
 // Pixel coordinates, y grows downward. Torso = 100 px, thigh = shin = 90 px
 // (real proportions: a leg is about 1.8-2 torso lengths).
 
-import { LM, type Landmark, type Landmarks, type Side } from '../lib/geometry';
-import type { DetectorFrame } from '../lib/elements/splitLeap';
+import { LM, type Landmark, type Landmarks, type Side } from '../../geometry';
+import type { DetectorFrame } from '../../elements/splitLeap';
 
 const CX = 300;
 const HIP_Y = 300;
