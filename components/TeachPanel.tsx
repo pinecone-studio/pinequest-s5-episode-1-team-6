@@ -46,8 +46,8 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
 
   async function importFile(file: File) {
     try {
-      const n = importTaught(await file.text());
-      session.libraryChanged(`Imported ${n} examples.`);
+      const { added, skipped } = importTaught(await file.text());
+      session.libraryChanged(`Imported ${added} examples.${skipped ? ` ${skipped} were already here and were skipped.` : ''}`);
     } catch (err) {
       session.setTeachStatus(`Could not import: ${err instanceof Error ? err.message : String(err)}`);
     }

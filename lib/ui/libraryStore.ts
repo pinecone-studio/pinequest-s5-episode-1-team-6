@@ -57,16 +57,31 @@ export function exportTaught(): string {
   return JSON.stringify(new PoseLibrary(taughtExamples()).toJSON());
 }
 
-/** Adds the examples from an exported file. Returns how many were added. */
-export function importTaught(text: string): number {
+/**
+ * Adds the examples from an exported file. Examples already in the library (same pose, same
+ * numbers) are skipped, so loading the same file twice adds nothing.
+ */
+export function importTaught(text: string): { added: number; skipped: number } {
   const data = JSON.parse(text) as LibraryJSON;
   if (data.version !== LIBRARY_VERSION || data.features?.join() !== FEATURES.map((f) => f.name).join()) {
     throw new Error('This file was made by a different version of the app');
   }
   const incoming = PoseLibrary.fromJSON(data).examples;
-  taught = [...taughtExamples(), ...incoming];
+  const seen = new Set(taughtExamples().map(exampleKey));
+  const added = incoming.filter((e) => {
+    const key = exampleKey(e);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  taught = [...taughtExamples(), ...added];
   save();
-  return incoming.length;
+  return { added: added.length, skipped: incoming.length - added.length };
+}
+
+/** Same pose and same numbers. Rounded like saved files, so a fresh example matches its saved copy. */
+function exampleKey(e: Example): string {
+  return `${e.label}:${e.f.map((x) => Math.round(x * 1000) / 1000).join(',')}`;
 }
 
 /** Removes every taught example (the default library stays). */

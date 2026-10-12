@@ -5,6 +5,7 @@ import { balanceFrame } from '../lib/elements/balanceFrame';
 import { BalanceDetector, measureBalance, libraryIsReady } from '../lib/elements/balances';
 import defaultLibraryData from '../lib/library/defaultLibrary.json';
 import type { LibraryJSON } from '../lib/library/recognizer';
+import { exportTaught, importTaught, libraryCounts, resetTaught, teach } from '../lib/ui/libraryStore';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
 import {
@@ -91,4 +92,18 @@ test('library export and import give the same library', () => {
   const copy = PoseLibrary.fromJSON(JSON.parse(JSON.stringify(library.toJSON())));
   assertEqual(copy.examples.length, library.examples.length);
   assertEqual(JSON.stringify(copy.counts()), JSON.stringify(library.counts()));
+});
+
+test('loading the same taught poses file twice adds the examples only once', () => {
+  resetTaught();
+  teach('attitude', [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.12345]]);
+  const file = exportTaught();
+  assertEqual(importTaught(file).added, 0, 'the example is already taught:');
+  resetTaught();
+  assertEqual(importTaught(file).added, 1);
+  const again = importTaught(file);
+  assertEqual(again.added, 0);
+  assertEqual(again.skipped, 1);
+  assertEqual(libraryCounts().taught.attitude, 1);
+  resetTaught();
 });
