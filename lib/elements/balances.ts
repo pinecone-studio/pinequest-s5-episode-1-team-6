@@ -159,9 +159,10 @@ export class BalanceDetector {
       if (!this.candidate || this.candidate.family !== family) this.candidate = newSegment(family, t, m);
       addFrame(this.candidate, t, m, lm!);
       if (this.candidate.tLast - this.candidate.tStart >= this.s.switchAfterMs) {
+        // Keep the candidate's frames: endSegment() clears this.candidate.
+        const next = this.candidate;
         this.endSegment();
-        this.segment = this.candidate;
-        this.candidate = null;
+        this.segment = next;
       }
     } else if (family) {
       this.candidate = null;

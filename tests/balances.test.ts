@@ -191,6 +191,17 @@ test('one misrecognized frame in the middle of a hold does not split it', () => 
   assertEqual(e.penalties.length, 0);
 });
 
+test('going straight from one balance into another keeps the full hold time of the second', () => {
+  const seq = [...repeat(10, () => standing()), ...repeat(40, () => frontSplitBalance({ help: true })),
+    ...repeat(40, () => attitudeBalance()), ...repeat(10, () => standing())];
+  const events = run(seq);
+  assertEqual(events.length, 2, 'number of events:');
+  const attitude = events[1];
+  assertEqual(attitude.code, '2.1202');
+  assert(attitude.measurements.holdMs! > 1200, `held ${attitude.measurements.holdMs} ms`);
+  assertEqual(attitude.penalties.length, 0); // no "held < 1 s" penalty
+});
+
 test('a short tracking dropout (0.3 s) does not split a hold', () => {
   const seq = [...repeat(10, () => standing()),
     ...repeat(20, () => frontSplitBalance({ help: true })), ...repeat(9, () => null),
