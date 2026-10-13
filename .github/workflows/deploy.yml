@@ -1,0 +1,53 @@
+# Deploys the app to Vercel on every push.
+#   push to main         -> production (https://pinequest-s5-episode-1-team-6.vercel.app)
+#   push to other branch -> a preview URL, shown in the run summary
+# Uses a Vercel access token, so the Vercel GitHub app does not need to be installed on the org.
+# Setup (once): create a token at vercel.com -> Account Settings -> Tokens and save it as the
+# repository secret VERCEL_TOKEN (GitHub -> repo Settings -> Secrets and variables -> Actions).
+name: Deploy
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy per branch at a time; a newer push replaces a running one.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Not secret: they only name the Vercel team and project (copied from .vercel/project.json).
+  VERCEL_ORG_ID: team_YA0Sa2CnGlIZMmbshNI3PwHZ
+  VERCEL_PROJECT_ID: prj_uAcXbMCA5uDkQtgOJQzH4O0DKVaz
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_CLI: vercel@63.1.2
+  TARGET: ${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the Vercel token is set
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::error::Add the repository secret VERCEL_TOKEN (see the top of .github/workflows/deploy.yml)."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Get the Vercel project settings
+        run: npx --yes $VERCEL_CLI pull --yes --environment=$TARGET --token=$VERCEL_TOKEN
+      - name: Build
+        run: npx --yes $VERCEL_CLI build $([ "$TARGET" = production ] && echo --prod) --token=$VERCEL_TOKEN
+      - name: Deploy
+        run: |
+          npx --yes $VERCEL_CLI deploy --prebuilt $([ "$TARGET" = production ] && echo --prod) --format=json --token=$VERCEL_TOKEN > deploy.json
+          url=$(node -p "require('./deploy.json').deployment.url")
+          echo "Deployed ($TARGET): $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url"
