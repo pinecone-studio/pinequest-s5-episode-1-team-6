@@ -22,7 +22,7 @@ export interface JudgeInputs {
   penalties?: number | string;
 }
 
-export type DbStatus = 'counted' | 'repeat' | 'not valid' | 'not in top 8' | 'rejected';
+export type DbStatus = 'counted' | 'repeat' | 'not valid' | 'not in top 8' | 'rejected' | 'technique only';
 
 export interface ScoreResult {
   D: number;
@@ -84,7 +84,9 @@ export class Scoreboard {
     const candidates: StoredEvent[] = [];
     for (const e of accepted) {
       const box = e.box ?? e.code;
-      if (!e.dbValid || e.dbValue <= 0) {
+      if (e.dbValid && e.dbValue <= 0) {
+        status.set(e.id, 'technique only'); // has no difficulty value at all (cheer motions)
+      } else if (!e.dbValid || e.dbValue <= 0) {
         status.set(e.id, 'not valid');
       } else if (seenBoxes.has(box)) {
         status.set(e.id, 'repeat');

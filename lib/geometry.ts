@@ -30,6 +30,8 @@ export const LM = {
   R_EAR: 8,
   L_SHOULDER: 11,
   R_SHOULDER: 12,
+  L_ELBOW: 13,
+  R_ELBOW: 14,
   L_WRIST: 15,
   R_WRIST: 16,
   L_INDEX: 19,
@@ -49,6 +51,11 @@ export const LM = {
 // Landmarks a leg-based rule needs before we trust a frame.
 export const LEG_POINTS = [
   LM.L_HIP, LM.R_HIP, LM.L_KNEE, LM.R_KNEE, LM.L_ANKLE, LM.R_ANKLE,
+];
+
+// Landmarks an arm-based rule (cheer motions) needs before we trust a frame.
+export const ARM_POINTS = [
+  LM.L_SHOULDER, LM.R_SHOULDER, LM.L_ELBOW, LM.R_ELBOW, LM.L_WRIST, LM.R_WRIST,
 ];
 
 export function sub(a: Point, b: Point): Point {
@@ -310,4 +317,52 @@ export function isOnReleve(
 ): boolean | null {
   if (!heel || !toe || (heel.visibility ?? 0) < 0.3 || (toe.visibility ?? 0) < 0.3) return null;
   return toe.y - heel.y > heelLift * shinLength;
+}
+
+export interface ArmPoints {
+  side: Side;
+  shoulder: Landmark;
+  elbow: Landmark;
+  wrist: Landmark;
+}
+
+/** The shoulder, elbow and wrist of one arm ('L' or 'R'). */
+export function armPoints(lm: Landmarks, sideKey: Side): ArmPoints {
+  const L = sideKey === 'L';
+  return {
+    side: sideKey,
+    shoulder: lm[L ? LM.L_SHOULDER : LM.R_SHOULDER],
+    elbow: lm[L ? LM.L_ELBOW : LM.R_ELBOW],
+    wrist: lm[L ? LM.L_WRIST : LM.R_WRIST],
+  };
+}
+
+/**
+ * How high an arm is raised, in degrees: 0 = hanging straight down, 90 = straight out to the side
+ * (a T), 180 = straight up. Measured on the line shoulder -> wrist, in the image plane, so it is
+ * right when the athlete faces the camera (cheer motions are shown to the crowd).
+ */
+export function armElevation(arm: ArmPoints): number {
+  return legElevation(arm.shoulder, arm.wrist);
+}
+
+/**
+ * Does the hand point AWAY from the body (out to its own side), rather than across it?
+ * Compares the wrist with the shoulder, seen from the middle of the shoulders.
+ */
+export function armPointsOutward(lm: Landmarks, arm: ArmPoints): boolean {
+  const center = mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]).x;
+  const outward = Math.sign(arm.shoulder.x - center) || (arm.side === 'L' ? 1 : -1);
+  return (arm.wrist.x - arm.shoulder.x) * outward >= 0;
+}
+
+/** Elbow angle, 180 = straight arm. */
+export function elbowAngle(arm: ArmPoints): number {
+  return jointAngle(arm.shoulder, arm.elbow, arm.wrist);
+}
+
+/** Knee angle of one leg, 180 = straight. */
+export function kneeAngle(lm: Landmarks, sideKey: Side): number {
+  const leg = legPoints(lm, sideKey);
+  return jointAngle(leg.hip, leg.knee, leg.ankle);
 }

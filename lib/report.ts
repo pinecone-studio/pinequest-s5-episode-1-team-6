@@ -2,6 +2,8 @@
 // sentence behind it, and the totals. Pure data (no HTML), so it can be tested and exported.
 
 import { RULE_SOURCE, round2, ruleTextFor, type RuleText } from './rules';
+import { CHEER_NOT_JUDGED, CHEER_RULE_SOURCE, cheerRuleTextFor } from './cheer/rules';
+import type { Sport } from './sport';
 import type { DbStatus, JudgeInputs, Scoreboard } from './scoring';
 import type { Measurements, Penalty } from './types';
 
@@ -11,7 +13,22 @@ const STATUS_TEXT: Record<DbStatus, string> = {
   'not valid': 'Not valid as a difficulty',
   'not in top 8': 'Not counted: only the highest 8 difficulties count (#1.5)',
   rejected: 'Rejected by the judge',
+  'technique only': 'Judged on technique only (no difficulty value)',
 };
+
+/** Same, for cheer: no Code of Points sections. */
+const CHEER_STATUS_TEXT: Record<DbStatus, string> = {
+  ...STATUS_TEXT,
+  repeat: 'Not counted again: same jump already performed',
+  'not valid': 'No difficulty: too far from the jump\'s shape',
+  'not in top 8': 'Not counted: only the highest 8 jumps count',
+};
+
+const GYMNASTICS_NOT_JUDGED = [
+  'Apparatus difficulties (DA), dance steps and R elements: entered by the judges as extra D.',
+  'Apparatus handling faults, artistry and expression: entered by the judges.',
+  'The angles in the Code are a guideline for judges (p. 26): every call above can be rejected.',
+];
 
 export interface ReportDeduction extends Penalty {
   rule: RuleText | null;
@@ -39,6 +56,7 @@ export interface ReportMove {
 }
 
 export interface Report {
+  sport: Sport;
   ruleSource: string;
   generatedAt: string;
   durationMs: number | null;
@@ -62,14 +80,17 @@ export interface Report {
 export function buildReport(
   scoreboard: Scoreboard,
   judge: JudgeInputs = {},
-  { durationMs = null }: { durationMs?: number | null } = {},
+  { durationMs = null, sport = 'gymnastics' }: { durationMs?: number | null; sport?: Sport } = {},
 ): Report {
   const scores = scoreboard.compute(judge);
+  const cheer = sport === 'cheer';
+  const statusText = cheer ? CHEER_STATUS_TEXT : STATUS_TEXT;
+  const ruleFor = (ref: string) => (cheer ? cheerRuleTextFor(ref) : ruleTextFor(ref));
   const events = [...scoreboard.events].sort((a, b) => a.t - b.t);
 
   const moves = events.map((e, i): ReportMove => {
     const status = scores.status.get(e.id);
-    const deductions = e.rejected ? [] : e.penalties.map((p) => ({ ...p, rule: ruleTextFor(p.ref) }));
+    const deductions = e.rejected ? [] : e.penalties.map((p) => ({ ...p, rule: ruleFor(p.ref) }));
     return {
       id: e.id,
       number: i + 1,
@@ -79,14 +100,14 @@ export function buildReport(
       requirement: e.requirement ?? null,
       dbValue: e.dbValue,
       status,
-      statusText: status ? STATUS_TEXT[status] : '',
+      statusText: status ? statusText[status] : '',
       measurements: e.measurements,
       deductions,
       totalDeduction: round2(deductions.reduce((sum, d) => sum + d.value, 0)),
       clean: !e.rejected && deductions.length === 0,
       rejected: e.rejected,
       reviewed: e.reviewed,
-      notes: e.warnings.map((w) => ({ text: w, rule: ruleTextFor(w) })),
+      notes: e.warnings.map((w) => ({ text: w, rule: ruleFor(w) })),
       flatFoot: Boolean(e.flatFoot),
       lowConfidence: Boolean(e.lowConfidence),
     };
@@ -94,7 +115,8 @@ export function buildReport(
 
   const judged = moves.filter((m) => !m.rejected);
   return {
-    ruleSource: RULE_SOURCE,
+    sport,
+    ruleSource: cheer ? CHEER_RULE_SOURCE : RULE_SOURCE,
     generatedAt: new Date().toISOString(),
     durationMs,
     summary: {
@@ -111,10 +133,6 @@ export function buildReport(
       final: scores.final,
     },
     moves,
-    notJudged: [
-      'Apparatus difficulties (DA), dance steps and R elements: entered by the judges as extra D.',
-      'Apparatus handling faults, artistry and expression: entered by the judges.',
-      'The angles in the Code are a guideline for judges (p. 26): every call above can be rejected.',
-    ],
+    notJudged: cheer ? CHEER_NOT_JUDGED : GYMNASTICS_NOT_JUDGED,
   };
 }

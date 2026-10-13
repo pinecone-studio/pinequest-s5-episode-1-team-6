@@ -14,6 +14,9 @@ export function describeMeasurements(m: Measurements): string {
   if (m.rotations != null) parts.push(`${m.rotations} turn${m.rotations > 1 ? 's' : ''}`);
   if (m.holdMs != null && m.rotations == null) parts.push(`held ${(m.holdMs / 1000).toFixed(1)} s`);
   if (m.relevePct != null) parts.push(`relevé ${m.relevePct}%`);
+  if (m.leftArmDeg != null && m.rightArmDeg != null) parts.push(`arms ${m.leftArmDeg}° (left) and ${m.rightArmDeg}° (right) from straight down`);
+  if (m.legHeightDeg != null) parts.push(`lower leg ${m.legHeightDeg}° from straight down (90° = level)`);
+  if (m.kneeDeg != null) parts.push(`knee ${m.kneeDeg}°`);
   if (m.flightMs != null) parts.push(`flight ${m.flightMs} ms`);
   return parts.join(', ');
 }

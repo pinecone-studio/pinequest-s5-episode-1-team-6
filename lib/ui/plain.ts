@@ -3,6 +3,8 @@
 
 import { round2 } from '../rules';
 import type { BalanceLive } from '../elements/balances';
+import type { MotionLive } from '../cheer/motions';
+import { CHEER_ELEMENTS } from '../cheer/rules';
 import type { Penalty } from '../types';
 
 /** Friendly names by element code. */
@@ -31,7 +33,15 @@ const LIVE_NAMES: Record<string, string> = {
 };
 
 export function friendlyName(event: { code: string; element: string }): string {
-  return NAMES[event.code] ?? event.element;
+  return NAMES[event.code] ?? CHEER_ELEMENTS[event.code]?.name ?? event.element;
+}
+
+/** Cheer arm mistakes: 'leftArmLow' -> problem and tip. */
+function armSegment(side: 'left' | 'right', low: boolean) {
+  return {
+    problem: (d: number | undefined) => `The ${side} arm was ${d}° ${low ? 'too low' : 'too high'}.`,
+    tip: low ? `Lift the ${side} arm a little higher and lock it there.` : `Bring the ${side} arm down a little and lock it there.`,
+  };
 }
 
 // What each measured body part means, and how to fix it.
@@ -44,6 +54,17 @@ const SEGMENTS: Record<string, { problem: (deg: number | undefined) => string; t
   passeThigh: { problem: (d) => `The raised thigh was ${d}° below hip height.`, tip: 'Lift the knee up to hip height.' },
   trunk: { problem: (d) => `The upper body leaned ${d}° away from upright.`, tip: 'Stand taller and keep the chest up.' },
   trunkAbove: { problem: (d) => `The upper body was ${d}° above horizontal.`, tip: 'Bring the chest down to horizontal.' },
+  // Cheer
+  leftArmLow: armSegment('left', true),
+  leftArmHigh: armSegment('left', false),
+  rightArmLow: armSegment('right', true),
+  rightArmHigh: armSegment('right', false),
+  leftElbow: { problem: (d) => `The left arm was bent by ${d}°.`, tip: 'Lock the left elbow straight.' },
+  rightElbow: { problem: (d) => `The right arm was bent by ${d}°.`, tip: 'Lock the right elbow straight.' },
+  jumpLegs: { problem: (d) => `At the top of the jump, the legs were ${d}° below hip height.`, tip: 'Lift the legs higher: kick up to hip height or above.' },
+  tuckKnees: { problem: (d) => `At the top of the jump, the knees were ${d}° below hip height.`, tip: 'Pull the knees up to the chest.' },
+  jumpKnees: { problem: (d) => `A knee was bent by ${d}° in the air.`, tip: 'Keep the legs straight and point the toes.' },
+  jumpArms: { problem: (d) => `In the air, the arms were ${d}° off their position.`, tip: 'Hit the arm position at the top of the jump.' },
 };
 
 // Short words for the red tag on a move's video, next to the body part.
@@ -56,6 +77,16 @@ const SHORT: Record<string, (deg: number | undefined) => string> = {
   passeThigh: (d) => `Thigh ${d}° low`,
   trunk: (d) => `Leaning ${d}°`,
   trunkAbove: (d) => `Chest ${d}° too high`,
+  leftArmLow: (d) => `Left arm ${d}° low`,
+  leftArmHigh: (d) => `Left arm ${d}° high`,
+  rightArmLow: (d) => `Right arm ${d}° low`,
+  rightArmHigh: (d) => `Right arm ${d}° high`,
+  leftElbow: (d) => `Left arm bent ${d}°`,
+  rightElbow: (d) => `Right arm bent ${d}°`,
+  jumpLegs: (d) => `Legs ${d}° low`,
+  tuckKnees: (d) => `Knees ${d}° low`,
+  jumpKnees: (d) => `Knee bent ${d}°`,
+  jumpArms: (d) => `Arms ${d}° off`,
 };
 
 /** "Thigh 6° low −0.10": the tag on a move's video. */
@@ -140,6 +171,8 @@ const HINTS: Record<string, string> = {
   'Pose not recognized': 'Hold the shape still so the app can recognize it.',
   'Head not visible: move back from the camera': 'Step back so your head is in the picture.',
   'Raised leg not visible: try a plain background and contrasting clothes': 'The camera can\'t see your raised leg. A plain, light background helps.',
+  'Face the camera': 'Face the camera so it can see both arms.',
+  'Arms not visible: step back from the camera': 'Step back so both arms are in the picture, even straight up.',
 };
 
 export function plainHint(hint: string | null | undefined): string | null | undefined {
@@ -170,6 +203,16 @@ export function liveMessage(live: Partial<BalanceLive> | null | undefined): Live
     tone: worst.value >= 0.5 ? 'bad' : 'warn',
     text: `${e.tip} (−${worst.value.toFixed(2)})`,
   };
+}
+
+/** Cheer: what to say on the video right now. Takes motion.live (lib/cheer/motions.ts). */
+export function cheerLiveMessage(motion: MotionLive, airborne: boolean): LiveMessage {
+  if (airborne) return { pose: 'Jump', dots: 0, tone: 'idle', text: 'In the air…' };
+  if (!motion.shape) return { pose: null, dots: 0, tone: 'idle', text: plainHint(motion.hint) ?? 'Ready. Hit a motion or do a jump.' };
+  const worst = [...motion.penalties].sort((a, b) => b.value - a.value)[0];
+  if (!worst) return { pose: motion.name, dots: 0, tone: 'good', text: 'Right on target ✓' };
+  const e = explainPenalty(worst);
+  return { pose: motion.name, dots: 0, tone: worst.value >= 0.3 ? 'bad' : 'warn', text: `${e.tip} (−${worst.value.toFixed(2)})` };
 }
 
 /** What to say on the video while she turns in an attitude. */

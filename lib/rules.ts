@@ -234,6 +234,7 @@ export function round2(value: number): number {
 export interface RuleText {
   page: number;
   text: string;
+  source?: string; // where the text comes from, when it is not the Code of Points (cheer rubric)
 }
 
 /**
