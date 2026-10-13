@@ -215,7 +215,7 @@ export class JudgingSession {
     this.set({ modelReady: false });
     old?.close();
 
-    // Loader on the video: "12 of 31 MB" and a bar while it downloads (usually already preloaded).
+    // Loader on the video: "40%" and a bar while it downloads (usually already preloaded).
     const title = 'Loading the pose model…';
     this.set({ message: { title, detail: 'Almost ready…' } });
     let shown = '';

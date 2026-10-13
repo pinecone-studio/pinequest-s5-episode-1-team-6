@@ -54,8 +54,9 @@ test('technical hints are translated', () => {
   assert(liveMessage({ shape: null, hint: 'Whole body and both feet must be in view' }).text.includes('Step back'));
 });
 
-test('model loader says how much has downloaded', () => {
-  assertEqual(modelDownloadText(12_400_000, 30_664_242), '12 of 31 MB');
+test('model loader shows the download in percent', () => {
+  assertEqual(modelDownloadText(12_400_000, 30_664_242), '40%');
+  assertEqual(modelDownloadText(30_600_000, 30_664_242), '99%'); // 100% only when it is really done
   assertEqual(modelDownloadText(30_664_242, 30_664_242), 'Downloaded. Starting it up…');
-  assertEqual(modelDownloadText(5_000_000, null), '5 MB downloaded');
+  assertEqual(modelDownloadText(5_000_000, null), 'Downloading…');
 });

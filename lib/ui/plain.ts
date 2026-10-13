@@ -147,9 +147,9 @@ export function liveMessage(live: Partial<BalanceLive> | null | undefined): Live
   };
 }
 
-/** Loader line while the pose model downloads: "12 of 31 MB". */
+/** Loader line while the pose model downloads: "40%". Without a known size there is no percent. */
 export function modelDownloadText(loaded: number, total: number | null): string {
-  const mb = (bytes: number) => Math.round(bytes / 1_000_000);
-  if (total && loaded >= total) return 'Downloaded. Starting it up…';
-  return total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB downloaded`;
+  if (!total) return 'Downloading…';
+  if (loaded >= total) return 'Downloaded. Starting it up…';
+  return `${Math.floor((loaded / total) * 100)}%`;
 }
