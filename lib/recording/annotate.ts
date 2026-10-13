@@ -73,6 +73,18 @@ export function bonesFor(segment: string, lm: Landmarks): Bone[] {
       return [...leg('L'), ...leg('R')];
     case 'tuckKnees':
       return [[lm[LM.L_HIP], lm[LM.L_KNEE]], [lm[LM.R_HIP], lm[LM.R_KNEE]]];
+    // Ballet (lib/ballet/)
+    case 'legHeight':
+    case 'workingKnee':
+      return [[raised.hip, raised.knee], [raised.knee, raised.ankle]];
+    case 'supportKnee':
+      return leftUp ? leg('R') : leg('L');
+    case 'balletTrunk':
+      return [[mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]), mid(lm[LM.L_HIP], lm[LM.R_HIP])]];
+    case 'retireFoot':
+      return [[raised.knee, raised.ankle], [raised.ankle, raised.foot]];
+    case 'kneesUneven':
+      return [...leg('L'), ...leg('R')];
     default:
       return [];
   }

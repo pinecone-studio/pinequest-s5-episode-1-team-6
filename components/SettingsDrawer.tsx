@@ -1,8 +1,8 @@
 'use client';
 
 // Settings drawer: camera accuracy, "only judge our moves", Teach poses, saved videos, the record download,
-// technical details and links to the developer tools. "Only judge our moves" and Teach poses are for
-// rhythmic gymnastics (the balance pose library); cheer doesn't use them.
+// technical details and links to the developer tools. "Only judge our moves" is for rhythmic gymnastics;
+// Teach poses for the sports that recognize poses by example (gymnastics, ballet), not cheerleading.
 // A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
 // back to the Settings button.
 
@@ -10,6 +10,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import type { JudgingSession, SessionState } from '@/lib/session';
 import type { ModelVariant } from '@/lib/pose';
+import { teachKitFor } from '@/lib/ui/teachKits';
 import { TeachPanel } from './TeachPanel';
 import { ghostButton, input, smallText } from './ui';
 
@@ -41,10 +42,11 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
     };
   }, [session, onClose]);
 
+  const kit = teachKitFor(state.sport);
   const tech = state.tech;
   const fps: [string, string, string?] = ['Frames per second', tech.fps == null ? '–' : String(tech.fps), tech.fps == null ? '' : tech.fps >= 15 ? 'text-good' : 'text-bad'];
-  // Cheer has no splits or relevé: only what its detectors see.
-  const techItems: [string, string, string?][] = state.sport === 'cheer'
+  // Cheer and ballet have no split readout: only what their detectors see.
+  const techItems: [string, string, string?][] = state.sport !== 'gymnastics'
     ? [fps, ['Shape', tech.shape], ['State', tech.state]]
     : [
       fps,
@@ -87,23 +89,23 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
         </section>
 
         {state.sport === 'gymnastics' && (
-          <>
-            <section className={setting}>
-              <label className="flex items-start gap-2.5 text-base">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 h-5 w-5 accent-accent"
-                  checked={state.focusOnly}
-                  onChange={(e) => session.setFocusOnly(e.target.checked)}
-                />
-                Only judge our moves (front split, back split, arabesque, attitude, stag leap, attitude turn)
-              </label>
-            </section>
+          <section className={setting}>
+            <label className="flex items-start gap-2.5 text-base">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-5 w-5 accent-accent"
+                checked={state.focusOnly}
+                onChange={(e) => session.setFocusOnly(e.target.checked)}
+              />
+              Only judge our moves (front split, back split, arabesque, attitude, stag leap, attitude turn)
+            </label>
+          </section>
+        )}
 
-            <section className={setting}>
-              <TeachPanel session={session} recording={state.teachRecording} status={state.teachStatus} />
-            </section>
-          </>
+        {kit && (
+          <section className={setting}>
+            <TeachPanel kit={kit} session={session} recording={state.teachRecording} status={state.teachStatus} />
+          </section>
         )}
 
         <section className={setting}>

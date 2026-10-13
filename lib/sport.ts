@@ -1,23 +1,26 @@
-// The two sports the app judges, and the words that change with them.
+// The sports the app judges, and the words that change with them.
 // The chosen sport is saved in this browser and set as data-sport="..." on <html> before the page
 // paints (same idea as the dark theme, lib/ui/theme.ts), so each sport's colors (app/globals.css)
-// never flash the other sport's. The switch is components/SportSwitch.tsx.
+// never flash another sport's. Nothing saved = rhythmic gymnastics. The menu is components/SportMenu.tsx.
 
-export type Sport = 'gymnastics' | 'cheer';
+export type Sport = 'gymnastics' | 'cheer' | 'ballet';
 
-export const SPORTS: Sport[] = ['gymnastics', 'cheer'];
+export const SPORTS: Sport[] = ['gymnastics', 'cheer', 'ballet'];
+
+/** The sport before anyone picks one. */
+export const DEFAULT_SPORT: Sport = 'gymnastics';
 
 /** localStorage key for the sport picked in this browser. */
 export const SPORT_KEY = 'rhymnast.sport';
 
 export function isSport(value: unknown): value is Sport {
-  return value === 'gymnastics' || value === 'cheer';
+  return (SPORTS as unknown[]).includes(value);
 }
 
 /** Runs in <head> before the page paints (app/layout.tsx): puts the saved sport on <html>. */
 export const restoreSportScript =
   `try{var s=localStorage.getItem(${JSON.stringify(SPORT_KEY)});` +
-  `if(s==="gymnastics"||s==="cheer")document.documentElement.dataset.sport=s}catch(e){}`;
+  `if(${JSON.stringify(SPORTS)}.indexOf(s)>=0)document.documentElement.dataset.sport=s}catch(e){}`;
 
 /** Everything on the screens that says something different per sport. Plain words (CLAUDE.md #8). */
 export interface SportText {
@@ -25,7 +28,7 @@ export interface SportText {
   short: string; // "Gymnastics"
   emoji: string;
   tagline: string; // under the app name
-  pickerText: string; // on the sport picker card
+  menuText: string; // under the sport's name in the Sports menu
   athlete: string; // "gymnast" / "athlete"
   artistry: string; // the judges' own score
   extraHelp: string; // "Points the app can't see"
@@ -45,7 +48,7 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     short: 'Gymnastics',
     emoji: '🎀',
     tagline: 'See which points you lose in your balances, leaps and turns, and why.',
-    pickerText: 'Balances, leaps and turns, judged with the FIG Code of Points.',
+    menuText: 'Balances, leaps and turns',
     athlete: 'gymnast',
     artistry: 'Artistry',
     extraHelp: 'For apparatus work, dance steps and other moves the app doesn\'t judge.',
@@ -63,7 +66,7 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     short: 'Cheer',
     emoji: '📣',
     tagline: 'See which points you lose in your jumps and motions, and why.',
-    pickerText: 'Jumps and arm motions, judged on height, placement and straight arms and legs.',
+    menuText: 'Jumps and arm motions',
     athlete: 'athlete',
     artistry: 'Showmanship',
     extraHelp: 'For stunts, pyramids, tumbling and other skills the app doesn\'t judge.',
@@ -75,5 +78,23 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     noMoves: 'Face the camera with your whole body and both arms in the picture. Hit each motion and hold it for a moment; film pikes and tucks from the side.',
     correctMove: 'Right on target.',
     footerRules: 'Cheer rules: a team-made technique rubric, not an official score sheet.',
+  },
+  ballet: {
+    name: 'Ballet',
+    short: 'Ballet',
+    emoji: '🩰',
+    tagline: 'See which points you lose in your arabesques, extensions, pirouettes and jumps, and why.',
+    menuText: 'Poses, pirouettes and grand jetés',
+    athlete: 'dancer',
+    artistry: 'Artistry',
+    extraHelp: 'For turnout, pointed feet, port de bras, musicality and steps the app doesn\'t judge.',
+    watches: 'The app watches six poses (arabesque, attitude, développé devant, à la seconde, retiré, plié), the pirouette and the grand jeté.',
+    emptyPractice: 'Press Start, then hold a pose for 1 second, turn a pirouette or do a grand jeté.',
+    startMessage: { title: 'Turn on the camera to begin', detail: 'Stand sideways for arabesques and développés, face the camera for à la seconde and pliés.' },
+    idleLive: 'Ready. Hold a pose, turn a pirouette or do a grand jeté.',
+    steps: ['Turn on the camera', 'Whole body in view, sideways or facing the camera', 'Press Start and hold each pose for 1 second'],
+    noMoves: 'Keep your whole body and both feet in the picture. Stand sideways for arabesques, attitudes and développés, face the camera for à la seconde and pliés, and hold each pose for at least 1 second.',
+    correctMove: 'Correct position.',
+    footerRules: 'Ballet rules: a team-made technique rubric, not an official syllabus or score sheet.',
   },
 };

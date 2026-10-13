@@ -19,7 +19,8 @@
    big buttons and plain words. A light theme (below) and a dark theme (.dark, further down).
    Each sport has its own look (data-sport on <html>, lib/sport.ts), further down:
      rhythmic gymnastics: violet with a pink ribbon, serif headings (also the default, before a sport is picked);
-     cheerleading: royal blue and gold varsity stripes, bold upper-case headings.
+     cheerleading: royal blue and gold varsity stripes, bold upper-case headings;
+     ballet: berry rose and champagne on blush, classical italic serif headings.
    The traffic-light colors (good / warn / bad) stay the same in every sport: they mean the same thing.
    Use these as Tailwind classes: bg-card, text-muted, border-line, bg-accent, text-good, bg-bad-soft, ... */
 @theme {
@@ -70,7 +71,7 @@
 
 :root {
   --sport-display: var(--font-playfair);
-  /* The stripe under the header and on the sport picker: a ribbon for gymnastics. */
+  /* The stripe above the header: a ribbon for gymnastics. */
   --sport-stripe: linear-gradient(90deg, #7438d6, #e0559f 55%, #f4a35c);
 }
 
@@ -87,6 +88,21 @@
   --color-accent-soft: #e2eaff;
   --color-spark: #f5b301;
   --color-stage: #0b1736;
+}
+
+/* Ballet, light. */
+[data-sport="ballet"] {
+  --sport-display: var(--font-cormorant);
+  --sport-stripe: linear-gradient(90deg, #f3c4d3, #b0346c 50%, #c9a14a);
+  --color-bg: #fffafb;
+  --color-card: #fbf0f3;
+  --color-ink: #2b1d24;
+  --color-muted: #735e68;
+  --color-line: #f0dee5;
+  --color-accent: #b0346c;
+  --color-accent-soft: #fbe5ee;
+  --color-spark: #c9a14a;
+  --color-stage: #2a1820;
 }
 
 :root {
@@ -119,9 +135,8 @@
     --color-on-fill: #120e1a;
   }
 
-  /* Cheerleading, dark (both on <html>, so this beats .dark alone; or a cheer card on the sport picker). */
-  .dark[data-sport="cheer"],
-  .dark [data-sport="cheer"] {
+  /* Cheerleading, dark (both on <html>, so this beats .dark alone). */
+  .dark[data-sport="cheer"] {
     --color-bg: #070d1f;
     --color-card: #101a35;
     --color-ink: #e8edf9;
@@ -135,6 +150,22 @@
     --color-tab: #213160;
     --color-on-fill: #070d1f;
   }
+
+  /* Ballet, dark. */
+  .dark[data-sport="ballet"] {
+    --color-bg: #170f13;
+    --color-card: #23171d;
+    --color-ink: #f6e9ee;
+    --color-muted: #bba3ad;
+    --color-line: #3a2830;
+    --color-accent: #f08cb6;
+    --color-accent-soft: #3b1f2d;
+    --color-spark: #e3c27a;
+    --color-stage: #0b0609;
+    --color-overlay: #23171d;
+    --color-tab: #3d2a33;
+    --color-on-fill: #170f13;
+  }
 }
 
 /* Headings in the sport's font (Tailwind class font-display). Bebas (cheer) has one weight: no fake bold. */
@@ -142,8 +173,13 @@
   font-weight: 400;
   letter-spacing: 0.03em;
 }
+/* Cormorant (ballet) is light and small at the same size: italic, a little spaced. */
+[data-sport="ballet"] .font-display {
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
 
-/* The sport's stripe (header, sport picker). */
+/* The sport's stripe (above the header). */
 .sport-stripe {
   background: var(--sport-stripe);
 }

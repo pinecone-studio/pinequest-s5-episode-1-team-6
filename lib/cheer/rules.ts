@@ -8,8 +8,7 @@
 // `verified: false` until a cheer judge or coach has checked them. Every number has a reference
 // (#C1 ... #C6) into CHEER_RULE_TEXT below, never a magic number in a detector.
 
-import type { Band } from '../types';
-import { MEASUREMENT_MARGIN_DEG, type RuleText } from '../rules';
+import { techniqueBand, type RuleText, type TechniqueBand } from '../rules';
 
 export const CHEER_RULE_SOURCE =
   'Rhymnast cheer technique rubric (team-made from common cheer judging criteria; not an official score sheet)';
@@ -17,35 +16,12 @@ export const CHEER_RULE_SOURCE =
 /** Shown next to every quoted cheer rule. */
 const SOURCE = 'Cheer rubric';
 
-interface CheerBand {
-  band: Band;
-  maxDeg: number;
-  penalty: number;
-  creditsDifficulty: boolean; // a jump this far off still earns its difficulty value
-}
-
 /**
  * How far a body part is from its target, after the camera margin (same 3° as gymnastics:
- * one 2D camera measures joint angles to about ±3°).
+ * one 2D camera measures joint angles to about ±3°). Shared with ballet: lib/rules.ts TECHNIQUE_BANDS.
  */
-export const CHEER_BANDS: CheerBand[] = [
-  { band: 'none', maxDeg: 0, penalty: 0, creditsDifficulty: true },
-  { band: 'small', maxDeg: 10, penalty: 0.1, creditsDifficulty: true },
-  { band: 'medium', maxDeg: 20, penalty: 0.2, creditsDifficulty: true },
-  { band: 'large', maxDeg: Infinity, penalty: 0.3, creditsDifficulty: false },
-];
-
-export interface JudgedCheerBand extends CheerBand {
-  deg: number; // deviation after the margin, rounded
-  measuredDeg: number; // raw deviation, rounded
-}
-
-/** Band for a MEASURED deviation in degrees (the first 3° are not deducted). */
-export function cheerBand(measuredDeviationDeg: number, margin = MEASUREMENT_MARGIN_DEG): JudgedCheerBand {
-  const measuredDeg = Math.max(0, Math.round(measuredDeviationDeg));
-  const deg = Math.max(0, Math.round(measuredDeviationDeg - margin));
-  return { ...CHEER_BANDS.find((b) => deg <= b.maxDeg)!, deg, measuredDeg };
-}
+export const cheerBand = techniqueBand;
+export type JudgedCheerBand = TechniqueBand;
 
 /** Straight arms and legs: bent more than this is a deduction. */
 export const CHEER_LIMITS = {

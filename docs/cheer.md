@@ -1,13 +1,12 @@
 # Cheerleading: what we automate
 
-Added 2026-10-14 (branch `27-new-sport-added---cheerleading`). Pick the sport on the first visit
-(sport picker) or with the Gymnastics | Cheer switch in the header.
+Added 2026-10-14 (branch `27-new-sport-added---cheerleading`). Pick it in the header: **Sports → Cheerleading**.
 
 ## Where the numbers come from (be honest about this)
 
 Cheerleading has **no public per-degree deduction table** like the FIG Code of Points. USASF and ICU
 score sheets score jumps and motions on ranges ("technique", "execution") and leave the numbers to the
-judges. So the cheer values are **our own rubric** (`lib/cheer/rules.ts`, sections #C1-#C6), written
+judges. So the cheer values are **our own rubric** (`lib/cheer/rules.ts`, sections #C1-#C6; the 0.10 / 0.20 / 0.30 bands are shared with ballet: `TECHNIQUE_BANDS` in `lib/rules.ts`), written
 from the technique those sheets and coaches describe. All are `verified: false` until a cheer judge or
 coach checks them. The UI and report say "team-made technique rubric, not an official score sheet".
 

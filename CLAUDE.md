@@ -5,6 +5,8 @@ A real-time computer-vision web app for **rhythmic gymnastics**. A gymnast perfo
 The system scores **Technical Difficulty (D)** and **Execution (E)**. Human judges score **Artistry and
 facial expression** in a separate judge panel. The app combines them into a final score.
 Positioning: *decision support that flags measurable deductions judges can miss, with an audit trail*, not a judge replacement.
+Since 2026-10-14 also **cheerleading** and **ballet** (Decisions 11, 12): same pipeline, each with its own
+moves, rubric and theme.
 
 ## Constraints
 - 2-week build, team of 5 junior engineers. Keep scope small and demo-able.
@@ -114,15 +116,26 @@ Known limits (be honest in the UI and README):
    method counted 180° for a full turn), plus one frame of turning as sampling margin.
    The team's clips replay as tests: `npm run replay`, `tests/videos.test.ts` (body points only).
 
-11. **Cheerleading (user, 2026-10-14):** a second sport. Sport picker on the first visit, Gymnastics | Cheer
-   switch in the header (`lib/sport.ts`, `components/useSport.ts`; saved in localStorage, `data-sport` on
-   `<html>` set before paint like the dark theme). Each sport has its own theme in `app/globals.css`:
+11. **Cheerleading (user, 2026-10-14):** a second sport. Picked in the header's **Sports** menu
+   (`components/SportMenu.tsx`; `lib/sport.ts`, `components/useSport.ts`; saved in localStorage, `data-sport`
+   on `<html>` set before paint like the dark theme). No sport picker screen (user, 2026-10-14): nothing
+   picked = rhythmic gymnastics. The dark mode switch is always in the header's top right corner. Each sport has its own theme in `app/globals.css`:
    gymnastics violet + ribbon pink, Playfair Display headings; cheer royal blue + gold varsity stripes,
    Bebas Neue headings. Cheer detectors in `lib/cheer/`: `motions.ts` (8 arm motions, front view, held
    ≥0.3 s) and `jumps.ts` (5 jumps, reusing the leap detector's airborne logic). Only one sport's
    detectors run at a time; changing sport starts a new routine. Cheer has no official per-degree table,
    so the values are OUR rubric (`lib/cheer/rules.ts`, #C1-#C6, `verified: false`), labeled as such in
    the UI and report. Showmanship replaces Artistry for cheer. See `docs/cheer.md`.
+
+12. **Ballet (user, 2026-10-14):** the third sport, built like gymnastics: a ballet pose library
+   (`lib/ballet/library.ts`, signature in `frame.ts`, default examples built by `npm run build-library`,
+   "Teach poses" in Settings with its own storage) recognizes arabesque, attitude, développé devant,
+   à la seconde, retiré and plié; `poses.ts` judges them, `pirouette.ts` counts retiré turns,
+   `jete.ts` re-judges the leap detector's split leap as a grand jeté. `PoseLibrary` takes a `LibrarySpec`
+   (labels + features) so each sport has its own library. Values: OUR rubric (`lib/ballet/rules.ts`,
+   #B1-#B8, `verified: false`). Theme: berry rose + champagne, Cormorant Garamond italic headings.
+   Not judged (from the team's real clips, see `docs/ballet.md`): a leg held by the hand (side view), a
+   plié seen from the side, a pose that turns > 90°, a pose under 0.7 s.
 
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare

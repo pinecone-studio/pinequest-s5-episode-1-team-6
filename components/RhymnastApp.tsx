@@ -2,8 +2,8 @@
 
 // The whole judging page. The session (lib/session.ts) runs the camera, pose model and judging;
 // this component lays out the page and passes clicks to it.
-// First the sport: until one is picked in this browser the sport picker shows (SportPicker.tsx);
-// the header switch changes it later, and the session then judges that sport's moves.
+// The sport comes from the Sports menu in the header (rhythmic gymnastics until one is picked);
+// the session then judges that sport's moves.
 // Two tabs show the same judging for two audiences:
 //   Practice (gymnast / coach): moves, points lost, one tip each
 //   Judge: final score, artistry entry, agree / disagree with each call, full report
@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { buildReport } from '@/lib/report';
-import { SPORT_TEXT, type Sport } from '@/lib/sport';
+import { SPORT_TEXT } from '@/lib/sport';
 import { useJudgingSession } from './useJudgingSession';
 import { Header, type Tab } from './Header';
 import { Stage } from './Stage';
@@ -19,17 +19,12 @@ import { Controls, mainButtonLabel } from './Controls';
 import { JudgePanel, PracticePanel, type JudgeForm } from './SidePanels';
 import { ResultsView } from './ResultsView';
 import { SettingsDrawer } from './SettingsDrawer';
-import { SportPicker } from './SportPicker';
 import { useSport } from './useSport';
 
 const TAB_KEY = 'rhymnast.tab';
 
 export function RhymnastApp() {
   const sport = useSport();
-  return sport ? <JudgingPage sport={sport} /> : <SportPicker />;
-}
-
-function JudgingPage({ sport }: { sport: Sport }) {
   const { session, state } = useJudgingSession();
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);

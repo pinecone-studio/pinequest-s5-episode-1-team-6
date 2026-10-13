@@ -5,8 +5,9 @@
 // One main button walks people through the app:
 //   Turn on camera  ->  Start  ->  Finish  ->  Try again
 //
-// Two sports (lib/sport.ts): rhythmic gymnastics runs the balance / leap / pivot detectors in
-// lib/elements/, cheerleading the jump and motion detectors in lib/cheer/. Only one set runs at a time.
+// Three sports (lib/sport.ts): rhythmic gymnastics runs the balance / leap / pivot detectors in
+// lib/elements/, cheerleading the jump and motion detectors in lib/cheer/, ballet the pose / pirouette /
+// grand jeté detectors in lib/ballet/. Only one sport's detectors run at a time.
 
 import { createPoseTracker, preloadPoseModel, watchModelDownload, type ModelVariant, type PoseTracker } from './pose';
 import { LandmarkSmoother } from './oneEuro';
@@ -21,15 +22,20 @@ import { cheerAngles, drawLegAngles, drawSkeleton, legAngles, type AnglesFn } fr
 import { CheerJumpDetector } from './cheer/jumps';
 import { MotionDetector } from './cheer/motions';
 import { CHEER_RULE_SOURCE } from './cheer/rules';
+import { BalletPoseDetector, setBalletLibrary } from './ballet/poses';
+import { PirouetteDetector } from './ballet/pirouette';
+import { GrandJeteDetector } from './ballet/jete';
+import { balletLibrary } from './ballet/library';
+import { BALLET_RULE_SOURCE } from './ballet/rules';
 import { SPORT_TEXT, type Sport } from './sport';
-import { currentLibrary, teach } from './ui/libraryStore';
-import { cheerLiveMessage, describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
+import { gymnasticsLibrary } from './ui/libraryStore';
+import { teachKitFor, type TeachKit } from './ui/teachKits';
+import { balletLiveMessage, cheerLiveMessage, describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
 import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
 import { saveRoutine, type SavedMove } from './recording/clipStore';
 import { TeachRecorder } from './ui/teachRecorder';
-import { POSE_NAMES, type PoseLabel } from './library/recognizer';
 import { downloadFile } from './ui/download';
 import type { ElementEvent } from './types';
 
@@ -144,6 +150,9 @@ export class JudgingSession {
   private balance: BalanceDetector;
   private cheerJumps: CheerJumpDetector;
   private motions: MotionDetector;
+  private balletPoses: BalletPoseDetector;
+  private pirouette: PirouetteDetector;
+  private jete: GrandJeteDetector;
   private recorder: TeachRecorder;
   private routineRecorder = new RoutineRecorder();
   private videoRun = 0; // goes up when a new routine starts, so older video work stops
@@ -181,7 +190,10 @@ export class JudgingSession {
     this.balance = new BalanceDetector((event) => this.onEvent(event));
     this.cheerJumps = new CheerJumpDetector((event) => this.onEvent(event));
     this.motions = new MotionDetector((event) => this.onEvent(event));
-    this.recorder = new TeachRecorder((label, signatures) => this.finishTeachRecording(label, signatures));
+    this.balletPoses = new BalletPoseDetector((event) => this.onEvent(event));
+    this.pirouette = new PirouetteDetector((event) => this.onEvent(event));
+    this.jete = new GrandJeteDetector((event) => this.onEvent(event));
+    this.recorder = new TeachRecorder((kit, label, signatures) => this.finishTeachRecording(kit, label, signatures));
   }
 
   // ---------- For React (useSyncExternalStore) ----------
@@ -211,8 +223,8 @@ export class JudgingSession {
     this.video = video;
     this.canvas = canvas;
     this.stage = stage;
-    // Recognize poses with the library: shipped examples + the ones your team taught.
-    setPoseLibrary(currentLibrary());
+    // Recognize poses with the libraries: shipped examples + the ones your team taught.
+    this.loadLibraries();
     this.fpsSince = performance.now();
     // Download the model now, while the person reads the page, so "Turn on camera" is quick.
     preloadPoseModel(this.state.model);
@@ -298,19 +310,31 @@ export class JudgingSession {
   }
 
   /**
-   * The sport picker / switch. Not while judging. A new sport starts a new routine: its moves are
+   * The Sports menu in the header. Not while judging. A new sport starts a new routine: its moves are
    * scored by other rules, so the two are never mixed in one score.
    */
   setSport(sport: Sport): void {
     if (sport === this.state.sport || this.state.judging) return;
     const showingStart = this.state.message === startMessage(this.state.sport);
-    this.set({ sport, live: null, ...(showingStart ? { message: startMessage(sport) } : {}) });
+    this.recorder.cancel(); // a recording for the other sport's library
+    this.set({ sport, live: null, teachRecording: false, teachStatus: '', ...(showingStart ? { message: startMessage(sport) } : {}) });
     this.lastLiveKey = '';
     this.newRoutine();
   }
 
   private get cheer(): boolean {
     return this.state.sport === 'cheer';
+  }
+
+  private get ballet(): boolean {
+    return this.state.sport === 'ballet';
+  }
+
+  /** Is the athlete in the air (for the sport being judged)? */
+  private get airborne(): boolean {
+    if (this.cheer) return this.cheerJumps.live.airborne;
+    if (this.ballet) return this.jete.live.airborne;
+    return this.leap.live.airborne;
   }
 
   // ---------- Sources ----------
@@ -462,6 +486,11 @@ export class JudgingSession {
       this.cheerJumps.update({ t, lm });
       // In the air the arms belong to the jump, not to a motion.
       this.motions.update({ t, lm, airborne: this.cheerJumps.live.airborne });
+    } else if (this.ballet) {
+      this.jete.update({ t, lm });
+      this.pirouette.update({ t, lm });
+      // A retiré that turns is a pirouette, not a balance; nothing in the air is a pose.
+      this.balletPoses.update({ t, lm, airborne: this.jete.live.airborne, turning: this.pirouette.live.turning });
     } else {
       this.leap.update({ t, lm });
       this.passe.update({ t, lm, airborne: this.leap.live.airborne });
@@ -479,7 +508,7 @@ export class JudgingSession {
     // The routine video shows the skeleton and the angles (drawn here if the page hides them).
     if (this.routineRecorder.recording) this.routineRecorder.addFrame(t, video, this.canvas, lm, this.anglesVisible ? null : angles);
     if (this.techVisible) this.updateTech(lm);
-    this.updateLive(this.recorder.capture(lm, this.leap.live.airborne));
+    this.updateLive(this.recorder.capture(lm, this.airborne));
     this.countFps();
   }
 
@@ -487,6 +516,10 @@ export class JudgingSession {
     if (this.cheer) {
       if (this.cheerJumps.live.airborne) return '#f08c9c';
       return this.motions.live.shape ? '#4cc38a' : '#7aa7ff'; // green: hitting a motion
+    }
+    if (this.ballet) {
+      if (this.jete.live.airborne) return '#f08c9c';
+      return this.balletPoses.live.pose || this.pirouette.live.turning ? '#4cc38a' : '#7aa7ff'; // green: in a pose
     }
     if (this.leap.live.airborne) return '#f08c9c';
     if (this.passe.live.inShape || this.pivot.live.turning || this.balance.live.shape) return '#4cc38a'; // green: in a shape
@@ -501,6 +534,11 @@ export class JudgingSession {
     } else if (this.cheer) {
       const m = cheerLiveMessage(this.motions.live, this.cheerJumps.live.airborne);
       live = { pose: m.pose ?? 'Watching', showDots: false, dots: 0, tone: m.tone, text: m.text };
+    } else if (this.ballet) {
+      const turn = this.pirouette.live.turning ? this.pirouette.live.rotationDeg : null;
+      const m = balletLiveMessage(this.balletPoses.live, this.jete.live.airborne, turn);
+      const holding = Boolean(this.balletPoses.live.pose) && this.balletPoses.live.pose !== 'plie' && turn === null;
+      live = { pose: m.pose ?? 'Watching', showDots: holding, dots: m.dots, tone: m.tone, text: m.text };
     } else if (this.pivot.live.turning) {
       const m = pivotMessage(this.pivot.live.rotationDeg);
       live = { pose: m.pose, showDots: false, dots: 0, tone: m.tone, text: m.text };
@@ -547,6 +585,14 @@ export class JudgingSession {
         fps,
         shape: cheerJumps.live.airborne ? cheerJumps.live.shape ?? 'jump' : motions.live.name ?? '–',
         state: cheerJumps.live.airborne ? 'in the air' : motions.live.shape ? 'motion' : 'on the floor',
+      };
+    } else if (this.ballet) {
+      const { jete, pirouette, balletPoses } = this;
+      tech = {
+        ...EMPTY_TECH,
+        fps,
+        shape: pirouette.live.turning ? `pirouette ${Math.round(pirouette.live.rotationDeg)}°` : balletPoses.live.pose ?? '–',
+        state: jete.live.airborne ? 'in the air' : pirouette.live.turning ? 'turning' : balletPoses.live.pose ? 'pose' : 'on the floor',
       };
     } else {
       const { leap, passe, balance } = this;
@@ -608,6 +654,8 @@ export class JudgingSession {
       this.pivot.flush();
       this.balance.flush();
       this.motions.flush();
+      this.pirouette.flush();
+      this.balletPoses.flush();
       this.stoppedAt = this.currentTimeMs();
       if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
     }
@@ -645,6 +693,9 @@ export class JudgingSession {
     this.balance.reset();
     this.cheerJumps.reset();
     this.motions.reset();
+    this.balletPoses.reset();
+    this.pirouette.reset();
+    this.jete.reset();
     this.lastVideoTime = -1;
   }
 
@@ -742,7 +793,9 @@ export class JudgingSession {
   // ---------- Teach poses ----------
 
   /** Record 3 s: needs a running camera or video, and not while judging. */
-  startTeachRecording(label: PoseLabel): void {
+  startTeachRecording(label: string): void {
+    const kit = teachKitFor(this.state.sport);
+    if (!kit) return; // this sport has no pose library
     if (this.state.source === null || this.state.judging) {
       this.set({ teachStatus: 'Start the camera first, and stop judging while you teach.' });
       return;
@@ -751,24 +804,30 @@ export class JudgingSession {
       this.set({ teachStatus: 'Wait until the pose model has loaded, then record.' });
       return;
     }
-    this.recorder.start(label);
+    this.recorder.start(kit, label);
     this.set({ teachRecording: true });
   }
 
-  private finishTeachRecording(label: PoseLabel, signatures: number[][]): void {
+  private finishTeachRecording(kit: TeachKit, label: string, signatures: number[][]): void {
     this.set({ teachRecording: false });
     if (signatures.length === 0) {
       this.set({ teachStatus: 'Nothing recorded: the whole body and both feet must be in view.' });
       return;
     }
-    const saved = teach(label, signatures);
-    this.libraryChanged(`Added ${signatures.length} examples of ${POSE_NAMES[label]}.${saved ? '' : ' (Not saved in this browser: they last until you close the page.)'}`);
+    const saved = kit.store.teach(label, signatures);
+    this.libraryChanged(`Added ${signatures.length} examples of ${kit.names[label]}.${saved ? '' : ' (Not saved in this browser: they last until you close the page.)'}`);
   }
 
   /** Taught poses changed: use them right away and show a message. */
   libraryChanged(message: string): void {
-    setPoseLibrary(currentLibrary());
+    this.loadLibraries();
     this.set({ teachStatus: message });
+  }
+
+  /** Every sport's pose library: shipped examples + the ones taught in this browser. */
+  private loadLibraries(): void {
+    setPoseLibrary(gymnasticsLibrary.currentLibrary());
+    setBalletLibrary(balletLibrary.currentLibrary());
   }
 
   setTeachStatus(teachStatus: string): void {
@@ -786,7 +845,7 @@ export class JudgingSession {
     const audit = this.scoreboard.toAudit(judge, {
       app: 'Rhymnast',
       sport: this.state.sport,
-      ruleSource: this.cheer ? CHEER_RULE_SOURCE : RULE_SOURCE,
+      ruleSource: this.cheer ? CHEER_RULE_SOURCE : this.ballet ? BALLET_RULE_SOURCE : RULE_SOURCE,
       source: this.state.source === 'file' ? `file: ${this.fileName}` : this.state.source,
       poseModel: `MediaPipe Pose Landmarker (${this.trackerVariant}, ${this.tracker?.delegate})`,
     });

@@ -3,6 +3,7 @@
 
 import { RULE_SOURCE, round2, ruleTextFor, type RuleText } from './rules';
 import { CHEER_NOT_JUDGED, CHEER_RULE_SOURCE, cheerRuleTextFor } from './cheer/rules';
+import { BALLET_NOT_JUDGED, BALLET_RULE_SOURCE, balletRuleTextFor } from './ballet/rules';
 import type { Sport } from './sport';
 import type { DbStatus, JudgeInputs, Scoreboard } from './scoring';
 import type { Measurements, Penalty } from './types';
@@ -16,12 +17,12 @@ const STATUS_TEXT: Record<DbStatus, string> = {
   'technique only': 'Judged on technique only (no difficulty value)',
 };
 
-/** Same, for cheer: no Code of Points sections. */
-const CHEER_STATUS_TEXT: Record<DbStatus, string> = {
+/** Same, for the sports with a team-made rubric (cheer, ballet): no Code of Points sections. */
+const RUBRIC_STATUS_TEXT: Record<DbStatus, string> = {
   ...STATUS_TEXT,
-  repeat: 'Not counted again: same jump already performed',
-  'not valid': 'No difficulty: too far from the jump\'s shape',
-  'not in top 8': 'Not counted: only the highest 8 jumps count',
+  repeat: 'Not counted again: same move already performed',
+  'not valid': 'No difficulty: too far from the move\'s shape',
+  'not in top 8': 'Not counted: only the highest 8 difficulties count',
 };
 
 const GYMNASTICS_NOT_JUDGED = [
@@ -29,6 +30,18 @@ const GYMNASTICS_NOT_JUDGED = [
   'Apparatus handling faults, artistry and expression: entered by the judges.',
   'The angles in the Code are a guideline for judges (p. 26): every call above can be rejected.',
 ];
+
+/** Where each sport's rules come from, how their text is looked up, and what the app doesn't judge. */
+const SPORT_RULES: Record<Sport, {
+  source: string;
+  ruleFor: (ref: string) => RuleText | null;
+  statusText: Record<DbStatus, string>;
+  notJudged: string[];
+}> = {
+  gymnastics: { source: RULE_SOURCE, ruleFor: ruleTextFor, statusText: STATUS_TEXT, notJudged: GYMNASTICS_NOT_JUDGED },
+  cheer: { source: CHEER_RULE_SOURCE, ruleFor: cheerRuleTextFor, statusText: RUBRIC_STATUS_TEXT, notJudged: CHEER_NOT_JUDGED },
+  ballet: { source: BALLET_RULE_SOURCE, ruleFor: balletRuleTextFor, statusText: RUBRIC_STATUS_TEXT, notJudged: BALLET_NOT_JUDGED },
+};
 
 export interface ReportDeduction extends Penalty {
   rule: RuleText | null;
@@ -83,14 +96,12 @@ export function buildReport(
   { durationMs = null, sport = 'gymnastics' }: { durationMs?: number | null; sport?: Sport } = {},
 ): Report {
   const scores = scoreboard.compute(judge);
-  const cheer = sport === 'cheer';
-  const statusText = cheer ? CHEER_STATUS_TEXT : STATUS_TEXT;
-  const ruleFor = (ref: string) => (cheer ? cheerRuleTextFor(ref) : ruleTextFor(ref));
+  const rules = SPORT_RULES[sport];
   const events = [...scoreboard.events].sort((a, b) => a.t - b.t);
 
   const moves = events.map((e, i): ReportMove => {
     const status = scores.status.get(e.id);
-    const deductions = e.rejected ? [] : e.penalties.map((p) => ({ ...p, rule: ruleFor(p.ref) }));
+    const deductions = e.rejected ? [] : e.penalties.map((p) => ({ ...p, rule: rules.ruleFor(p.ref) }));
     return {
       id: e.id,
       number: i + 1,
@@ -100,14 +111,14 @@ export function buildReport(
       requirement: e.requirement ?? null,
       dbValue: e.dbValue,
       status,
-      statusText: status ? statusText[status] : '',
+      statusText: status ? rules.statusText[status] : '',
       measurements: e.measurements,
       deductions,
       totalDeduction: round2(deductions.reduce((sum, d) => sum + d.value, 0)),
       clean: !e.rejected && deductions.length === 0,
       rejected: e.rejected,
       reviewed: e.reviewed,
-      notes: e.warnings.map((w) => ({ text: w, rule: ruleFor(w) })),
+      notes: e.warnings.map((w) => ({ text: w, rule: rules.ruleFor(w) })),
       flatFoot: Boolean(e.flatFoot),
       lowConfidence: Boolean(e.lowConfidence),
     };
@@ -116,7 +127,7 @@ export function buildReport(
   const judged = moves.filter((m) => !m.rejected);
   return {
     sport,
-    ruleSource: cheer ? CHEER_RULE_SOURCE : RULE_SOURCE,
+    ruleSource: rules.source,
     generatedAt: new Date().toISOString(),
     durationMs,
     summary: {
@@ -133,6 +144,6 @@ export function buildReport(
       final: scores.final,
     },
     moves,
-    notJudged: cheer ? CHEER_NOT_JUDGED : GYMNASTICS_NOT_JUDGED,
+    notJudged: rules.notJudged,
   };
 }

@@ -4,6 +4,8 @@
 import { round2 } from '../rules';
 import type { BalanceLive } from '../elements/balances';
 import type { MotionLive } from '../cheer/motions';
+import type { BalletPoseLive } from '../ballet/poses';
+import { BALLET_POSE_NAMES } from '../ballet/library';
 import { CHEER_ELEMENTS } from '../cheer/rules';
 import type { Penalty } from '../types';
 
@@ -65,6 +67,15 @@ const SEGMENTS: Record<string, { problem: (deg: number | undefined) => string; t
   tuckKnees: { problem: (d) => `At the top of the jump, the knees were ${d}° below hip height.`, tip: 'Pull the knees up to the chest.' },
   jumpKnees: { problem: (d) => `A knee was bent by ${d}° in the air.`, tip: 'Keep the legs straight and point the toes.' },
   jumpArms: { problem: (d) => `In the air, the arms were ${d}° off their position.`, tip: 'Hit the arm position at the top of the jump.' },
+  // Ballet
+  legHeight: { problem: (d) => `The working leg was ${d}° below 90°.`, tip: 'Lift the leg higher: reach for 90° or above.' },
+  workingKnee: { problem: (d) => `The working leg was bent by ${d}°.`, tip: 'Stretch the working knee and point the foot.' },
+  supportKnee: { problem: (d) => `The standing leg was bent by ${d}°.`, tip: 'Pull up the standing knee.' },
+  balletTrunk: { problem: (d) => `The upper body leaned ${d}° more than allowed.`, tip: 'Lift the chest and keep the back placed.' },
+  retireFoot: { problem: (d) => `The foot was ${d}% of a shin length below the knee.`, tip: 'Bring the toe up to the knee.' },
+  kneesUneven: { problem: (d) => `The knees were bent ${d}° differently.`, tip: 'Bend both knees the same amount, over the toes.' },
+  turnShort: { problem: (d) => `The turn was ${d}° short of a full turn.`, tip: 'Spot and finish the whole turn.' },
+  flatTurn: { problem: () => 'The turn was done mostly on a flat foot.', tip: 'Rise onto demi-pointe for the whole turn.' },
 };
 
 // Short words for the red tag on a move's video, next to the body part.
@@ -87,6 +98,14 @@ const SHORT: Record<string, (deg: number | undefined) => string> = {
   tuckKnees: (d) => `Knees ${d}° low`,
   jumpKnees: (d) => `Knee bent ${d}°`,
   jumpArms: (d) => `Arms ${d}° off`,
+  legHeight: (d) => `Leg ${d}° low`,
+  workingKnee: (d) => `Leg bent ${d}°`,
+  supportKnee: (d) => `Standing knee bent ${d}°`,
+  balletTrunk: (d) => `Leaning ${d}° too much`,
+  retireFoot: (d) => `Foot ${d}% below knee`,
+  kneesUneven: (d) => `Knees ${d}° uneven`,
+  turnShort: (d) => `${d}° short of a turn`,
+  flatTurn: () => 'Flat foot',
 };
 
 /** "Thigh 6° low −0.10": the tag on a move's video. */
@@ -172,6 +191,7 @@ const HINTS: Record<string, string> = {
   'Head not visible: move back from the camera': 'Step back so your head is in the picture.',
   'Raised leg not visible: try a plain background and contrasting clothes': 'The camera can\'t see your raised leg. A plain, light background helps.',
   'Face the camera': 'Face the camera so it can see both arms.',
+  'Face the camera for pliés': 'Face the camera for pliés, so it can see both knees.',
   'Arms not visible: step back from the camera': 'Step back so both arms are in the picture, even straight up.',
 };
 
@@ -213,6 +233,23 @@ export function cheerLiveMessage(motion: MotionLive, airborne: boolean): LiveMes
   if (!worst) return { pose: motion.name, dots: 0, tone: 'good', text: 'Right on target ✓' };
   const e = explainPenalty(worst);
   return { pose: motion.name, dots: 0, tone: worst.value >= 0.3 ? 'bad' : 'warn', text: `${e.tip} (−${worst.value.toFixed(2)})` };
+}
+
+/** Ballet: what to say on the video right now (the pose detector's live view and the turn). */
+export function balletLiveMessage(pose: BalletPoseLive, airborne: boolean, turnDeg: number | null): LiveMessage {
+  if (turnDeg !== null) {
+    const deg = Math.round(turnDeg);
+    return { pose: 'Pirouette', dots: 0, tone: deg >= 360 ? 'good' : 'idle', text: deg >= 360 ? `Full turn ✓ (${deg}°)` : `Turning… ${deg}°` };
+  }
+  if (airborne) return { pose: 'Jump', dots: 0, tone: 'idle', text: 'In the air…' };
+  if (!pose.pose) return { pose: null, dots: 0, tone: 'idle', text: plainHint(pose.hint) ?? 'Ready. Hold a pose, turn a pirouette or do a grand jeté.' };
+  const name = BALLET_POSE_NAMES[pose.pose];
+  // A plié is a movement, not a balance: no hold dots.
+  const dots = pose.pose === 'plie' ? 0 : Math.min(4, Math.floor((pose.holdMs / 1000) * 4));
+  const worst = [...pose.penalties].sort((a, b) => b.value - a.value)[0];
+  if (!worst) return { pose: name, dots, tone: 'good', text: dots < 4 && pose.pose !== 'plie' ? 'Looks good. Keep holding…' : 'Looks good ✓' };
+  const e = explainPenalty(worst);
+  return { pose: name, dots, tone: worst.value >= 0.3 ? 'bad' : 'warn', text: `${e.tip} (−${worst.value.toFixed(2)})` };
 }
 
 /** What to say on the video while she turns in an attitude. */
