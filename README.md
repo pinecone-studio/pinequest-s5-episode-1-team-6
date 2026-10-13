@@ -12,14 +12,15 @@ browser) finds her joints in every frame. **Rules from the FIG Code of Points** 
 
 **Live URL: https://pinequest-s5-episode-1-team-6.vercel.app** (from `main`). Deploys are manual:
 run `npm run deploy` (Vercel CLI; log in once with `npx vercel login`). GitHub Actions runs the type
-check, lint and tests. The first load downloads the pose model
-(about 10 MB). Video stays on your device.
+check, lint and tests. The first visit downloads the pose model (30 MB) and its runtime (9 MB) in
+the background while the page is open. Video stays on your device.
 
 ## Run it locally
 
 Requires Node.js 20 or newer and Chrome, Edge or Safari. Internet is needed on first load: the pose
-model is downloaded from Google's CDN (the default "Heavy" model is 30 MB, about 30 s the first time;
-the browser keeps it afterwards). If the video looks slow, choose "Faster" under Settings → Camera accuracy.
+model is downloaded from Google's CDN (the default "Heavy" model is 30 MB). It starts downloading as
+soon as the page opens, so "Turn on camera" is quick, and is kept in the browser's Cache Storage, so it
+downloads only once (`lib/modelCache.ts`; skipped when the browser asks to save data). If the video looks slow, choose "Faster" under Settings → Camera accuracy.
 
 ```sh
 npm install

@@ -5,7 +5,7 @@
 // One main button walks people through the app:
 //   Turn on camera  ->  Start  ->  Finish  ->  Try again
 
-import { createPoseTracker, type ModelVariant, type PoseTracker } from './pose';
+import { createPoseTracker, preloadPoseModel, type ModelVariant, type PoseTracker } from './pose';
 import { LandmarkSmoother } from './oneEuro';
 import { legLengthRatios, type Landmarks } from './geometry';
 import { SplitLeapDetector, legsFullLength } from './elements/splitLeap';
@@ -173,6 +173,8 @@ export class JudgingSession {
     // Recognize poses with the library: shipped examples + the ones your team taught.
     setPoseLibrary(currentLibrary());
     this.fpsSince = performance.now();
+    // Download the model now, while the person reads the page, so "Turn on camera" is quick.
+    preloadPoseModel(this.state.model);
 
     // Jumping in a clip breaks motion tracking; the end of a clip finishes the routine.
     const onSeeked = () => this.resetTracking();
@@ -216,7 +218,10 @@ export class JudgingSession {
   /** Settings → Camera accuracy. Loads the new model at once if a camera or video is running. */
   async setModel(model: ModelVariant): Promise<void> {
     this.set({ model });
-    if (!this.state.source) return;
+    if (!this.state.source) {
+      preloadPoseModel(model);
+      return;
+    }
     this.set({ busy: true });
     try {
       await this.ensureTracker();
