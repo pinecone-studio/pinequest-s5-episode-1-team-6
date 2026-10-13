@@ -46,6 +46,8 @@ Open <http://localhost:3000>, then:
    **Full screen** (button on the video) shows the video, skeleton and boxes on the whole screen, with
    Start / Finish on it; **Exit full screen** or Esc leaves, and Finish leaves by itself so the results
    show. On iPhone Safari, which can't put a page part in full screen, the video covers the page instead.
+   A phone turned sideways works too: the video fits the screen height (the page scrolls to it when
+   the camera starts), Start / Finish is on the video, and the boxes on it are the small phone ones.
 3. Stand **sideways** to the camera, whole body and both feet in the picture.
 4. Press **Start** and hold each balance for at least 1 second. The box on the video shows the balance
    it sees, four dots that fill up in one second, and "Looks good" or one tip ("Open the split more

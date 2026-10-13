@@ -3,6 +3,18 @@
 /* dark:... classes apply when <html> has the "dark" class (components/ThemeToggle.tsx). */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* compact:... = small boxes on the video: narrow screens and phones turned sideways (short screens). */
+@custom-variant compact {
+  @media (max-width: 639px) {
+    @slot;
+  }
+  @media (max-height: 500px) {
+    @slot;
+  }
+}
+/* short:... = phones turned sideways: the video fits the screen height. */
+@custom-variant short (@media (max-height: 500px));
+
 /* Simple and friendly: white page, soft cards, one blue accent, traffic-light results,
    big buttons and plain words. A light theme (below) and a dark theme (.dark, further down).
    Use these as Tailwind classes: bg-card, text-muted, border-line, bg-accent, text-good, bg-bad-soft, ... */
