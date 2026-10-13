@@ -93,6 +93,11 @@ Known limits (be honest in the UI and README):
    `.env.local` (not committed) overrides them on one computer. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
    Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
+10. **Move videos (user, 2026-10-13):** while judging, the routine is recorded (video + skeleton + leg
+   angles, `lib/recording/routineRecorder.ts`). After Finish, every move that lost points is cut out,
+   1 s before to 1 s after the move (`clipCutter.ts`), with a photo from the middle of the hold. The
+   results show Watch / Download video / Download photo. Saved in IndexedDB (localStorage is too
+   small), newest 10 routines, on the Saved videos page (`/saved`). Nothing is uploaded.
 
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare

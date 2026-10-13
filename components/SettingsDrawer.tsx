@@ -1,6 +1,6 @@
 'use client';
 
-// Settings drawer: camera accuracy, "only the three balances", Teach poses, the record download,
+// Settings drawer: camera accuracy, "only the three balances", Teach poses, saved videos, the record download,
 // technical details and links to the developer tools.
 // A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
 // back to the Settings button.
@@ -95,6 +95,12 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
 
         <section className={setting}>
           <TeachPanel session={session} recording={state.teachRecording} status={state.teachStatus} />
+        </section>
+
+        <section className={setting}>
+          <b>Saved videos</b>
+          <p className={smallText}>Videos and photos of the moves that lost points, kept in this browser.</p>
+          <Link className={ghostButton} href="/saved">Open saved videos</Link>
         </section>
 
         <section className={setting}>

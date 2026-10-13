@@ -18,6 +18,7 @@ export interface ReportDeduction extends Penalty {
 }
 
 export interface ReportMove {
+  id: number; // scoreboard event id (links the move to its video)
   number: number;
   timeMs: number;
   element: string;
@@ -70,6 +71,7 @@ export function buildReport(
     const status = scores.status.get(e.id);
     const deductions = e.rejected ? [] : e.penalties.map((p) => ({ ...p, rule: ruleTextFor(p.ref) }));
     return {
+      id: e.id,
       number: i + 1,
       timeMs: e.routineMs ?? e.t,
       element: e.element,
