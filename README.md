@@ -49,8 +49,12 @@ Open <http://localhost:3000>, then:
    tip for every move. **Show rulebook details** adds the codes, measurements and rule quotes.
    In the **Judge** tab, enter Artistry and penalties, press Agree / Disagree on each call, and get
    the final score.
-6. **Settings** holds everything else: camera accuracy, judging all moves, Teach poses, downloading
-   the record, technical details and the developer tools.
+   Every move that lost points gets a **photo and a short video** (1 s before to 1 s after the move,
+   with the skeleton and leg angles drawn on it): **Watch**, **Download video**, **Download photo**.
+   They are kept in this browser (IndexedDB, newest 10 routines; nothing is uploaded) and listed on
+   **Saved videos** (`/saved`, also linked from Settings).
+6. **Settings** holds everything else: camera accuracy, judging all moves, Teach poses, saved videos,
+   downloading the record, technical details and the developer tools.
 
 The camera only works on `localhost` or HTTPS (browser rule). To use it from another device, use the
 Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all.
@@ -123,6 +127,8 @@ components/
   Stage.tsx                  video + skeleton overlay, live box, move cards
   SidePanels.tsx             Practice and Judge panels;  MoveRow.tsx: one move in a list
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
+  MoveMedia.tsx              photo, video and downloads of a move that lost points
+  SavedVideos.tsx            the Saved videos page (app/(app)/saved): delete one routine or all
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
   auth/                      sign-in UI: AuthProvider (useAuth), RequireAuth, AuthScreen, SignInForm,
@@ -146,6 +152,8 @@ lib/
   report.ts                  end-of-routine deduction report (data)
   ui/plain.ts                plain-language texts and tips (keep new UI text in this style)
   tools/                     photo / video analysis used by the developer tools
+  recording/                 move videos: record the routine while judging, cut each move that lost
+                             points (video + photo), save in IndexedDB (newest 10 routines)
 tests/                       unit tests (vitest)
 scripts/build-library.ts     regenerates lib/library/defaultLibrary.json
 docs/rules.md                rules we automate, quoted from the Code with page numbers

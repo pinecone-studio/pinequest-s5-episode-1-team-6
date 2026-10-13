@@ -15,7 +15,11 @@ import { Scoreboard, type JudgeInputs } from './scoring';
 import { RULE_SOURCE } from './rules';
 import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { liveMessage, modelDownloadText, type Tone } from './ui/plain';
+import { describeMove, liveMessage, modelDownloadText, type Tone } from './ui/plain';
+import { RoutineRecorder } from './recording/routineRecorder';
+import { cutClip } from './recording/clipCutter';
+import { clipFileName, clipWindow, movesNeedingClips, videoExtension } from './recording/clipWindows';
+import { saveRoutine, type SavedMove } from './recording/clipStore';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
 import { downloadFile } from './ui/download';
@@ -59,6 +63,12 @@ export interface TechReadout {
   state: string;
 }
 
+/** The video and photo of a move that lost points (made after Finish). */
+export type MoveVideo =
+  | { status: 'preparing' }
+  | { status: 'failed' }
+  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photo: Blob; photoUrl: string; photoName: string };
+
 export interface SessionState {
   source: Source;
   judging: boolean;
@@ -79,6 +89,8 @@ export interface SessionState {
   resultsOpen: boolean;
   resultsDurationMs: number | null;
   resultsRequest: number; // goes up each time results are opened by an action (to scroll to them)
+  moveVideos: Record<number, MoveVideo>; // by event id: moves that lost points
+  videosSaved: boolean | null; // saved in this browser (null: not tried yet)
 }
 
 const START_MESSAGE: StageMessage = {
@@ -110,6 +122,8 @@ export class JudgingSession {
     resultsOpen: false,
     resultsDurationMs: null,
     resultsRequest: 0,
+    moveVideos: {},
+    videosSaved: null,
   };
   private listeners = new Set<() => void>();
 
@@ -120,6 +134,9 @@ export class JudgingSession {
   private passe: PasseDetector;
   private balance: BalanceDetector;
   private recorder: TeachRecorder;
+  private routineRecorder = new RoutineRecorder();
+  private videoRun = 0; // goes up when a new routine starts, so older video work stops
+  private videoUrls: string[] = [];
   private tracker: PoseTracker | null = null;
   private trackerVariant: ModelVariant | null = null;
   private fileName: string | null = null;
@@ -200,6 +217,7 @@ export class JudgingSession {
       this.tracker = null;
       this.trackerVariant = null;
       this.set({ modelReady: false });
+      this.forgetMoveVideos();
     };
   }
 
@@ -409,6 +427,8 @@ export class JudgingSession {
       drawSkeleton(ctx, lm, this.legColor());
       if (this.anglesVisible) drawLegAngles(ctx, lm);
     }
+    // The routine video shows the skeleton and the leg angles (drawn here if the page hides them).
+    if (this.routineRecorder.recording) this.routineRecorder.addFrame(t, video, this.canvas, lm, !this.anglesVisible);
     if (this.techVisible) this.updateTech(lm);
     this.updateLive(this.recorder.capture(lm, this.leap.live.airborne));
     this.countFps();
@@ -529,9 +549,12 @@ export class JudgingSession {
       if (this.state.source === 'camera' && this.scoreboard.events.length === 0) this.routineStartMs = performance.now();
     }
     this.set(patch);
+    if (on && this.video) this.routineRecorder.start(this.video);
+    if (stopping && quiet) this.routineRecorder.discard();
     if (stopping && !quiet) {
       this.set({ finished: true });
       this.openResults();
+      void this.makeMoveVideos();
     }
   }
 
@@ -541,6 +564,7 @@ export class JudgingSession {
     this.routineStartMs = this.state.source === 'camera' ? performance.now() : 0;
     this.stoppedAt = null;
     this.resetTracking();
+    this.forgetMoveVideos();
     this.set({ finished: false, resultsOpen: false, cards: [], scoreVersion: this.state.scoreVersion + 1 });
   }
 
@@ -565,6 +589,83 @@ export class JudgingSession {
 
   closeResults(): void {
     this.set({ resultsOpen: false });
+  }
+
+  // ---------- Videos of moves that lost points ----------
+
+  /**
+   * After Finish: cuts each move that lost points out of the routine recording (video + photo),
+   * shows them in the results and saves them in this browser (lib/recording/clipStore.ts).
+   */
+  private async makeMoveVideos(): Promise<void> {
+    const run = ++this.videoRun;
+    const recording = await this.routineRecorder.stop();
+    const events = [...this.scoreboard.events].sort((a, b) => a.t - b.t);
+    const moves = movesNeedingClips(events);
+    if (!recording || moves.length === 0) return;
+    this.set({ moveVideos: Object.fromEntries(moves.map((e) => [e.id, { status: 'preparing' } as MoveVideo])), videosSaved: null });
+
+    const when = new Date();
+    const routineId = `${when.getTime()}`;
+    const saved: SavedMove[] = [];
+    for (const event of moves) {
+      const number = events.indexOf(event) + 1; // same numbers as the report
+      const described = describeMove(event);
+      let video: MoveVideo = { status: 'failed' };
+      const part = clipWindow(event, recording.timeline, recording.durationMs);
+      try {
+        if (!part) throw new Error('The move is not in the recording');
+        const media = await cutClip(recording, part);
+        if (run !== this.videoRun) return; // a new routine started meanwhile
+        video = {
+          status: 'ready',
+          clip: media.clip,
+          clipUrl: this.keepUrl(media.clip),
+          clipName: clipFileName(when, number, described.name, videoExtension(media.clipType)),
+          photo: media.photo,
+          photoUrl: this.keepUrl(media.photo),
+          photoName: clipFileName(when, number, described.name, 'jpg'),
+        };
+        saved.push({
+          id: `${routineId}-${number}`,
+          routineId,
+          number,
+          name: described.name,
+          result: described.result,
+          tone: described.tone,
+          reasons: described.reasons.map((r) => r.text),
+          clip: media.clip,
+          clipType: media.clipType,
+          photo: media.photo,
+        });
+      } catch (err) {
+        console.warn(`No video for move ${number}`, err);
+        if (run !== this.videoRun) return;
+      }
+      this.set({ moveVideos: { ...this.state.moveVideos, [event.id]: video } });
+    }
+
+    if (saved.length === 0) return;
+    const pointsLost = this.scoreboard.compute({}).breakdown.autoE;
+    const ok = await saveRoutine({ id: routineId, createdAt: when.getTime(), pointsLost, videos: saved.length }, saved);
+    if (run === this.videoRun) this.set({ videosSaved: ok });
+  }
+
+  private keepUrl(blob: Blob): string {
+    const url = URL.createObjectURL(blob);
+    this.videoUrls.push(url);
+    return url;
+  }
+
+  /** Drops the videos shown in the results (saved ones stay in the browser) and stops recording. */
+  private forgetMoveVideos(): void {
+    this.videoRun++;
+    this.routineRecorder.discard();
+    this.videoUrls.forEach((url) => URL.revokeObjectURL(url));
+    this.videoUrls = [];
+    if (Object.keys(this.state.moveVideos).length > 0 || this.state.videosSaved !== null) {
+      this.set({ moveVideos: {}, videosSaved: null });
+    }
   }
 
   // ---------- Teach poses ----------
