@@ -73,6 +73,18 @@ export const ELEMENTS = {
     requirement: 'A split position of 180° is required at the highest point of the leap. (Table #9, p. 74)',
     ref: 'Jumps #8.1, #9 item 21 (p. 72-78); deviations #2.5 (p. 25)',
   },
+  STAG_LEAP: {
+    code: '1.2702',
+    name: 'Stag leap',
+    // Table of jump/leap difficulties #9, item 27 "Stag leap, take-off from 1 or 2 feet, also with
+    // ring/back bend of the trunk" (p. 80): 1.2702 (0.20) plain, 1.2704 (0.40) with ring/back bend.
+    value: 0.2,
+    // "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart" (p. 75)
+    requiredSplitDeg: 180,
+    requirement: 'Stag leap: "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart, the stag position may be horizontal and will also be accepted when the 180° position is maintained with 1 of the legs above and the other below a horizontal position." (Technique, p. 75)',
+    verified: false,
+    ref: 'Jumps #8.1, technique p. 75, #9 item 27 (p. 80); deviations #2.5 (p. 25)',
+  },
   PASSE_BALANCE: {
     code: '2.101',
     name: 'Passé balance',

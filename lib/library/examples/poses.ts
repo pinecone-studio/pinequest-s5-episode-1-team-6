@@ -72,6 +72,26 @@ export function splitPose(splitDeg: number, { rise = 40, width = 0.15 } = {}): L
 }
 
 /**
+ * Stag leap in the air: front (left) leg bent to `kneeDeg`, back (right) leg straight,
+ * `splitDeg` between the front thigh and the back leg, symmetric around the trunk.
+ */
+export function stagPose(splitDeg: number, { kneeDeg = 60, rise = 40, width = 0.15 } = {}): Landmarks {
+  const lm = body({ width: 0, rise });
+  const hip = lm[LM.L_HIP];
+  const thighAngle = splitDeg / 2; // from straight down, + = forward
+  const knee = p(hip.x + THIGH * Math.sin(rad(thighAngle)), hip.y + THIGH * Math.cos(rad(thighAngle)));
+  const shinAngle = thighAngle - (180 - kneeDeg); // shin folds back under the thigh
+  const ankle = p(knee.x + SHIN * Math.sin(rad(shinAngle)), knee.y + SHIN * Math.cos(rad(shinAngle)));
+  lm[LM.L_KNEE] = knee;
+  lm[LM.L_ANKLE] = ankle;
+  lm[LM.L_FOOT] = p(ankle.x + 10 * Math.sin(rad(shinAngle)), ankle.y + 10 * Math.cos(rad(shinAngle)));
+  lm[LM.L_HEEL] = p(ankle.x - 3 * Math.sin(rad(shinAngle)), ankle.y - 3 * Math.cos(rad(shinAngle)));
+  straightLeg(lm, 'R', lm[LM.R_HIP], -splitDeg / 2);
+  widen(lm, width);
+  return lm;
+}
+
+/**
  * Passé on the right (support) leg; the left thigh raised `thighDeg` from straight down.
  * releve: heel lifted. width: body width ratio (changes as the gymnast turns).
  */

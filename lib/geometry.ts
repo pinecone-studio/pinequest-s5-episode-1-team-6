@@ -122,6 +122,30 @@ export function splitAngle(lm: Landmarks): number {
   return split;
 }
 
+export interface StagMeasure {
+  bentKnee: number; // knee angle of the more bent leg (the front leg in a stag), 180 = straight
+  otherKnee: number; // knee angle of the other leg
+  split: number; // angle between the bent leg's THIGH and the other leg (hip -> ankle)
+}
+
+/**
+ * Stag shape: the front leg is bent, so the "legs 180° apart" of a stag leap (CoP p. 75) is measured
+ * from the front THIGH (hip -> knee) to the straight back leg (hip -> ankle), through the bottom like
+ * splitAngle(). 2D only: reliable when the camera sees the leap side-on.
+ */
+export function stagMeasure(lm: Landmarks): StagMeasure {
+  const kneeL = jointAngle(lm[LM.L_HIP], lm[LM.L_KNEE], lm[LM.L_ANKLE]);
+  const kneeR = jointAngle(lm[LM.R_HIP], lm[LM.R_KNEE], lm[LM.R_ANKLE]);
+  const leftBent = kneeL < kneeR;
+  const hips = mid(lm[LM.L_HIP], lm[LM.R_HIP]);
+  const down = sub(hips, mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]));
+  const front = signedAngle(down, sub(leftBent ? lm[LM.L_KNEE] : lm[LM.R_KNEE], hips));
+  const back = signedAngle(down, sub(leftBent ? lm[LM.R_ANKLE] : lm[LM.L_ANKLE], hips));
+  let split = Math.abs(front - back);
+  if (split > 270) split = 360 - split;
+  return { bentKnee: Math.min(kneeL, kneeR), otherKnee: Math.max(kneeL, kneeR), split };
+}
+
 /**
  * How high a thigh is raised, in degrees: 0 = hanging straight down,
  * 90 = horizontal, 180 = straight up.
