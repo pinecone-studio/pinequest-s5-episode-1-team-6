@@ -4,8 +4,10 @@
 // Dark mode is the "dark" class on <html> (colors in app/globals.css). The choice is saved in this
 // browser, and the script from lib/ui/theme.ts puts it back before the page paints.
 // The switch's look follows the class through Tailwind's dark: variant, so it is right on the first paint.
+// On click the new theme grows as a circle from the switch (View Transitions API); browsers without it,
+// and people who turned on "reduce motion", get an instant change.
 
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, type MouseEvent } from 'react';
 import { THEME_KEY } from '@/lib/ui/theme';
 
 /** Tell React when the "dark" class on <html> changes (also when another switch on the page changes it). */
@@ -20,12 +22,36 @@ const isDarkOnServer = () => false;
 export function ThemeToggle() {
   const dark = useSyncExternalStore(subscribe, isDark, isDarkOnServer);
 
-  const toggle = () => {
+  const toggle = (event: MouseEvent<HTMLButtonElement>) => {
     const next = !dark;
-    document.documentElement.classList.toggle('dark', next);
-    try {
-      localStorage.setItem(THEME_KEY, next ? 'dark' : 'light');
-    } catch { /* storage blocked: the theme still changes, it just isn't remembered */ }
+    const apply = () => {
+      document.documentElement.classList.toggle('dark', next);
+      try {
+        localStorage.setItem(THEME_KEY, next ? 'dark' : 'light');
+      } catch { /* storage blocked: the theme still changes, it just isn't remembered */ }
+    };
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (typeof document.startViewTransition !== 'function' || reduceMotion) {
+      apply();
+      return;
+    }
+
+    // The circle starts at the middle of the switch and grows until it covers the farthest corner.
+    const box = event.currentTarget.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+    const transition = document.startViewTransition(apply);
+    transition.ready
+      .then(() => {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 600, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' },
+        );
+      })
+      .catch(() => { /* animation skipped: the theme has already changed */ });
   };
 
   const fade = 'transition-opacity duration-300 motion-reduce:transition-none';

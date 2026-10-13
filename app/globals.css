@@ -99,6 +99,14 @@ label:has(> input[type="file"]:focus-visible) {
   outline-offset: 2px;
 }
 
+/* Dark mode switch: the new theme grows as a circle from the switch (components/ThemeToggle.tsx).
+   Turn off the browser's default cross-fade so only the circle shows. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 details > summary {
   cursor: pointer;
   font-weight: 600;
