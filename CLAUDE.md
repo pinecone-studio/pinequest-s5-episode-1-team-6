@@ -78,9 +78,15 @@ Known limits (be honest in the UI and README):
    use plain words only (no codes, no D/E/A jargon in Practice); two tabs, Practice and Judge; one main
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
 9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, Google (popup) or
-   "Try without an account" (Firebase Anonymous, for demos), in the browser
-   (`firebase` client SDK, no backend). The app stays behind `components/AuthGate.tsx` until someone
-   is signed in. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
+   "Try without an account" (Firebase Anonymous, for demos; a guest sees Sign in in the header instead
+   of Sign out, and may open /login and /signup), in the browser
+   (`firebase` client SDK, no backend). Sign in (`/login`) and Create account (`/signup`) are their own pages in
+   `app/(auth)/`; every other page
+   lives in the route group `app/(app)/`, whose layout (`components/auth/RequireAuth.tsx`) sends people who
+   are not signed in to `/login?next=...` (2026-10-13). Who is signed in: `useAuth()` from
+   `components/auth/AuthProvider.tsx` (root layout). Firebase calls live in `lib/firebase/auth.ts` (no React).
+   Sign-up asks for a name; "Forgot password?" sends Firebase's reset email; closing the Google window
+   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
    (user, 2026-10-12): the browser receives them anyway, and local dev and Vercel then need no setup.
    `.env.local` (not committed) overrides them on one computer. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;

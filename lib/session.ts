@@ -238,6 +238,7 @@ export class JudgingSession {
     try {
       this.stopSource();
       await this.ensureTracker();
+      this.setMessage('Turning on the camera…', 'If your browser asks, allow the camera.');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: this.state.facing },
         audio: false,
@@ -269,6 +270,7 @@ export class JudgingSession {
     try {
       this.stopSource();
       await this.ensureTracker();
+      this.setMessage('Opening the video…');
       video.srcObject = null;
       video.src = URL.createObjectURL(file);
       video.controls = true;
