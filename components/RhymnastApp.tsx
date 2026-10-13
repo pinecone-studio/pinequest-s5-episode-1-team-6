@@ -120,7 +120,7 @@ export function RhymnastApp() {
 
       <footer className="border-t border-line px-[clamp(16px,4vw,40px)] pt-4 pb-7 text-center text-[13px] text-muted print:hidden">
         Rhymnast helps judges and coaches; it doesn&apos;t replace them. Rules: FIG Rhythmic Gymnastics Code of Points
-        2025–2028. Your video stays on this device: videos of moves that lost points are kept in this browser
+        2025–2028. Your video stays on this device: the videos of your moves are kept in this browser
         (<Link className="text-accent" href="/saved">Saved videos</Link>).
       </footer>
     </>

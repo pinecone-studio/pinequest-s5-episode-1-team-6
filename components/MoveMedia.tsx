@@ -1,7 +1,7 @@
 'use client';
 
-// The video of one move that lost points, with the mistake marked on it (red body part, tag, badge
-// and a strip showing when), and a Download button. The photo from the middle of the move is the
+// The video of one move, with the move marked on it (a mistake: red body part, tag, badge; a correct
+// move: green badge; a strip showing when), and a Download button. The photo from the middle of the move is the
 // video's cover picture, and what prints. Used in the results after Finish and on Saved videos.
 
 import { downloadBlob } from '@/lib/ui/download';
@@ -24,7 +24,7 @@ export function MoveMedia({ files, name }: { files: MoveMediaFiles; name: string
         muted
         playsInline
         preload="metadata"
-        aria-label={`Video of ${name}. The part that lost points is marked in red.`}
+        aria-label={`Video of ${name}. Anything that lost points is marked in red.`}
         className="w-full max-w-[520px] rounded-[10px] bg-stage print:hidden"
       />
       {/* eslint-disable-next-line @next/next/no-img-element -- a photo in this browser (blob URL): nothing for next/image to optimize */}

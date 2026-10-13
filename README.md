@@ -51,8 +51,8 @@ Open <http://localhost:3000>, then:
    tip for every move. **Show rulebook details** adds the codes, measurements and rule quotes.
    In the **Judge** tab, enter Artistry and penalties, press Agree / Disagree on each call, and get
    the final score.
-   Every move that lost points gets a **short video** (1 s before to 1 s after the move, with the
-   skeleton and leg angles). While the move is held, the body part that lost points is **red** with a
+   Every move gets a **short video** (1 s before to 1 s after the move, with the skeleton and leg
+   angles); a correct move is marked green. While a move that lost points is held, the body part is **red** with a
    tag ("Thigh 6° low −0.10"), a badge says "Points lost here", and a strip along the top shows
    when it happens. **Download video** saves it.
    They are kept in this browser (IndexedDB, newest 10 routines; nothing is uploaded) and listed on
@@ -131,7 +131,7 @@ components/
   Stage.tsx                  video + skeleton overlay, live box, move cards
   SidePanels.tsx             Practice and Judge panels;  MoveRow.tsx: one move in a list
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
-  MoveMedia.tsx              video (mistake marked) and download of a move that lost points
+  MoveMedia.tsx              video (mistakes marked) and download of one move
   SavedVideos.tsx            the Saved videos page (app/(app)/saved): delete one routine or all
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
@@ -156,8 +156,8 @@ lib/
   report.ts                  end-of-routine deduction report (data)
   ui/plain.ts                plain-language texts and tips (keep new UI text in this style)
   tools/                     photo / video analysis used by the developer tools
-  recording/                 move videos: record the routine while judging, cut each move that lost
-                             points with the mistake marked (annotate.ts), save in IndexedDB (newest 10)
+  recording/                 move videos: record the routine while judging, cut out every move with
+                             mistakes marked (annotate.ts), save in IndexedDB (newest 10)
 tests/                       unit tests (vitest)
 scripts/build-library.ts     regenerates lib/library/defaultLibrary.json
 docs/rules.md                rules we automate, quoted from the Code with page numbers

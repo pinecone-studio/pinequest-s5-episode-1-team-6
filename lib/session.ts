@@ -18,7 +18,7 @@ import { currentLibrary, teach } from './ui/libraryStore';
 import { describeMove, liveMessage, mistakeLabel, modelDownloadText, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
-import { clipFileName, clipWindow, movesNeedingClips, videoExtension } from './recording/clipWindows';
+import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
 import { saveRoutine, type SavedMove } from './recording/clipStore';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
@@ -63,7 +63,7 @@ export interface TechReadout {
   state: string;
 }
 
-/** The video of a move that lost points, with the mistake marked on it, and its cover photo (made after Finish). */
+/** The video of a move, with any mistake marked on it, and its cover photo (made after Finish). */
 export type MoveVideo =
   | { status: 'preparing' }
   | { status: 'failed' }
@@ -89,7 +89,7 @@ export interface SessionState {
   resultsOpen: boolean;
   resultsDurationMs: number | null;
   resultsRequest: number; // goes up each time results are opened by an action (to scroll to them)
-  moveVideos: Record<number, MoveVideo>; // by event id: moves that lost points
+  moveVideos: Record<number, MoveVideo>; // by event id: every judged move
   videosSaved: boolean | null; // saved in this browser (null: not tried yet)
 }
 
@@ -591,17 +591,17 @@ export class JudgingSession {
     this.set({ resultsOpen: false });
   }
 
-  // ---------- Videos of moves that lost points ----------
+  // ---------- Videos of the moves ----------
 
   /**
-   * After Finish: cuts each move that lost points out of the routine recording (video + photo),
+   * After Finish: cuts every move out of the routine recording (video + photo, mistakes marked),
    * shows them in the results and saves them in this browser (lib/recording/clipStore.ts).
    */
   private async makeMoveVideos(): Promise<void> {
     const run = ++this.videoRun;
     const recording = await this.routineRecorder.stop();
     const events = [...this.scoreboard.events].sort((a, b) => a.t - b.t);
-    const moves = movesNeedingClips(events);
+    const moves = events; // every move: the ones that lost points, and the correct ones (user, 2026-10-13)
     if (!recording || moves.length === 0) return;
     this.set({ moveVideos: Object.fromEntries(moves.map((e) => [e.id, { status: 'preparing' } as MoveVideo])), videosSaved: null });
 

@@ -1,8 +1,9 @@
-// Marks the mistake on a move's video, so you see where and when the points were lost:
-//   - a strip along the top (the player's buttons cover the bottom): the whole clip, the part that
-//     lost points in red, and where you are;
-//   - during that part: the body part that lost points drawn in red with a tag ("Thigh 6° low −0.10"),
-//     and a badge "Points lost here −0.40" (with mistakes that have no body part, like a short hold).
+// Marks the move on its video, so you see where and when points were lost (or that it was right):
+//   - a strip along the top (the player's buttons cover the bottom): the whole clip, the move itself
+//     (red if it lost points, green if not), and where you are;
+//   - during the move: the body part that lost points drawn in red with a tag ("Thigh 6° low −0.10"),
+//     and a badge "Points lost here −0.40" (with mistakes that have no body part, like a short hold);
+//     a correct move gets a green badge "Correct: no points lost".
 // clipCutter.ts calls drawMistakeMarks on every frame of the clip and on the photo.
 
 import { LM, mid, type Landmark, type Landmarks } from '../geometry';
@@ -24,6 +25,7 @@ export interface MistakeMarks {
 type Bone = [Landmark, Landmark];
 
 const RED = 'rgba(240, 64, 80, 0.95)';
+const GREEN = 'rgba(31, 160, 90, 0.95)';
 
 /**
  * The bones to draw red for one deduction, or [] when it is not about a body part (a short hold).
@@ -55,7 +57,7 @@ export function bonesFor(segment: string, lm: Landmarks): Bone[] {
   }
 }
 
-/** Is recording time `recMs` inside the part that lost points? */
+/** Is recording time `recMs` inside the move itself? */
 export function inMistake(marks: MistakeMarks, recMs: number): boolean {
   return recMs >= marks.holdFromMs && recMs <= marks.holdToMs;
 }
@@ -73,8 +75,13 @@ export function drawMistakeMarks(
   recMs: number,
 ): void {
   const u = ctx.canvas.width / 640; // sizes grow with the video
-  drawStrip(ctx, marks, recMs, u);
+  const correct = marks.mistakes.length === 0;
+  drawStrip(ctx, marks, recMs, u, correct ? GREEN : RED);
   if (!inMistake(marks, recMs)) return;
+  if (correct) {
+    badge(ctx, ['Correct: no points lost'], u, GREEN);
+    return;
+  }
 
   const loose: string[] = []; // mistakes without a body part: listed in the badge
   for (const mistake of marks.mistakes) {
@@ -100,21 +107,21 @@ export function drawMistakeMarks(
     const [a, b] = bones[0];
     tag(ctx, mistake.label, (at(a).x + at(b).x) / 2 + 12 * u, (at(a).y + at(b).y) / 2, u);
   }
-  badge(ctx, [`Points lost here  −${marks.pointsLost.toFixed(2)}`, ...loose], u);
+  badge(ctx, [`Points lost here  −${marks.pointsLost.toFixed(2)}`, ...loose], u, RED);
 }
 
 /** Height of the strip along the top. */
 const STRIP = 8;
 
-/** Top strip: clip length, the red part that lost points, and a white line where you are. */
-function drawStrip(ctx: CanvasRenderingContext2D, marks: MistakeMarks, recMs: number, u: number): void {
+/** Top strip: clip length, the move in `color` (red: lost points, green: correct), a white line where you are. */
+function drawStrip(ctx: CanvasRenderingContext2D, marks: MistakeMarks, recMs: number, u: number, color: string): void {
   const { width } = ctx.canvas;
   const length = Math.max(1, marks.clipToMs - marks.clipFromMs);
   const x = (ms: number) => ((ms - marks.clipFromMs) / length) * width;
   const h = STRIP * u;
   ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
   ctx.fillRect(0, 0, width, h);
-  ctx.fillStyle = RED;
+  ctx.fillStyle = color;
   ctx.fillRect(x(marks.holdFromMs), 0, Math.max(2, x(marks.holdToMs) - x(marks.holdFromMs)), h);
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(Math.min(width - 3 * u, Math.max(0, x(recMs))), 0, 3 * u, h + 4 * u);
@@ -135,13 +142,13 @@ function tag(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, 
   ctx.fillText(text, left + 7 * u, y);
 }
 
-/** Red badge in the top-left corner, one line per entry. */
-function badge(ctx: CanvasRenderingContext2D, lines: string[], u: number): void {
+/** Badge in the top-left corner, one line per entry. */
+function badge(ctx: CanvasRenderingContext2D, lines: string[], u: number, color: string): void {
   ctx.font = `700 ${Math.round(17 * u)}px system-ui, sans-serif`;
   ctx.textBaseline = 'middle';
   const lineH = 26 * u;
   const w = Math.max(...lines.map((l) => ctx.measureText(l).width)) + 24 * u;
-  ctx.fillStyle = RED;
+  ctx.fillStyle = color;
   ctx.beginPath();
   const top = (STRIP + 12) * u; // below the strip
   ctx.roundRect(12 * u, top, w, lineH * lines.length + 10 * u, 8 * u);

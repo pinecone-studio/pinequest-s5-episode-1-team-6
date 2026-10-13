@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness';
-import { CLIP_MARGIN_MS, clipFileName, clipWindow, landmarksAt, movesNeedingClips, recTimeFor, videoExtension } from '../lib/recording/clipWindows';
+import { CLIP_MARGIN_MS, clipFileName, clipWindow, landmarksAt, recTimeFor, videoExtension } from '../lib/recording/clipWindows';
 import { bonesFor, inMistake } from '../lib/recording/annotate';
 import { mistakeLabel } from '../lib/ui/plain';
 import { LM } from '../lib/geometry';
@@ -71,14 +71,6 @@ test('a move video stays inside the recording', () => {
   const late = clipWindow({ tStart: 59_000, tEnd: 60_000 }, timeline, 10_000);
   assertEqual(late?.toMs, 10_000);
   assertEqual(clipWindow({ tStart: 53_000, tEnd: 55_000 }, [], 10_000), null);
-});
-
-test('only moves that lost points get a video', () => {
-  const moves = [
-    { id: 1, penalties: [] },
-    { id: 2, penalties: [{ reason: 'Trunk', value: 0.3, ref: '#2.5.3', segment: 'trunk' }] },
-  ];
-  assertEqual(movesNeedingClips(moves).map((m) => m.id).join(), '2');
 });
 
 test('file names say when, which move and what it was', () => {

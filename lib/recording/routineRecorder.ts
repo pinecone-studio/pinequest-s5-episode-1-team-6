@@ -1,5 +1,5 @@
 // Records the routine while judging: the video with the skeleton and the leg angles drawn on it,
-// so a move's video shows why it lost points. Browser only. The recording stays in memory until
+// so a move's video shows how it was judged. Browser only. The recording stays in memory until
 // the session cuts the moves out of it (clipCutter.ts); then it is dropped.
 
 import { drawLegAngles } from '../draw';

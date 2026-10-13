@@ -47,7 +47,7 @@
 - [ ] Check detectors on 5-10 labeled side-on video clips per element; record agreement in
       `docs/validation.md`. **Owner: team + Claude**
 - [x] README
-- [x] Videos and photos of moves that lost points: watch, download, Saved videos page (2026-10-13)
+- [x] Videos of every move, mistakes marked red, correct moves green: download, Saved videos page (2026-10-13)
 - [ ] Try the move videos with a real camera on a laptop and a phone. **Owner: team**
 - [ ] Demo script, pitch. **Owner: team**
 

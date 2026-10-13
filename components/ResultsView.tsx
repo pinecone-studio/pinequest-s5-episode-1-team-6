@@ -1,7 +1,7 @@
 // Results after "Finish", built from report data (lib/report.ts).
 //   Practice: "You did 3 balances. Points lost: 0.40" + each move with reason and tip.
 //   Judge:    the score (difficulty, execution, artistry, final) + each move.
-//   Moves that lost points get a video with the mistake marked on it, and a download (made after Finish).
+//   Every move gets a video (mistakes marked red, a correct move green) and a download (made after Finish).
 //   "Show rulebook details" adds codes, measurements, the rule text and pages.
 
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import { chip, ghostButton, smallText, toneBorder } from './ui';
 
 interface ResultsProps {
   report: Report;
-  videos: Record<number, MoveVideo>; // by move id: moves that lost points
+  videos: Record<number, MoveVideo>; // by move id
   videosSaved: boolean | null;
   mode: Tab;
   details: boolean;

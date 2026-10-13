@@ -95,7 +95,7 @@ Known limits (be honest in the UI and README):
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
    Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
 10. **Move videos (user, 2026-10-13):** while judging, the routine is recorded (video + skeleton + leg
-   angles, `lib/recording/routineRecorder.ts`). After Finish, every move that lost points is cut out,
+   angles, `lib/recording/routineRecorder.ts`). After Finish, every move is cut out (also correct ones, marked green; user 2026-10-13),
    1 s before to 1 s after the move (`clipCutter.ts`), with a photo from the middle of the hold as its
    cover. While the move is held, the video marks the mistake (`annotate.ts`, user 2026-10-13): the body
    part in red with a tag, a "Points lost here" badge, a strip along the top showing when. The results show the video

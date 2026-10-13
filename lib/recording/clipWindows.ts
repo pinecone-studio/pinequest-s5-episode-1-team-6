@@ -68,11 +68,6 @@ export function landmarksAt(timeline: TimelinePoint[], recMs: number): Landmarks
   return nearest.lm ?? null;
 }
 
-/** Moves that lost points get a video and a photo. */
-export function movesNeedingClips<T extends Pick<ElementEvent, 'penalties'>>(events: T[]): T[] {
-  return events.filter((e) => e.penalties.length > 0);
-}
-
 /** "rhymnast-2026-10-13-1530-move-2-attitude.mp4": date and time (local), move number, move name. */
 export function clipFileName(when: Date, number: number, name: string, extension: string): string {
   const two = (n: number) => String(n).padStart(2, '0');
