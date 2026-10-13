@@ -115,6 +115,25 @@ export const ELEMENTS = {
   },
 };
 
+/**
+ * Attitude pivot (rotation table #13 row 12, p. 100): 3.1203 (0.30) plain attitude; 3.1205 (0.50)
+ * is ring without help / attitude with back bend (not detected). VALUE NOT YET VERIFIED.
+ */
+export const ATTITUDE_PIVOT = {
+  code: '3.1203',
+  name: 'Attitude pivot',
+  value: 0.3,
+  box: '3.12',
+  // Shape as the attitude balance: "Horizontal position of the free leg (thigh)" (p. 87).
+  requiredThighDeg: 90,
+  baseRotationDeg: 360, // #12.1.2 (p. 91)
+  // +0.20 per additional rotation for pivots with a base value of 0.20 or more (#12.2.6, p. 93).
+  perExtraRotation: 0.2,
+  requirement: 'Attitude pivot: attitude shape ("horizontal position of the free leg (thigh)", p. 87), minimum basic rotation 360° (#12.1.2, p. 91); +0.20 per additional rotation (#12.2.6, p. 93).',
+  verified: false,
+  ref: 'Rotations #12.1-12.2 (p. 91-93), #13 row 12 (p. 100); attitude technique p. 87; deviations #2.5 (p. 25)',
+};
+
 /** Rules shared by all balances on the foot (#10.1.2, #10.2.2, #10.3, p. 82-84). */
 export const BALANCE_RULES = {
   minHoldMs: 1000, // "Stop position fixed in the shape for a minimum of 1 second"

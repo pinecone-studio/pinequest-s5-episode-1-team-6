@@ -7,6 +7,7 @@ import type { Landmarks } from '../geometry';
 import { SplitLeapDetector } from '../elements/splitLeap';
 import { PasseDetector } from '../elements/passe';
 import { BalanceDetector } from '../elements/balances';
+import { AttitudePivotDetector } from '../elements/attitudePivot';
 import { balanceFrame } from '../elements/balanceFrame';
 import type { PoseLibrary } from '../library/recognizer';
 import type { ElementEvent } from '../types';
@@ -35,6 +36,7 @@ export function replayLandmarks(recording: LandmarkRecording, library: PoseLibra
   const smoother = new LandmarkSmoother();
   const leap = new SplitLeapDetector(onEvent);
   const passe = new PasseDetector(onEvent);
+  const pivot = new AttitudePivotDetector(onEvent);
   const balance = new BalanceDetector(onEvent);
   balance.library = library;
   const frameLines: string[] = [];
@@ -45,10 +47,13 @@ export function replayLandmarks(recording: LandmarkRecording, library: PoseLibra
     else smoother.reset();
     leap.update({ t: frame.t, lm });
     passe.update({ t: frame.t, lm, airborne: leap.live.airborne });
-    balance.update({ t: frame.t, lm, airborne: leap.live.airborne });
+    pivot.update({ t: frame.t, lm });
+    // Turning in an attitude is a pivot, not a balance: the balance detector skips those frames.
+    balance.update({ t: frame.t, lm, airborne: leap.live.airborne, turning: pivot.live.turning });
     frameLines.push(frameLine(frame.t, lm, leap.live.airborne, balance.live.label ?? balance.live.hint ?? ''));
   }
   passe.flush();
+  pivot.flush();
   balance.flush();
   events.sort((a, b) => a.tStart - b.tStart);
   return { events, frameLines };

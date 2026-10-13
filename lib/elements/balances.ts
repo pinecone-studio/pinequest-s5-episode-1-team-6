@@ -143,7 +143,13 @@ export class BalanceDetector {
     this.live = { shape: null, label: null, mainDeg: null, holdMs: 0, deduction: null, hint: null };
   }
 
-  update({ t, lm, airborne = false }: DetectorFrame): void {
+  update({ t, lm, airborne = false, turning = false }: DetectorFrame): void {
+    if (turning) {
+      // The hold became a pivot (judged by attitudePivot.ts): its start is no balance of its own.
+      this.segment = null;
+      this.candidate = null;
+      airborne = true; // and the turning frames are no balance either
+    }
     let m: BalanceMeasurement;
     const legs = legsUsable(lm, this.s);
     if (!lm) m = { shape: null, deviations: [], hint: 'Step into the camera view' };

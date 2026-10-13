@@ -161,6 +161,33 @@ export function thighElevation(hip: Point, knee: Point, thighLength: number): nu
 }
 
 /**
+ * Which way the body faces, in degrees around the vertical axis: 0 = facing the camera,
+ * ±180 = back to the camera, ±90 = side-on. Used to measure pivots.
+ *
+ * Two cues: the shoulders' left/right order (her left shoulder is on the image's right when she
+ * faces the camera, on the left when her back is to it) and how far the nose is ahead of the
+ * shoulders (largest when side-on). Each is divided by its typical size (shoulders ~0.6 torso
+ * lengths apart, nose ~0.35 ahead; checked on the team's pivot videos, 2026-10-13).
+ * Relies on the pose model keeping left and right apart from behind, as it did in those videos.
+ */
+export function facingAngle(lm: Landmarks): number {
+  const torso = torsoLength(lm);
+  if (!torso) return 0;
+  const shoulders = mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]);
+  const across = (lm[LM.L_SHOULDER].x - lm[LM.R_SHOULDER].x) / torso / 0.6;
+  const ahead = (lm[LM.NOSE].x - shoulders.x) / torso / 0.35;
+  return toDeg(Math.atan2(ahead, across));
+}
+
+/** Smallest signed change from angle a to angle b, in degrees (-180..180). */
+export function angleStep(a: number, b: number): number {
+  let d = b - a;
+  while (d > 180) d -= 360;
+  while (d < -180) d += 360;
+  return d;
+}
+
+/**
  * Are both legs seen at (nearly) full length? A leg pointing toward or away from
  * the camera looks shorter in 2D, and then any angle measured with it is wrong.
  *

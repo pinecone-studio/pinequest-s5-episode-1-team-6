@@ -204,6 +204,46 @@ export function attitudeBalance(
   });
 }
 
+/**
+ * Attitude seen while turning: a 3D body rotated `turnDeg` around the vertical axis and projected
+ * onto the image (0 = facing the camera, 90 = side-on, 180 = back to the camera). Free leg = left,
+ * thigh `thighDeg` from straight down (backward), knee bent to `kneeDeg`; support leg = right, straight.
+ * Shoulders 0.6 torso lengths apart and the nose 0.35 ahead, as geometry.ts facingAngle() expects.
+ */
+export function attitudeTurnPose(turnDeg: number, { thighDeg = 90, kneeDeg = 90 } = {}): Landmarks {
+  const c = Math.cos(rad(turnDeg));
+  const s = Math.sin(rad(turnDeg));
+  // Body directions in the image: x of "her left" and of "her front" (depth is dropped).
+  const leftX = c;
+  const frontX = -s;
+  const at = (lateral: number, front: number, y: number) => p(CX + lateral * leftX + front * frontX, y);
+  const lm = Array.from({ length: 33 }, () => at(0, 0, HIP_Y - TORSO * 1.3));
+  lm[LM.L_SHOULDER] = at(30, 0, HIP_Y - TORSO);
+  lm[LM.R_SHOULDER] = at(-30, 0, HIP_Y - TORSO);
+  lm[LM.NOSE] = at(0, 35, HIP_Y - TORSO - 30);
+  lm[LM.L_HIP] = at(15, 0, HIP_Y);
+  lm[LM.R_HIP] = at(-15, 0, HIP_Y);
+  // Support leg (right) straight down, on relevé.
+  lm[LM.R_KNEE] = at(-15, 0, HIP_Y + THIGH);
+  lm[LM.R_ANKLE] = at(-15, 0, HIP_Y + THIGH + SHIN - 6);
+  lm[LM.R_FOOT] = at(-15, 10, FLOOR_Y);
+  lm[LM.R_HEEL] = at(-15, -4, FLOOR_Y - 12);
+  // Free leg (left): angles from straight down, + = backward.
+  const legPoint = (from: Landmark, fromFront: number, len: number, deg: number) => ({
+    front: fromFront - len * Math.sin(rad(deg)),
+    y: from.y + len * Math.cos(rad(deg)),
+  });
+  const knee = legPoint(lm[LM.L_HIP], 0, THIGH, thighDeg);
+  lm[LM.L_KNEE] = at(15, knee.front, knee.y);
+  const shinDeg = thighDeg + (180 - kneeDeg); // the shin rises behind her
+  const ankle = legPoint(lm[LM.L_KNEE], knee.front, SHIN, shinDeg);
+  lm[LM.L_ANKLE] = at(15, ankle.front, ankle.y);
+  const toe = legPoint(lm[LM.L_ANKLE], ankle.front, 10, shinDeg);
+  lm[LM.L_FOOT] = at(15, toe.front, toe.y);
+  lm[LM.L_HEEL] = at(15, ankle.front, ankle.y);
+  return lm;
+}
+
 /** Moves one ankle (and its foot) toward the hip: a leg pointing at the camera. */
 export function foreshortenLeg(lm: Landmarks, sideKey: Side, factor: number): Landmarks {
   const hips = { x: (lm[LM.L_HIP].x + lm[LM.R_HIP].x) / 2, y: (lm[LM.L_HIP].y + lm[LM.R_HIP].y) / 2 };

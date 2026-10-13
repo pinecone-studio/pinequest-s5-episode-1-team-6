@@ -21,7 +21,13 @@ type LeapRule = typeof ELEMENTS.SPLIT_LEAP | typeof ELEMENTS.STAG_LEAP;
 export const SPLIT_LEAP_SETTINGS = {
   takeoffHipRise: 0.15, // hips must rise this much above standing height...
   takeoffFootLift: 0.1, // ...and the lowest toe must leave the floor by this much
-  landingFootLift: 0.05, // flight ends when the lowest toe is this close to the floor
+  landingFootLift: 0.05, // flight ends when the lowest toe is this close to the floor...
+  // ...or when the lowest toe stays still this long: a body in flight never does (at the top of a
+  // jump the foot still moves ~0.1 torso lengths in ±100 ms). Catches a wrong floor level, e.g. the
+  // support foot farther from the camera than the foot the floor was learned from (team's pivot
+  // videos, 2026-10-13: "in the air" for a whole pivot).
+  landingStillMs: 200,
+  landingStillRange: 0.04, // torso lengths
   minFlightMs: 100,
   maxFlightMs: 1500,
   peakWindow: 0.7, // frames with hip rise >= 70% of max count as "highest point"
@@ -44,6 +50,7 @@ export interface DetectorFrame {
   t: number; // ms
   lm: Landmarks | null;
   airborne?: boolean;
+  turning?: boolean; // turning in a pivot shape (attitudePivot.ts): a hold that turns is a pivot, not a balance
 }
 
 interface FlightFrame {
@@ -60,6 +67,7 @@ interface Flight {
   lastSeen: number;
   maxRise: number;
   frames: FlightFrame[];
+  toes: { t: number; y: number }[]; // lowest toe height during the flight
 }
 
 export class SplitLeapDetector {
@@ -112,7 +120,7 @@ export class SplitLeapDetector {
 
     if (!this.flight) {
       if (hipRise > this.s.takeoffHipRise && footLift > this.s.takeoffFootLift) {
-        this.flight = { tStart: t, lastSeen: t, maxRise: 0, frames: [] };
+        this.flight = { tStart: t, lastSeen: t, maxRise: 0, frames: [], toes: [] };
       } else {
         // Standing, walking or preparing: slowly track hip height and floor level.
         const a = this.s.baselineAlpha;
@@ -132,8 +140,15 @@ export class SplitLeapDetector {
         visibility: minVisibility(lm, LEG_POINTS),
         legRatios: legLengthRatios(lm),
       });
+      f.toes.push({ t, y: lowestToeY });
       if (footLift < this.s.landingFootLift) {
         this.finishFlight(t);
+      } else if (footStill(f.toes, t, this.s.landingStillMs, this.s.landingStillRange * torso)) {
+        // Standing after all: the floor level was wrong. Learn it again here.
+        this.finishFlight(t);
+        this.hipBaseY = hipY;
+        this.floorY = lowestToeY;
+        this.baseTorso = torso;
       }
     }
 
@@ -170,7 +185,8 @@ export class SplitLeapDetector {
       peakSplitDeg: angle(best),
       flightMs,
       visibility: best.visibility,
-      sideOn: legsFullLength(best.legRatios, this.s),
+      // A stag's front leg is bent on purpose: only the straight back leg must look full length.
+      sideOn: stag ? Math.max(...best.legRatios) >= this.s.minLegToTorso : legsFullLength(best.legRatios, this.s),
     }));
   }
 }
@@ -237,6 +253,14 @@ export function legsFullLength(
   const shorter = Math.min(a, b);
   const longer = Math.max(a, b);
   return shorter >= s.minLegToTorso && shorter >= s.minLegBalance * longer;
+}
+
+/** Has the lowest toe stayed within `range` pixels for the last `ms` milliseconds? */
+function footStill(toes: { t: number; y: number }[], now: number, ms: number, range: number): boolean {
+  if (toes.length < 2 || now - toes[0].t < ms) return false;
+  const recent = toes.filter((p) => now - p.t <= ms);
+  const ys = recent.map((p) => p.y);
+  return Math.max(...ys) - Math.min(...ys) < range;
 }
 
 /** y of the toes, falling back to the ankle if the toes are not visible. */
