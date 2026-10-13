@@ -15,9 +15,15 @@ interface ControlsProps {
   onSwitchCamera: () => void;
 }
 
+/** Text of the one main button (also shown on the video in full screen). */
+export function mainButtonLabel(state: SessionState): string {
+  const { source, judging, finished, busy, modelReady } = state;
+  return busy ? 'Please wait…' : !source ? 'Turn on camera' : !modelReady ? 'Try loading again' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
+}
+
 export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
-  const { source, judging, finished, busy, cameraCount, modelReady } = state;
-  const label = busy ? 'Please wait…' : !source ? 'Turn on camera' : !modelReady ? 'Try loading again' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
+  const { source, judging, finished, busy, cameraCount } = state;
+  const label = mainButtonLabel(state);
   const step = !source ? 1 : !judging && !finished ? 2 : 3;
 
   return (
