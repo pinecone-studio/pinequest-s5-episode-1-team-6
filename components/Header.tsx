@@ -40,7 +40,7 @@ export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab)
             onClick={() => onTab(t.id)}
             onKeyDown={onTabKey}
             className={`inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-full px-[22px] text-base font-semibold sm:flex-none ${
-              tab === t.id ? 'bg-bg text-ink shadow-[0_1px_4px_rgba(29,36,51,0.15)]' : 'bg-transparent text-muted'
+              tab === t.id ? 'bg-tab text-ink shadow-[0_1px_4px_rgba(29,36,51,0.15)]' : 'bg-transparent text-muted'
             }`}
           >
             {t.label}
