@@ -65,8 +65,15 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [x] One package manager: npm (`package-lock.json`). `bun.lock` was out of date and removed; CI already used npm
 - [x] Example poses and real-photo fixtures moved from `tests/` to `lib/library/examples/` (they also build the shipped library)
 
+## Phase 5 - Three more elements (decided 2026-10-13)
+- [ ] Team records videos into `data/validation/videos/{arabesque,attitude_pivot,stag_leap,not_these}/`
+- [ ] Arabesque balance: detector + pose-library examples + tests
+- [ ] Stag leap: detector on top of the split-leap state machine + tests
+- [ ] Attitude pivot: attitude shape + turn counting + tests; check on real video first
+- [ ] Human check of CoP codes and D values for all three
+
 ## Later (not in the 2-week scope)
-- Arabesque and side split balances; back split with help; pivots in the focus shapes
+- Side split balance; back split with help; pivots in the focus shapes
 - Landing faults (heavy landing, arched back)
 - Apparatus tracking
 

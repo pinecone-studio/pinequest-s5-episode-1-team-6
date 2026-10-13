@@ -92,6 +92,12 @@ Known limits (be honest in the UI and README):
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
    Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
 
+10. **Next three elements (user, 2026-10-13):** arabesque balance, attitude pivot, stag leap (jump with
+   front leg folded, back leg stretched). Order: arabesque (reuses attitude code), stag leap (reuses
+   `splitLeap.ts`), attitude pivot (attitude shape + turn counter from `passe.ts`; riskiest, the shape is
+   only side-on for part of each turn). Team videos go in `data/validation/videos/<element>/` (see
+   `data/README.md`). CoP codes and D values need a human check before they go into `lib/rules.ts`.
+
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare
 them with the FIG Code of Points. Example: split leap needs a 180° split at the highest point. Deviation

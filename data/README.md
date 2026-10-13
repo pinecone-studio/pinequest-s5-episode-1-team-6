@@ -59,3 +59,22 @@ How to take them:
 Run them through <http://localhost:3000/tools/validate> (nothing is uploaded). It can export the
 body-point numbers (no images) as `lib/library/examples/real-balances.json`, which turns every photo into
 a permanent unit test.
+
+## Validation videos (new elements, 2026-10-13)
+Same rules as the photos: real people, never commit, share through the team's private drive.
+
+```
+data/validation/videos/
+  arabesque/        arabesque balance (free leg back, knee straight)
+  attitude_pivot/   attitude held while turning
+  stag_leap/        jump with front leg folded, back leg stretched
+  not_these/        look-alikes that must NOT be scored (attitude balance, split leap, ...)
+  front_split_help/          earlier team video (2026-10-09)
+  back_split_trunk_forward/  earlier team video (2026-10-09): back split without help, trunk forward
+```
+
+- Name files `<person>_<n>.mp4`, e.g. `ana_01.mp4`. One element per clip, a few seconds each.
+- Camera side-on, level, at hip height, whole body and both feet in frame, plain light background
+  if possible (dark leggings on a dark wall lower pose confidence).
+- Record clean ones **and** ones with small, medium and large faults, from several people.
+- Optional `labels.csv` per folder: `file,expected_shape,judge_deduction,notes`.
