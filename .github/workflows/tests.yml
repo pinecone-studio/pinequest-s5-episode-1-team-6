@@ -1,5 +1,5 @@
 # Runs the type check, lint and unit tests on every push and pull request.
-# Deployment is done by Vercel, not by this workflow.
+# Deployment is done by deploy.yml.
 name: Tests
 
 on:

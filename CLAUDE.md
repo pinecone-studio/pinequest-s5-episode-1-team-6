@@ -59,7 +59,9 @@ Known limits (be honest in the UI and README):
    - CaFlow: no trained weights at all; you must train it yourself. No license.
 
 4. **Hosting: Vercel (Hobby plan), repo private.** GitHub Pages dropped when the repo went private.
-   Vercel builds the Next.js app with its defaults (no `vercel.json` needed).
+   Vercel builds the Next.js app with its defaults (no `vercel.json` needed). Deploys run from GitHub
+   Actions (`.github/workflows/deploy.yml`, secret `VERCEL_TOKEN`) because the Vercel GitHub app is not
+   installed on the pinecone-studio org (2026-10-13). Live: https://pinequest-s5-episode-1-team-6.vercel.app
    Hobby is non-commercial: move to Vercel Pro once the startup uses it commercially.
 5. **No open-source license for now.** The team plans a startup; decide licensing later.
 6. **Pose recognition by example (user, 2026-10-08):** a pose library (nearest neighbours over a
