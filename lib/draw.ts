@@ -86,11 +86,15 @@ export function legAngles(lm: Landmarks): LegAngle[] {
   return angles;
 }
 
-/** Draws the leg angles as small labels next to the joints. Call after drawSkeleton. */
+/** How big the angle labels are: 1 = small, 1.5 = easy to read from a few metres away. */
+const LABEL_SIZE = 1.5;
+
+/** Draws the leg angles as labels next to the joints. Call after drawSkeleton. */
 export function drawLegAngles(ctx: CanvasRenderingContext2D, lm: Landmarks | null): void {
   if (!lm) return;
-  const scale = Math.max(ctx.canvas.width, ctx.canvas.height) / 640;
-  ctx.font = `600 ${Math.round(12 * scale)}px system-ui, sans-serif`;
+  // LABEL_SIZE sets the whole label (text, box, gap); it grows with the video like the skeleton.
+  const scale = (Math.max(ctx.canvas.width, ctx.canvas.height) / 640) * LABEL_SIZE;
+  ctx.font = `700 ${Math.round(12 * scale)}px system-ui, sans-serif`;
   ctx.textBaseline = 'middle';
   for (const { at, deg, color } of legAngles(lm)) {
     const text = `${deg}°`;
