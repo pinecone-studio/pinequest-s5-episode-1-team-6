@@ -1,6 +1,7 @@
 import { test, assert, assertEqual } from './harness';
 import { readFirebaseConfig } from '../lib/firebase/config';
 import { authErrorText } from '../lib/firebase/errors';
+import { toAccount } from '../lib/firebase/auth';
 
 const FULL = {
   NEXT_PUBLIC_FIREBASE_API_KEY: 'key',
@@ -31,15 +32,29 @@ test('auth errors use plain sentences', () => {
   assertEqual(authErrorText('auth/email-already-in-use'), 'That email already has an account. Sign in instead.');
   assertEqual(authErrorText('auth/invalid-credential'), 'Email or password is wrong.');
   assertEqual(authErrorText('auth/something-else'), 'Something went wrong. Try again.');
-  assert(authErrorText('auth/configuration-not-found').includes('Email/Password'));
+  assert(authErrorText('auth/configuration-not-found')?.includes('Email/Password'));
+});
+
+test('closing the Google window yourself shows no error', () => {
+  assertEqual(authErrorText('auth/popup-closed-by-user'), null);
+  assertEqual(authErrorText('auth/cancelled-popup-request'), null);
 });
 
 test('google sign-in errors say what to do', () => {
-  assert(authErrorText('auth/popup-blocked').includes('pop-ups'));
-  assert(authErrorText('auth/unauthorized-domain').includes('Authorized domains'));
-  assert(authErrorText('auth/operation-not-allowed').includes('Sign-in method'));
+  assert(authErrorText('auth/popup-blocked')?.includes('pop-ups'));
+  assert(authErrorText('auth/unauthorized-domain')?.includes('Authorized domains'));
+  assert(authErrorText('auth/operation-not-allowed')?.includes('Sign-in method'));
 });
 
 test('guest sign-in error says how to turn it on', () => {
-  assert(authErrorText('auth/admin-restricted-operation').includes('Anonymous'));
+  assert(authErrorText('auth/admin-restricted-operation')?.includes('Anonymous'));
+});
+
+test('account shows the name, else the email, else Guest', () => {
+  const base = { uid: 'u1', displayName: null, email: null, isAnonymous: false };
+  assertEqual(toAccount({ ...base, displayName: ' Saraa ', email: 'saraa@example.com' }).name, 'Saraa');
+  assertEqual(toAccount({ ...base, email: 'saraa@example.com' }).name, 'saraa@example.com');
+  const guest = toAccount({ ...base, isAnonymous: true });
+  assertEqual(guest.name, 'Guest');
+  assertEqual(guest.isGuest, true);
 });

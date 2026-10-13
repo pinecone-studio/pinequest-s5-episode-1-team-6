@@ -7,7 +7,7 @@ import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { setPoseLibrary } from '@/lib/elements/balances';
 import { currentLibrary } from '@/lib/ui/libraryStore';
-import { AccountButton } from '../AuthGate';
+import { AccountButton } from '../auth/AccountButton';
 import { ThemeToggle } from '../ThemeToggle';
 import { smallText } from '../ui';
 

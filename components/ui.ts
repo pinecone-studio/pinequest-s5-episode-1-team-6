@@ -3,14 +3,14 @@
 
 import type { Tone } from '@/lib/ui/plain';
 
-const button = 'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-[18px] text-base leading-none font-semibold enabled:hover:brightness-105 disabled:cursor-default disabled:opacity-45';
+const button = 'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-[18px] text-base leading-none font-semibold not-disabled:hover:brightness-105 disabled:cursor-default disabled:opacity-45';
 
 /** Blue main action. */
 export const primaryButton = `${button} bg-accent text-on-fill`;
 /** Light blue, for second actions. */
 export const secondaryButton = `${button} bg-accent-soft text-accent`;
 /** Outline only, for small actions (Close, Print, ...). */
-export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink enabled:hover:border-accent enabled:hover:text-accent`;
+export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
 /** Add to a button to make it the big one. */
 export const bigButton = 'min-h-14 px-8 text-[19px]';
 

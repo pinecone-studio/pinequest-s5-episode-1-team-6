@@ -11,15 +11,19 @@ const MESSAGES: Record<string, string> = {
   'auth/network-request-failed': 'Could not reach the sign-in service. Check your internet and try again.',
   'auth/configuration-not-found': 'Sign-in is turned off. Turn on Email/Password under Authentication in the Firebase console.',
   'auth/operation-not-allowed': 'This way of signing in is turned off. Turn it on under Authentication → Sign-in method in the Firebase console.',
-  'auth/popup-closed-by-user': 'The Google window was closed before you finished. Try again.',
-  'auth/cancelled-popup-request': 'The Google window was closed before you finished. Try again.',
+  'auth/missing-email': 'Type your email first.',
   'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups for this site and try again.',
   'auth/unauthorized-domain': 'Google sign-in is not allowed on this website yet. Add it under Authentication → Settings → Authorized domains.',
   'auth/account-exists-with-different-credential': 'That email already has an account. Sign in with email and password.',
   'auth/admin-restricted-operation': 'Trying without an account is turned off. Turn on Anonymous under Authentication → Sign-in method in the Firebase console.',
 };
 
-export function authErrorText(code: string): string {
+/** The person closed the Google window themselves: not an error, so nothing is shown. */
+const CANCELLED = new Set(['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/user-cancelled']);
+
+/** A sentence to show, or null when there is nothing to say (the person cancelled). */
+export function authErrorText(code: string): string | null {
+  if (CANCELLED.has(code)) return null;
   return MESSAGES[code] ?? 'Something went wrong. Try again.';
 }
 

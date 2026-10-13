@@ -59,7 +59,9 @@ Known limits (be honest in the UI and README):
    - CaFlow: no trained weights at all; you must train it yourself. No license.
 
 4. **Hosting: Vercel (Hobby plan), repo private.** GitHub Pages dropped when the repo went private.
-   Vercel builds the Next.js app with its defaults (no `vercel.json` needed).
+   Vercel builds the Next.js app with its defaults (no `vercel.json` needed). Deploys run from GitHub
+   Actions (`.github/workflows/deploy.yml`, secret `VERCEL_TOKEN`) because the Vercel GitHub app is not
+   installed on the pinecone-studio org (2026-10-13). Live: https://pinequest-s5-episode-1-team-6.vercel.app
    Hobby is non-commercial: move to Vercel Pro once the startup uses it commercially.
 5. **No open-source license for now.** The team plans a startup; decide licensing later.
 6. **Pose recognition by example (user, 2026-10-08):** a pose library (nearest neighbours over a
@@ -76,9 +78,15 @@ Known limits (be honest in the UI and README):
    use plain words only (no codes, no D/E/A jargon in Practice); two tabs, Practice and Judge; one main
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
 9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, Google (popup) or
-   "Try without an account" (Firebase Anonymous, for demos), in the browser
-   (`firebase` client SDK, no backend). The app stays behind `components/AuthGate.tsx` until someone
-   is signed in. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
+   "Try without an account" (Firebase Anonymous, for demos; a guest sees Sign in in the header instead
+   of Sign out, and may open /login and /signup), in the browser
+   (`firebase` client SDK, no backend). Sign in (`/login`) and Create account (`/signup`) are their own pages in
+   `app/(auth)/`; every other page
+   lives in the route group `app/(app)/`, whose layout (`components/auth/RequireAuth.tsx`) sends people who
+   are not signed in to `/login?next=...` (2026-10-13). Who is signed in: `useAuth()` from
+   `components/auth/AuthProvider.tsx` (root layout). Firebase calls live in `lib/firebase/auth.ts` (no React).
+   Sign-up asks for a name; "Forgot password?" sends Firebase's reset email; closing the Google window
+   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
    (user, 2026-10-12): the browser receives them anyway, and local dev and Vercel then need no setup.
    `.env.local` (not committed) overrides them on one computer. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;

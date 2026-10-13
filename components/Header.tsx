@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from 'react';
-import { AccountButton } from './AuthGate';
+import { AccountButton } from './auth/AccountButton';
 import { ThemeToggle } from './ThemeToggle';
 import { ghostButton } from './ui';
 
