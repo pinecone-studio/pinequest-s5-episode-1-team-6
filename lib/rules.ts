@@ -91,7 +91,7 @@ export const ELEMENTS = {
     // "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart" (p. 75)
     requiredSplitDeg: 180,
     requirement: 'Stag leap: "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart, the stag position may be horizontal and will also be accepted when the 180° position is maintained with 1 of the legs above and the other below a horizontal position." (Technique, p. 75)',
-    verified: false,
+    verified: true,
     ref: 'Jumps #8.1, technique p. 75, #9 item 27 (p. 80); deviations #2.5 (p. 25)',
   },
   PASSE_BALANCE: {
@@ -126,7 +126,7 @@ export const ELEMENTS = {
 
 /**
  * Attitude pivot (rotation table #13 row 12, p. 100): 3.1203 (0.30) plain attitude; 3.1205 (0.50)
- * is ring without help / attitude with back bend (not detected). VALUE NOT YET VERIFIED.
+ * is ring without help / attitude with back bend (not detected). Checked on the pictogram (p. 100, 2026-10-13).
  */
 export const ATTITUDE_PIVOT = {
   code: '3.1203',
@@ -139,7 +139,7 @@ export const ATTITUDE_PIVOT = {
   // +0.20 per additional rotation for pivots with a base value of 0.20 or more (#12.2.6, p. 93).
   perExtraRotation: 0.2,
   requirement: 'Attitude pivot: attitude shape ("horizontal position of the free leg (thigh)", p. 87), minimum basic rotation 360° (#12.1.2, p. 91); +0.20 per additional rotation (#12.2.6, p. 93).',
-  verified: false,
+  verified: true,
   ref: 'Rotations #12.1-12.2 (p. 91-93), #13 row 12 (p. 100); attitude technique p. 87; deviations #2.5 (p. 25)',
 };
 
@@ -166,9 +166,9 @@ export interface BalanceRule {
   requiredThighDeg?: number;
 }
 
-// The balances the team focuses on. VALUES NOT YET VERIFIED (verified: false):
-// the PDF text does not say which pictogram sits in which value column, so each value is
-// mapped by the order of the variants in the row title. A teammate must check p. 88-89.
+// The balances the team focuses on. The PDF text does not say which pictogram sits in which value
+// column, so each value was first mapped by the order of the variants in the row title, then checked
+// against the pictograms on the rendered pages 88-89 (2026-10-13): all match (verified: true).
 // `box` = the table row; a difficulty from the same box can only count once (#2.4.1).
 export const BALANCES = {
   FRONT_SPLIT: {
@@ -179,7 +179,7 @@ export const BALANCES = {
     // "Split is required" (technique, p. 86).
     requiredSplitDeg: 180,
     requirement: 'Front split with or without help: "Split is required". (Technique, p. 86)',
-    verified: false,
+    verified: true,
     ref: 'Balances #10 (p. 82-84), technique p. 86, table #11 row 3 (p. 88)',
   },
   BACK_SPLIT: {
@@ -193,7 +193,7 @@ export const BALANCES = {
     footAboveHead: { code: '2.1005', name: 'Back split balance without help', value: 0.5 },
     requiredSplitDeg: 180,
     requirement: 'Free leg high up backward, without help: "Split is NOT required; whole foot above the head is required. Touching is NOT required." (Technique, p. 87)',
-    verified: false,
+    verified: true,
     ref: 'Balances #10 (p. 82-84), technique p. 86-87, table #11 row 10 (p. 89)',
   },
   BACK_SPLIT_TRUNK_FORWARD: {
@@ -205,7 +205,7 @@ export const BALANCES = {
     // The balance table gives no separate technique text; the matching rotation (p. 97) defines the
     // shape: "Split position required. The trunk should remain at the horizontal or below."
     requirement: 'Back split, trunk forward at the horizontal or below (table #11 row 11, p. 89): split position required; the trunk at the horizontal or below (same shape as the rotation, p. 97).',
-    verified: false,
+    verified: true,
     ref: 'Balances #10 (p. 82-84), table #11 row 11 (p. 89), shape as rotation p. 97',
   },
   ARABESQUE: {
@@ -218,7 +218,7 @@ export const BALANCES = {
     //  position of the free leg (thigh) and the maximum vertical position of the body" (p. 86).
     requiredThighDeg: 90,
     requirement: 'Arabesque: "Horizontal position of the free leg (thigh) and the maximum vertical position of the body". (Technique, p. 86)',
-    verified: false,
+    verified: true,
     ref: 'Balances #10 (p. 82-84), technique p. 86, table #11 row 9 (p. 89)',
   },
   ATTITUDE: {
@@ -230,7 +230,7 @@ export const BALANCES = {
     //  the body" (p. 87).
     requiredThighDeg: 90,
     requirement: 'Attitude: "Horizontal position of the free leg (thigh) and the maximum vertical position of the body". (Technique, p. 87)',
-    verified: false,
+    verified: true,
     ref: 'Balances #10 (p. 82-84), technique p. 87, table #11 row 12 (p. 89)',
   },
 } satisfies Record<string, BalanceRule & Record<string, unknown>>;

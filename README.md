@@ -75,16 +75,17 @@ Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all
 | Split leap | 1.2103 | 0.30 | Shape deviation from 180°: ≤10° −0.10, 11–20° −0.30, >20° −0.50 and DB not valid |
 | Passé balance | 2.101 | 0.10 (−0.10 on flat foot) | Thigh below horizontal (same bands); held < 1 s −0.30 |
 | Passé pivot | 3.101 | 0.10 + 0.10 per extra 360° | Thigh below horizontal (same bands); < 360° not valid |
-| **Front split balance with help** | 2.303 | 0.30 ⚠️ (without help: 2.305, 0.50 ⚠️) | Split short of 180° (bands); held < 1 s −0.30; flat foot −0.10 |
-| **Back split balance without help** | 2.1005 | 0.50 ⚠️ | Whole foot not above the head (bands, in degrees); held < 1 s −0.30; flat foot −0.10 |
-| **Back split balance, trunk forward** | 2.1104 | 0.40 ⚠️ | Split short of 180° and trunk above horizontal, each its own band; held < 1 s −0.30; flat foot −0.10 |
-| **Attitude balance** | 2.1202 | 0.20 ⚠️ | Thigh below horizontal and trunk not vertical, each its own band; held < 1 s −0.30; flat foot −0.10 |
-| **Arabesque balance** | 2.902 | 0.20 ⚠️ | Thigh below horizontal and trunk not vertical, each its own band; held < 1 s −0.30; flat foot −0.10 |
-| **Stag leap** | 1.2702 | 0.20 ⚠️ | Front thigh to back leg short of 180° (bands); front knee bend left to judges |
-| **Attitude pivot** | 3.1203 | 0.30 ⚠️ + 0.20 per extra 360° | Thigh below horizontal (bands); < 360° not valid; trunk and relevé left to judges |
+| **Front split balance with help** | 2.303 | 0.30 (without help: 2.305, 0.50) | Split short of 180° (bands); held < 1 s −0.30; flat foot −0.10 |
+| **Back split balance without help** | 2.1005 | 0.50 | Whole foot not above the head (bands, in degrees); held < 1 s −0.30; flat foot −0.10 |
+| **Back split balance, trunk forward** | 2.1104 | 0.40 | Split short of 180° and trunk above horizontal, each its own band; held < 1 s −0.30; flat foot −0.10 |
+| **Attitude balance** | 2.1202 | 0.20 | Thigh below horizontal and trunk leaning more than 20°, each its own band; held < 1 s −0.30; flat foot −0.10 |
+| **Arabesque balance** | 2.902 | 0.20 | Thigh below horizontal and trunk leaning more than 20°, each its own band; held < 1 s −0.30; flat foot −0.10 |
+| **Stag leap** | 1.2702 | 0.20 | Front thigh to back leg short of 180° (bands); front knee bend left to judges |
+| **Attitude pivot** | 3.1203 | 0.30 + 0.20 per extra 360° | Thigh below horizontal (bands); < 360° not valid; trunk and relevé left to judges |
 
-⚠️ = value read from the table by row order; a teammate must confirm it against the pictograms
-(CoP p. 80 jumps, p. 88-89 balances, p. 100 rotations; see `docs/rules.md`).
+Every D value was checked against the pictograms in the CoP tables (p. 80 jumps, p. 88-89 balances,
+p. 100 rotations) on 2026-10-13. The 20° natural trunk lean is a team decision, not a Code value
+(see `docs/rules.md`).
 
 Scoring follows the Code: **Final = D + A + E − penalties**, highest 8 body difficulties count, a
 repeated difficulty counts once but its execution faults are still deducted.

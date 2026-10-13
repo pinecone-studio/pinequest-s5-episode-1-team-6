@@ -109,7 +109,7 @@ Known limits (be honest in the UI and README):
    `data/README.md`). CoP codes and D values need a human check before they go into `lib/rules.ts`.
    **Built 2026-10-13** (branch `15-new-elements`): arabesque 2.902 (0.20) in `balances.ts`; stag leap
    1.2702 (0.20) in `splitLeap.ts` (the leap detector decides split vs stag); attitude pivot 3.1203
-   (0.30, +0.20 per extra turn) in `attitudePivot.ts`. Values by row order, still `verified: false`.
+   (0.30, +0.20 per extra turn) in `attitudePivot.ts`. Values checked on the pictograms (decision 12).
    Pivot rotation = facing angle from the shoulders' left/right order + nose offset (the old body-width
    method counted 180° for a full turn), plus one frame of turning as sampling margin.
    The team's clips replay as tests: `npm run replay`, `tests/videos.test.ts` (body points only).
@@ -125,9 +125,13 @@ is side-on to the split. We detect this from **leg foreshortening** (each leg sh
 lengths), not body width: gymnasts open shoulders/hips to the audience even when the legs are side-on.
 Show warnings in the UI and skip low-visibility frames.
 
+11. **Natural trunk lean (user, 2026-10-13):** in arabesque and attitude the first 20° of trunk lean are
+   not a deviation (`NATURAL_TRUNK_LEAN_DEG`, `lib/rules.ts`); only the lean beyond goes into the bands.
+   A team decision: the Code gives no angle for "maximum vertical position of the body".
+12. **D values checked on the pictograms (2026-10-13):** every code the app uses was checked on the
+   rendered CoP table pages (p. 80, 88-89, 100); all `verified: true`.
+
 ## Open decisions (ask the user before assuming)
-- Arabesque/attitude trunk: the code reads "maximum vertical position of the body" literally (trunk lean
-  from vertical = a deviation), so the team's arabesque (24-27° lean) is a large deviation, not valid.
-  Keep, or allow a natural forward lean before deducting?
+- None right now.
 
 See PLAN.md for the phased build order.

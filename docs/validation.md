@@ -102,3 +102,7 @@ What was found and changed:
 | attitude_pivot 2 | Attitude pivot 360° (348° seen, 370° with margin), "close to a full turn: check" | 0.30 | −0.30 (thigh 71°) |
 
 ⚠️ The arabesque result depends on the open trunk decision (CLAUDE.md, `docs/rules.md`).
+
+**Update (same day):** natural 20° trunk lean decided (user). Arabesque clip now: 2 × Arabesque balance,
+valid, D 0.10 each (0.20 − 0.10 flat foot), E −0.10 (trunk 4-7° past the natural 20°). D values of every
+element checked on the rendered pictograms (p. 80, 88-89, 100): all match.

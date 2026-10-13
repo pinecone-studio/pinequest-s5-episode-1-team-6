@@ -76,9 +76,9 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [x] Stag leap: detector on top of the split-leap state machine + tests
 - [x] Attitude pivot: attitude shape + turn measured from the facing angle + tests; checked on both videos
 - [x] `npm run replay` + "Export body points" in /tools/video-analyze; the team's clips are regression tests (`tests/videos.test.ts`)
-- [ ] Decide: arabesque/attitude trunk lean (literal "maximum vertical" makes the team's 24-27° lean a large deviation)
+- [x] Decide: arabesque/attitude trunk lean → first 20° are natural, not deducted (user, 2026-10-13)
 - [ ] More videos: `not_these/` look-alikes, faults (small/medium/large), several people; a stag leap filmed from the start
-- [ ] Human check of CoP codes and D values for all three (p. 80, 89, 100)
+- [x] CoP codes and D values checked on the pictograms (p. 80, 88-89, 100), also the earlier balances
 
 ## Later (not in the 2-week scope)
 - Side split balance; back split with help; pivots in the focus shapes
