@@ -67,6 +67,7 @@ export function RhymnastApp() {
             videoRef={videoRef}
             canvasRef={canvasRef}
             message={state.message}
+            busy={state.busy}
             judging={state.judging}
             live={state.live}
             cards={state.cards}

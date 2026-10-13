@@ -76,8 +76,8 @@ Known limits (be honest in the UI and README):
    use plain words only (no codes, no D/E/A jargon in Practice); two tabs, Practice and Judge; one main
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
 9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, Google (popup) or
-   "Try without an account" (Firebase Anonymous, for demos; a guest sees Sign in / Create account in the
-   header instead of Sign out, and may open /login and /signup), in the browser
+   "Try without an account" (Firebase Anonymous, for demos; a guest sees Sign in in the header instead
+   of Sign out, and may open /login and /signup), in the browser
    (`firebase` client SDK, no backend). Sign in (`/login`) and Create account (`/signup`) are their own pages in
    `app/(auth)/`; every other page
    lives in the route group `app/(app)/`, whose layout (`components/auth/RequireAuth.tsx`) sends people who

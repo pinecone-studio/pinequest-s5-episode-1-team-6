@@ -28,7 +28,7 @@ npm run dev
 The first screen is **Sign in** at `/login` (Firebase Authentication: email and password, with
 **Forgot password?**) or **Create account** at `/signup` (name, email and password). Both also offer
 **Continue with Google** and **Try without an account** (one click, for demos). A guest has no Sign out:
-the header shows **Sign in** and **Create account** instead. After signing in you go back to the page you opened.
+the header shows **Sign in** instead. After signing in you go back to the page you opened.
 The camera stays off until you are signed in. The Firebase web settings are public and committed in
 `.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
 

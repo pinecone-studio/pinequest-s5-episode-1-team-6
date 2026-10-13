@@ -1,6 +1,7 @@
 'use client';
 
-// The video with everything drawn on top of it: skeleton, message, "Watching" badge,
+// The video with everything drawn on top of it: skeleton, message (with a spinner while the
+// camera / model loads), "Watching" badge,
 // the live box (which balance, hold dots, one tip) and a card after every move.
 // On phones (below the sm breakpoint) the boxes are smaller and only the newest card shows,
 // so the gymnast stays visible.
@@ -15,21 +16,27 @@ interface StageProps {
   videoRef: RefObject<HTMLVideoElement | null>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
   message: StageMessage | null;
+  busy: boolean; // the camera / model is loading
   judging: boolean;
   live: LiveView | null;
   cards: MoveCardData[];
 }
 
-export function Stage({ stageRef, videoRef, canvasRef, message, judging, live, cards }: StageProps) {
+export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, live, cards }: StageProps) {
+  const shown = message ?? (busy ? { title: 'Getting ready…', detail: '' } : null);
   return (
     <div ref={stageRef} className="relative aspect-video max-w-full overflow-hidden rounded-card bg-ink">
       <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-contain" />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" />
 
-      {message && (
-        <div className="absolute inset-0 grid place-content-center gap-2 p-6 text-center text-white">
-          <b className="text-[clamp(20px,2.6vw,28px)]">{message.title}</b>
-          <span className="text-stage-text">{message.detail}</span>
+      {shown && (
+        <div
+          className={`absolute inset-0 grid place-content-center justify-items-center gap-2 p-6 text-center text-white ${busy ? 'bg-ink/70' : ''}`}
+          role="status"
+        >
+          {busy && <Spinner />}
+          <b className="text-[clamp(20px,2.6vw,28px)]">{shown.title}</b>
+          {shown.detail && <span className="text-stage-text">{shown.detail}</span>}
         </div>
       )}
 
@@ -43,6 +50,16 @@ export function Stage({ stageRef, videoRef, canvasRef, message, judging, live, c
         {cards.map((card, i) => <MoveCard key={card.id} card={card} newest={i === 0} />)}
       </div>
     </div>
+  );
+}
+
+/** Turning ring while something loads. Stays still for people who asked for less motion. */
+function Spinner() {
+  return (
+    <span
+      className="mb-2 h-11 w-11 rounded-full border-4 border-white/25 border-t-white motion-safe:animate-spin max-sm:h-8 max-sm:w-8 max-sm:border-[3px]"
+      aria-hidden="true"
+    />
   );
 }
 
