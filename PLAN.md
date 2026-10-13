@@ -29,6 +29,8 @@
 - [x] White minimalist UI redesign
 - [x] Live feedback: video overlay (pose, match, hold timer, live deduction, hints), card after each
       move, running total; focus mode (only the 3 balances)
+- [x] Practice: leg angles on the video (split at the hips, each knee), green / amber / red by the
+      deduction bands (`lib/draw.ts`)
 - [x] Deduction report on Stop judging, with rulebook quotes and pages; print / PDF
 - [x] Pose library + "Teach poses" (record 3 s / photos, export/import)
 - [x] Simple redesign after the judges' review (2026-10-09): Practice / Judge tabs, one main button,

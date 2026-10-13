@@ -33,6 +33,9 @@ export function RhymnastApp() {
   // Connect the session to the video once the page is in the browser.
   useEffect(() => session.attach(videoRef.current!, canvasRef.current!, stageRef.current!), [session]);
 
+  // Practice shows the leg angles on the video; the Judge view stays clean.
+  useEffect(() => session.setAnglesVisible(tab === 'practice'), [session, tab]);
+
   // Remember the last tab (per browser). Read after the first render to match the server HTML.
   useEffect(() => {
     try {
