@@ -5,11 +5,15 @@
 // the live box (which balance, hold dots, one tip) and a card after every move.
 // On phones (below the sm breakpoint) the boxes are smaller and only the newest card shows,
 // so the gymnast stays visible.
+// "Full screen" shows all of it on the whole screen (useFullscreen.ts); there the main button
+// (Start / Finish) is on the video too, so nobody has to leave full screen to press it. When judging
+// stops (Finish, or the end of a video) full screen closes, so the results can be seen.
 
-import type { RefObject } from 'react';
-import type { LiveView, MoveCardData, StageMessage } from '@/lib/session';
+import { useEffect, useRef, type RefObject } from 'react';
+import type { LiveView, MoveCardData, Source, StageMessage } from '@/lib/session';
 import { describeMove } from '@/lib/ui/plain';
-import { toneBorder, toneText } from './ui';
+import { useFullscreen } from './useFullscreen';
+import { primaryButton, toneBorder, toneText } from './ui';
 
 interface StageProps {
   stageRef: RefObject<HTMLDivElement | null>;
@@ -20,12 +24,24 @@ interface StageProps {
   judging: boolean;
   live: LiveView | null;
   cards: MoveCardData[];
+  source: Source; // camera, video file or nothing
+  main: { label: string; onClick: () => void }; // the main button, for full screen
 }
 
-export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, live, cards }: StageProps) {
+export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, live, cards, source, main }: StageProps) {
   const shown = message ?? (busy ? { title: 'Getting ready…', detail: '' } : null);
+  const { fullscreen, stretched, enter, exit } = useFullscreen(stageRef);
+  const wasJudging = useRef(judging);
+  useEffect(() => {
+    if (wasJudging.current && !judging) exit(); // the results open below the video
+    wasJudging.current = judging;
+  }, [judging, exit]);
+  // Only one position class: with both "relative" and "fixed", the CSS order decides and "fixed" can lose.
+  const size = stretched
+    ? 'fixed inset-0 z-50 h-dvh w-screen max-w-none rounded-none' // iPhone: cover the page
+    : `relative aspect-video max-w-full ${fullscreen ? 'rounded-none' : 'rounded-card'}`;
   return (
-    <div ref={stageRef} className="relative aspect-video max-w-full overflow-hidden rounded-card bg-stage">
+    <div ref={stageRef} className={`overflow-hidden bg-stage ${size}`}>
       <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-contain" />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" />
 
@@ -47,10 +63,42 @@ export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, l
 
       {live && <LiveBox live={live} />}
 
+      {source && (
+        // A video file shows the player's own buttons along the bottom: stay above them.
+        <div className={`absolute right-3 flex items-center gap-2 max-sm:right-2 ${source === 'file' ? 'bottom-14' : 'bottom-3 max-sm:bottom-2'}`}>
+          {fullscreen && (
+            <button type="button" className={`${primaryButton} min-h-11 px-5`} disabled={busy} onClick={main.onClick}>
+              {main.label}
+            </button>
+          )}
+          <button
+            type="button"
+            className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-0 bg-black/60 px-3.5 text-sm font-semibold text-white hover:bg-black/75"
+            aria-label={fullscreen ? 'Exit full screen' : 'Full screen'}
+            onClick={() => (fullscreen ? exit() : void enter())}
+          >
+            <FullscreenIcon exit={fullscreen} />
+            <span className="max-sm:hidden">{fullscreen ? 'Exit full screen' : 'Full screen'}</span>
+          </button>
+        </div>
+      )}
+
       <div className="pointer-events-none absolute bottom-3 left-3 grid w-[min(340px,calc(100%-24px))] gap-2 max-sm:bottom-2 max-sm:left-2 max-sm:w-[min(240px,calc(100%-16px))]" aria-live="polite">
         {cards.map((card, i) => <MoveCard key={card.id} card={card} newest={i === 0} />)}
       </div>
     </div>
+  );
+}
+
+/** Four corners pointing out (full screen) or in (exit). */
+function FullscreenIcon({ exit }: { exit: boolean }) {
+  const d = exit
+    ? 'M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3'
+    : 'M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3';
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={d} />
+    </svg>
   );
 }
 

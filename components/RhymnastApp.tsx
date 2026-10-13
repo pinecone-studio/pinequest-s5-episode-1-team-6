@@ -12,7 +12,7 @@ import { buildReport } from '@/lib/report';
 import { useJudgingSession } from './useJudgingSession';
 import { Header, type Tab } from './Header';
 import { Stage } from './Stage';
-import { Controls } from './Controls';
+import { Controls, mainButtonLabel } from './Controls';
 import { JudgePanel, PracticePanel, type JudgeForm } from './SidePanels';
 import { ResultsView } from './ResultsView';
 import { SettingsDrawer } from './SettingsDrawer';
@@ -75,6 +75,8 @@ export function RhymnastApp() {
             judging={state.judging}
             live={state.live}
             cards={state.cards}
+            source={state.source}
+            main={{ label: mainButtonLabel(state), onClick: () => session.onMainButton() }}
           />
           <Controls
             state={state}
