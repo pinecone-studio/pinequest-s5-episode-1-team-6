@@ -185,7 +185,13 @@ export class JudgingSession {
 
   // ---------- Page elements ----------
 
-  /** Connects the session to the page and starts the frame loop. Returns a function that stops it. */
+  /**
+   * Connects the session to the page and starts the frame loop. Returns a function that stops it.
+   * With cacheComponents, Next.js hides a page on navigation instead of unmounting it (<Activity>):
+   * the stop function runs, but this session, the results and the page's DOM stay, and attach runs
+   * again on return. So stopping turns the camera off and clears what it drew (stopSource), but keeps
+   * the results and their move videos.
+   */
   attach(video: HTMLVideoElement, canvas: HTMLCanvasElement, stage: HTMLElement): () => void {
     this.video = video;
     this.canvas = canvas;
@@ -217,7 +223,7 @@ export class JudgingSession {
       this.tracker = null;
       this.trackerVariant = null;
       this.set({ modelReady: false });
-      this.forgetMoveVideos();
+      this.routineRecorder.discard();
     };
   }
 
@@ -371,7 +377,10 @@ export class JudgingSession {
     if (video.src) URL.revokeObjectURL(video.src);
     video.removeAttribute('src');
     video.srcObject = null;
-    this.set({ source: null, live: null });
+    // Clear the last skeleton: nothing redraws the overlay without a camera or video.
+    const canvas = this.canvas;
+    canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    this.set({ source: null, live: null, cards: [], message: START_MESSAGE });
     this.setJudging(false, { quiet: true });
   }
 
