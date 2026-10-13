@@ -15,10 +15,10 @@ import { Scoreboard, type JudgeInputs } from './scoring';
 import { RULE_SOURCE } from './rules';
 import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { describeMove, liveMessage, modelDownloadText, type Tone } from './ui/plain';
+import { describeMove, liveMessage, mistakeLabel, modelDownloadText, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
-import { clipFileName, clipWindow, movesNeedingClips, videoExtension } from './recording/clipWindows';
+import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
 import { saveRoutine, type SavedMove } from './recording/clipStore';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
@@ -63,11 +63,11 @@ export interface TechReadout {
   state: string;
 }
 
-/** The video and photo of a move that lost points (made after Finish). */
+/** The video of a move, with any mistake marked on it, and its cover photo (made after Finish). */
 export type MoveVideo =
   | { status: 'preparing' }
   | { status: 'failed' }
-  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photo: Blob; photoUrl: string; photoName: string };
+  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photoUrl: string };
 
 export interface SessionState {
   source: Source;
@@ -89,7 +89,7 @@ export interface SessionState {
   resultsOpen: boolean;
   resultsDurationMs: number | null;
   resultsRequest: number; // goes up each time results are opened by an action (to scroll to them)
-  moveVideos: Record<number, MoveVideo>; // by event id: moves that lost points
+  moveVideos: Record<number, MoveVideo>; // by event id: every judged move
   videosSaved: boolean | null; // saved in this browser (null: not tried yet)
 }
 
@@ -600,17 +600,17 @@ export class JudgingSession {
     this.set({ resultsOpen: false });
   }
 
-  // ---------- Videos of moves that lost points ----------
+  // ---------- Videos of the moves ----------
 
   /**
-   * After Finish: cuts each move that lost points out of the routine recording (video + photo),
+   * After Finish: cuts every move out of the routine recording (video + photo, mistakes marked),
    * shows them in the results and saves them in this browser (lib/recording/clipStore.ts).
    */
   private async makeMoveVideos(): Promise<void> {
     const run = ++this.videoRun;
     const recording = await this.routineRecorder.stop();
     const events = [...this.scoreboard.events].sort((a, b) => a.t - b.t);
-    const moves = movesNeedingClips(events);
+    const moves = events; // every move: the ones that lost points, and the correct ones (user, 2026-10-13)
     if (!recording || moves.length === 0) return;
     this.set({ moveVideos: Object.fromEntries(moves.map((e) => [e.id, { status: 'preparing' } as MoveVideo])), videosSaved: null });
 
@@ -624,16 +624,15 @@ export class JudgingSession {
       const part = clipWindow(event, recording.timeline, recording.durationMs);
       try {
         if (!part) throw new Error('The move is not in the recording');
-        const media = await cutClip(recording, part);
+        const mistakes = event.penalties.map((p) => ({ segment: p.segment, label: mistakeLabel(p) }));
+        const media = await cutClip(recording, part, mistakes, described.pointsLost);
         if (run !== this.videoRun) return; // a new routine started meanwhile
         video = {
           status: 'ready',
           clip: media.clip,
           clipUrl: this.keepUrl(media.clip),
           clipName: clipFileName(when, number, described.name, videoExtension(media.clipType)),
-          photo: media.photo,
-          photoUrl: this.keepUrl(media.photo),
-          photoName: clipFileName(when, number, described.name, 'jpg'),
+          photoUrl: this.keepUrl(media.photo), // the video's cover picture (and what prints)
         };
         saved.push({
           id: `${routineId}-${number}`,

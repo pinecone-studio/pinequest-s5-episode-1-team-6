@@ -99,7 +99,7 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
 
         <section className={setting}>
           <b>Saved videos</b>
-          <p className={smallText}>Videos and photos of the moves that lost points, kept in this browser.</p>
+          <p className={smallText}>Videos of your moves, kept in this browser.</p>
           <Link className={ghostButton} href="/saved">Open saved videos</Link>
         </section>
 

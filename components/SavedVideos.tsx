@@ -1,6 +1,6 @@
 'use client';
 
-// The Saved videos page: photos and videos of the moves that lost points, saved in this browser
+// The Saved videos page: videos of every judged move (mistakes marked), saved in this browser
 // after each routine (lib/recording/clipStore.ts). Newest routine first; delete one or all.
 
 import { useCallback, useEffect, useState } from 'react';
@@ -27,7 +27,7 @@ export function SavedVideos() {
   useEffect(reload, [reload]);
 
   async function deleteAll() {
-    if (!window.confirm('Delete all saved videos and photos from this browser?')) return;
+    if (!window.confirm('Delete all saved videos from this browser?')) return;
     await deleteAllRoutines();
     reload();
   }
@@ -43,14 +43,14 @@ export function SavedVideos() {
         </div>
         <h1 className="m-0 text-4xl leading-tight font-bold">Saved videos</h1>
         <p className={smallText}>
-          {`Photos and videos of the moves that lost points, from the newest ${KEEP_ROUTINES} routines. They are kept in this browser only: nothing is uploaded.`}
+          {`Videos of your moves, from the newest ${KEEP_ROUTINES} routines. Anything that lost points is marked in red; a correct move is marked green. They are kept in this browser only: nothing is uploaded.`}
         </p>
       </div>
 
       {routines === null && <p className={smallText} role="status">Loading…</p>}
       {routines?.length === 0 && (
         <p className="m-0 rounded-card bg-card px-5 py-4">
-          No saved videos yet. After a routine, press Finish: the moves that lost points are saved here.
+          No saved videos yet. After a routine, press Finish: the videos of your moves are saved here.
         </p>
       )}
       {routines && routines.length > 0 && (
@@ -118,9 +118,7 @@ function SavedMoveItem({ move, createdAt }: { move: SavedMove; createdAt: number
       clip: move.clip,
       clipUrl: URL.createObjectURL(move.clip),
       clipName: clipFileName(when, move.number, move.name, videoExtension(move.clipType)),
-      photo: move.photo,
       photoUrl: URL.createObjectURL(move.photo),
-      photoName: clipFileName(when, move.number, move.name, 'jpg'),
     };
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the links must be freed in this effect's cleanup
     setFiles(next);
