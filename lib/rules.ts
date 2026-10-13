@@ -63,6 +63,14 @@ export function judgedBand(measuredDeviationDeg: number, margin = MEASUREMENT_MA
  */
 export const NATURAL_TRUNK_LEAN_DEG = 20;
 
+/**
+ * Rotation margin for pivots (team decision, user 2026-10-13; NOT a Code value). One camera measures a
+ * turn to about ±45°, and the team's two full-turn videos measured ~351° in the browser. Like the 3°
+ * margin for angles, the gymnast gets the benefit of the doubt: a turn within 15° of a full rotation
+ * counts as that rotation. The app says when a turn was credited this way, so a judge can check it.
+ */
+export const ROTATION_MARGIN_DEG = 15;
+
 /** Difficulty components, Difficulty #1.5 (p. 21): highest 8 DB counted. */
 export const MAX_DB_COUNTED = 8;
 

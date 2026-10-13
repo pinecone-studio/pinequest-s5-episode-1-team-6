@@ -93,6 +93,9 @@ export async function createPoseTracker(
   let landmarker: PoseLandmarkerType;
   let delegate: 'GPU' | 'CPU' = 'GPU';
   try {
+    // Without WebGL2 the GPU model still loads but then fails on every frame (nothing is judged,
+    // no error shown), so go straight to the CPU. Seen in a browser without graphics, 2026-10-13.
+    if (!hasWebGL2()) throw new Error('WebGL2 not available');
     landmarker = await PoseLandmarker.createFromOptions(fileset, options('GPU'));
   } catch (err) {
     console.warn('GPU pose model failed, using CPU', err);
@@ -117,4 +120,13 @@ export async function createPoseTracker(
       landmarker.close();
     },
   };
+}
+
+/** Can this browser create a WebGL2 context (what MediaPipe's GPU model draws with)? */
+function hasWebGL2(): boolean {
+  try {
+    return Boolean(document.createElement('canvas').getContext('webgl2'));
+  } catch {
+    return false;
+  }
 }

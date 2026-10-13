@@ -106,7 +106,11 @@ from the camera, narrow when side-on; each change ≈ 90°). Accuracy about ±45
   camera margin for angles. Within 45° of a full turn the app says "close to a full turn: check".
 - **Deduction:** thigh below horizontal only (median over the turn, #2.5 bands). Trunk lean can't be
   seen when she faces the camera: judges check it.
-- 180-359° in the shape = "Attitude pivot (under 360°)", not valid. Less than 180° = an attitude
+- **Rotation margin (team decision, user 2026-10-13, not a Code value):** a turn within 15° of a full
+  rotation counts as that rotation (`ROTATION_MARGIN_DEG`, `lib/rules.ts`), and the move says "counted
+  with the 15° rotation margin". Reason: ±45° accuracy, and the team's two full turns measured ~351° in
+  the browser (Python replay: 298° and 370°: the two runtimes sample the video slightly differently).
+- 180-344° in the shape = "Attitude pivot (under 360°)", not valid. Less than 180° = an attitude
   balance (balance detector). A hold that turns into a pivot is not judged as a balance as well.
 
 ## Arabesque balance: row 9, code 2.902, value 0.20 ✅

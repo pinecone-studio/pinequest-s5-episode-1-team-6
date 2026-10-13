@@ -81,7 +81,7 @@ Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all
 | **Attitude balance** | 2.1202 | 0.20 | Thigh below horizontal and trunk leaning more than 20°, each its own band; held < 1 s −0.30; flat foot −0.10 |
 | **Arabesque balance** | 2.902 | 0.20 | Thigh below horizontal and trunk leaning more than 20°, each its own band; held < 1 s −0.30; flat foot −0.10 |
 | **Stag leap** | 1.2702 | 0.20 | Front thigh to back leg short of 180° (bands); front knee bend left to judges |
-| **Attitude pivot** | 3.1203 | 0.30 + 0.20 per extra 360° | Thigh below horizontal (bands); < 360° not valid; trunk and relevé left to judges |
+| **Attitude pivot** | 3.1203 | 0.30 + 0.20 per extra 360° | Thigh below horizontal (bands); < 360° not valid (15° rotation margin); trunk and relevé left to judges |
 
 Every D value was checked against the pictograms in the CoP tables (p. 80 jumps, p. 88-89 balances,
 p. 100 rotations) on 2026-10-13. The 20° natural trunk lean is a team decision, not a Code value

@@ -18,7 +18,7 @@ import {
   LM, LEG_POINTS, angleStep, dist, facingAngle, isOnReleve, jointAngle, legPoints, minVisibility, thighElevation,
   type Landmarks,
 } from '../geometry';
-import { ATTITUDE_PIVOT, judgedBand, round2 } from '../rules';
+import { ATTITUDE_PIVOT, ROTATION_MARGIN_DEG, judgedBand, round2 } from '../rules';
 import type { ElementEvent, Penalty } from '../types';
 import type { DetectorFrame } from './splitLeap';
 
@@ -169,8 +169,10 @@ export function judgeAttitudePivot(m: MeasuredAttitudePivot, s = ATTITUDE_PIVOT_
       band: deviation.band,
     }]
     : [];
-  const rotations = Math.floor(m.rotationDeg / 360);
+  // Benefit of the doubt: a turn within ROTATION_MARGIN_DEG of a full rotation counts (team decision).
+  const rotations = Math.floor((m.rotationDeg + ROTATION_MARGIN_DEG) / 360);
   const full = rotations >= 1;
+  const creditedByMargin = rotations > Math.floor(m.rotationDeg / 360);
   const value = full ? round2(rule.value + rule.perExtraRotation * (rotations - 1)) : 0;
   const warnings = [
     `Rotation measured from the shoulders and face (about ±45°): ${Math.round(m.measuredRotationDeg ?? m.rotationDeg)}° seen, ${Math.round(m.rotationDeg)}° with one frame of margin`,
@@ -178,6 +180,9 @@ export function judgeAttitudePivot(m: MeasuredAttitudePivot, s = ATTITUDE_PIVOT_
   ];
   if (Math.abs(m.rotationDeg - 360 * Math.max(1, Math.round(m.rotationDeg / 360))) <= s.closeCallDeg) {
     warnings.push(`Close to a full turn (${Math.round(m.rotationDeg)}°): check this call`);
+  }
+  if (creditedByMargin) {
+    warnings.push(`Counted as ${rotations * 360}° with the ${ROTATION_MARGIN_DEG}° rotation margin (measured ${Math.round(m.rotationDeg)}°)`);
   }
   if (!full) warnings.unshift('Less than the minimum 360° rotation (#12.1.2)');
   if (!rule.verified) warnings.push('DB value awaiting a check against the CoP table (p. 100)');

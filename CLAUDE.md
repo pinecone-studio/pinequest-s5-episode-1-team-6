@@ -130,6 +130,8 @@ Show warnings in the UI and skip low-visibility frames.
    A team decision: the Code gives no angle for "maximum vertical position of the body".
 12. **D values checked on the pictograms (2026-10-13):** every code the app uses was checked on the
    rendered CoP table pages (p. 80, 88-89, 100); all `verified: true`.
+13. **Rotation margin (user, 2026-10-13):** an attitude-pivot turn within 15° of a full rotation counts
+   (`ROTATION_MARGIN_DEG`, `lib/rules.ts`); the move says so. A team decision, like the 3° angle margin.
 
 ## Open decisions (ask the user before assuming)
 - None right now.
