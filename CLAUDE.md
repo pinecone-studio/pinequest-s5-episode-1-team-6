@@ -88,9 +88,10 @@ Known limits (be honest in the UI and README):
    are not signed in to `/login?next=...` (2026-10-13). Who is signed in: `useAuth()` from
    `components/auth/AuthProvider.tsx` (root layout). Firebase calls live in `lib/firebase/auth.ts` (no React).
    Sign-up asks for a name; "Forgot password?" sends Firebase's reset email; closing the Google window
-   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
-   (user, 2026-10-12): the browser receives them anyway, and local dev and Vercel then need no setup.
-   `.env.local` (not committed) overrides them on one computer. Never commit server secrets
+   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are NOT committed (user, 2026-10-13;
+   they were committed in `.env` before): `.env.example` lists the names, each computer copies it to
+   `.env` (or `.env.local`), and Vercel has them under Project → Settings → Environment Variables.
+   `.env*` is git-ignored except `.env.example`. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
    Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
 10. **Move videos (user, 2026-10-13):** while judging, the routine is recorded (video + skeleton + leg
