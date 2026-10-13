@@ -46,8 +46,8 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
 
   async function importFile(file: File) {
     try {
-      const n = importTaught(await file.text());
-      session.libraryChanged(`Imported ${n} examples.`);
+      const { added, skipped } = importTaught(await file.text());
+      session.libraryChanged(`Imported ${added} examples.${skipped ? ` ${skipped} were already here and were skipped.` : ''}`);
     } catch (err) {
       session.setTeachStatus(`Could not import: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -73,7 +73,7 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
               type="file"
               accept="image/*"
               multiple
-              hidden
+              className="sr-only"
               onChange={(e) => {
                 const files = [...(e.target.files ?? [])];
                 e.target.value = '';
@@ -99,7 +99,7 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
             <input
               type="file"
               accept="application/json,.json"
-              hidden
+              className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 e.target.value = '';

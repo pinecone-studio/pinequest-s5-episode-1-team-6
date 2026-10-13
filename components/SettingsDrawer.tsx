@@ -2,6 +2,8 @@
 
 // Settings drawer: camera accuracy, "only the three balances", Teach poses, the record download,
 // technical details and links to the developer tools.
+// A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
+// back to the Settings button.
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -21,14 +23,20 @@ const setting = 'grid gap-2 border-t border-line py-3.5';
 
 export function SettingsDrawer({ session, state, onExport, onClose }: SettingsProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && panelRef.current) keepFocusInside(panelRef.current, e);
+    };
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
       session.setTechVisible(false);
+      opener?.focus();
     };
   }, [session, onClose]);
 
@@ -46,7 +54,10 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
     <>
       <div className="fixed inset-0 z-10 bg-ink/35 print:hidden" onClick={onClose} />
       <aside
+        ref={panelRef}
         id="settings"
+        role="dialog"
+        aria-modal="true"
         aria-labelledby="settings-title"
         className="fixed top-0 right-0 bottom-0 z-11 grid w-[min(420px,100%)] content-start gap-3.5 overflow-y-auto bg-bg px-[22px] pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] shadow-[-8px_0_30px_rgba(0,0,0,0.15)] print:hidden"
       >
@@ -59,8 +70,9 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
           <label htmlFor="model-select"><b>Camera accuracy</b></label>
           <select
             id="model-select"
-            className={input}
+            className={`${input} disabled:opacity-60`}
             value={state.model}
+            disabled={state.busy}
             onChange={(e) => void session.setModel(e.target.value as ModelVariant)}
           >
             <option value="heavy">Best for splits (slower to load)</option>
@@ -112,4 +124,20 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
       </aside>
     </>
   );
+}
+
+/** Tab on the last control goes to the first one, Shift+Tab on the first goes to the last. */
+function keepFocusInside(panel: HTMLElement, e: KeyboardEvent): void {
+  const focusable = [...panel.querySelectorAll<HTMLElement>('a[href], button, input, select, summary')]
+    .filter((el) => !el.matches(':disabled') && el.getClientRects().length > 0); // skips content of closed <details>
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }

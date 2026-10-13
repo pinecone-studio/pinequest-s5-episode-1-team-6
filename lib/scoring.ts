@@ -50,15 +50,17 @@ export class Scoreboard {
 
   /** Adds an element event (from a detector). Returns it with an id. */
   add(event: ElementEvent): StoredEvent {
-    const stored = { ...event, id: this.nextId++, rejected: false };
+    const stored = { ...event, id: this.nextId++, rejected: false, reviewed: false };
     this.events.push(stored);
     return stored;
   }
 
-  /** Judge accepts or rejects an automated event. */
+  /** Judge accepts (false) or rejects (true) an automated event. Either way it is now reviewed. */
   setRejected(id: number, rejected: boolean): void {
     const ev = this.events.find((e) => e.id === id);
-    if (ev) ev.rejected = rejected;
+    if (!ev) return;
+    ev.rejected = rejected;
+    ev.reviewed = true;
   }
 
   /**

@@ -23,6 +23,9 @@ import type { ElementEvent } from './types';
 
 export type Source = 'camera' | 'file' | null;
 
+/** Front camera ('user') or back camera ('environment', for filming someone else with a phone or tablet). */
+export type CameraFacing = 'user' | 'environment';
+
 /** Big message in the middle of the video. */
 export interface StageMessage {
   title: string;
@@ -60,6 +63,8 @@ export interface SessionState {
   judging: boolean;
   finished: boolean;
   busy: boolean; // the camera / model is loading
+  facing: CameraFacing;
+  cameraCount: number; // cameras on this device (the switch button needs 2 or more)
   message: StageMessage | null;
   live: LiveView | null;
   cards: MoveCardData[];
@@ -88,6 +93,8 @@ export class JudgingSession {
     judging: false,
     finished: false,
     busy: false,
+    facing: 'user',
+    cameraCount: 0,
     message: START_MESSAGE,
     live: null,
     cards: [],
@@ -194,16 +201,29 @@ export class JudgingSession {
   private async ensureTracker(): Promise<void> {
     const variant = this.state.model;
     if (this.tracker && this.trackerVariant === variant) return;
-    this.setMessage('Getting the camera ready…', variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
-    this.tracker?.close();
+    this.setMessage('Getting ready…',variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
+    // Take the old model out of the frame loop before closing it: a closed model must never be called.
+    const old = this.tracker;
+    this.tracker = null;
+    this.trackerVariant = null;
+    old?.close();
     this.tracker = await createPoseTracker(variant);
     this.trackerVariant = variant;
     this.setMessage(null);
   }
 
+  /** Settings → Camera accuracy. Loads the new model at once if a camera or video is running. */
   async setModel(model: ModelVariant): Promise<void> {
     this.set({ model });
-    if (this.state.source) await this.ensureTracker();
+    if (!this.state.source) return;
+    this.set({ busy: true });
+    try {
+      await this.ensureTracker();
+    } catch (err) {
+      console.error(err);
+      this.setMessage('The camera accuracy could not be changed', `${errorText(err)}. Try another setting.`);
+    }
+    this.set({ busy: false });
   }
 
   setFocusOnly(focusOnly: boolean): void {
@@ -219,13 +239,13 @@ export class JudgingSession {
       this.stopSource();
       await this.ensureTracker();
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: this.state.facing },
         audio: false,
       });
       video.srcObject = stream;
       video.controls = false;
       await video.play();
-      this.set({ source: 'camera' });
+      this.set({ source: 'camera', cameraCount: await countCameras() });
       this.onSourceReady();
     } catch (err) {
       console.error(err);
@@ -236,8 +256,16 @@ export class JudgingSession {
     this.set({ busy: false });
   }
 
+  /** Front <-> back camera. Restarts the camera; not while judging. */
+  async switchCamera(): Promise<void> {
+    if (this.state.source !== 'camera' || this.state.judging) return;
+    this.set({ facing: this.state.facing === 'user' ? 'environment' : 'user' });
+    await this.startCamera();
+  }
+
   async loadFile(file: File): Promise<void> {
     const video = this.video!;
+    this.set({ busy: true }); // the model can take a while to load the first time
     try {
       this.stopSource();
       await this.ensureTracker();
@@ -246,15 +274,25 @@ export class JudgingSession {
       video.controls = true;
       this.fileName = file.name;
       this.set({ source: 'file' });
-      await new Promise((resolve) => { video.onloadeddata = resolve; });
+      await firstFrameReady(video);
       this.onSourceReady();
       this.newRoutine();
       this.setJudging(true); // judge the clip from the start
       await video.play();
     } catch (err) {
       console.error(err);
+      this.stopSource(); // don't leave a broken clip on the screen
       this.setMessage('The video could not be opened', errorText(err));
     }
+    this.set({ busy: false });
+  }
+
+  /** "Try again" on a video: judge the clip again from the start. */
+  private replayFile(): void {
+    const video = this.video;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
   }
 
   private stopSource(): void {
@@ -413,6 +451,7 @@ export class JudgingSession {
     else if (!judging && finished) {
       this.newRoutine();
       this.setJudging(true);
+      if (source === 'file') this.replayFile();
     } else this.setJudging(!judging);
   }
 
@@ -422,6 +461,7 @@ export class JudgingSession {
       this.passe.flush(); // judge a balance still being held
       this.balance.flush();
       this.stoppedAt = this.currentTimeMs();
+      if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
     }
     const patch: Partial<SessionState> = { judging: on };
     if (on) {
@@ -516,6 +556,36 @@ export class JudgingSession {
     });
     downloadFile(`rhymnast-record-${new Date().toISOString().replace(/[:.]/g, '-')}.json`, JSON.stringify(audit, null, 2), 'application/json');
   }
+}
+
+/** Number of cameras (labels and ids need permission, but the count is known once the camera runs). */
+async function countCameras(): Promise<number> {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((d) => d.kind === 'videoinput').length;
+  } catch {
+    return 1;
+  }
+}
+
+/** Waits for the first frame of a clip. Fails if the browser can't play the file. */
+function firstFrameReady(video: HTMLVideoElement): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const stopListening = () => {
+      video.removeEventListener('loadeddata', onLoaded);
+      video.removeEventListener('error', onError);
+    };
+    const onLoaded = () => {
+      stopListening();
+      resolve();
+    };
+    const onError = () => {
+      stopListening();
+      reject(new Error('This browser cannot play this video file. Try an MP4 file'));
+    };
+    video.addEventListener('loadeddata', onLoaded);
+    video.addEventListener('error', onError);
+  });
 }
 
 function errorText(err: unknown): string {

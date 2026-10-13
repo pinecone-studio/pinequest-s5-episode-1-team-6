@@ -34,6 +34,7 @@ Open <http://localhost:3000>, then:
 
 1. Pick a tab at the top: **Practice** (gymnast / coach) or **Judge**.
 2. Press **Turn on camera** and allow access (or **or use a video** for a recorded routine).
+   On a phone or tablet, **Switch camera** uses the back camera to film someone else.
 3. Stand **sideways** to the camera, whole body and both feet in the picture.
 4. Press **Start** and hold each balance for at least 1 second. The box on the video shows the balance
    it sees, four dots that fill up in one second, and "Looks good" or one tip ("Open the split more

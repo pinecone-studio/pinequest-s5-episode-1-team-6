@@ -51,6 +51,9 @@ interface JudgePanelProps {
 
 export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport, hidden }: JudgePanelProps) {
   const newestFirst = [...events].reverse();
+  const checked = events.filter((e) => e.reviewed).length;
+  const noMoves = events.length === 0; // show "–" instead of a score made only of the empty 10.00 execution
+  const score = (value: number) => (noMoves ? '–' : value.toFixed(2));
   const field = (key: keyof JudgeForm, label: string, extra: { max?: number; step: number }) => (
     <label className="grid gap-1 text-sm font-semibold">
       {label}
@@ -65,10 +68,10 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
       />
     </label>
   );
-  const part = (label: string, value: number, note: string) => (
+  const part = (label: string, value: string, note: string) => (
     <div className="grid gap-0.5 rounded-[10px] bg-bg p-2.5">
       <span className="text-sm text-muted">{label}</span>
-      <b className="text-[22px] tabular-nums">{value.toFixed(2)}</b>
+      <b className="text-[22px] tabular-nums">{value}</b>
       <small className="text-xs text-muted">{note}</small>
     </div>
   );
@@ -77,12 +80,12 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
     <section className={card} id="panel-judge" role="tabpanel" aria-labelledby="tab-judge" hidden={hidden}>
       <div className="flex items-baseline justify-between">
         <span className="text-lg font-semibold">Final score</span>
-        <b className="text-[44px] font-bold text-accent tabular-nums">{r.final.toFixed(2)}</b>
+        <b className="text-[44px] font-bold text-accent tabular-nums">{score(r.final)}</b>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        {part('Difficulty', r.D, 'from the app')}
-        {part('Execution', r.E, r.breakdown.autoE ? `from the app (−${r.breakdown.autoE.toFixed(2)})` : 'from the app')}
-        {part('Artistry', r.A, 'your score')}
+        {part('Difficulty', score(r.D), 'from the app')}
+        {part('Execution', score(r.E), r.breakdown.autoE ? `from the app (−${r.breakdown.autoE.toFixed(2)})` : 'from the app')}
+        {part('Artistry', r.A.toFixed(2), 'your score')}
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {field('artistry', 'Artistry (0–10)', { max: 10, step: 0.05 })}
@@ -96,7 +99,14 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
           {field('extraE', 'Extra execution points lost', { step: 0.1 })}
         </div>
       </details>
-      <h2 className="m-0 text-xl leading-tight font-bold">Moves</h2>
+      <div className="flex items-baseline justify-between gap-2.5">
+        <h2 className="m-0 text-xl leading-tight font-bold">Moves</h2>
+        {events.length > 0 && (
+          <span className={`text-sm font-semibold ${checked === events.length ? 'text-good' : 'text-muted'}`}>
+            {checked} of {events.length} checked
+          </span>
+        )}
+      </div>
       <ol className="m-0 grid list-none gap-2.5 p-0">
         {newestFirst.length
           ? newestFirst.map((e) => <MoveRow key={e.id} event={e} status={r.status.get(e.id)} forJudge onReject={onReject} />)

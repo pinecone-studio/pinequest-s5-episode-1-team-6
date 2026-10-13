@@ -1,7 +1,7 @@
 'use client';
 
 // The one main button (Turn on camera -> Start -> Finish -> Try again), "or use a video",
-// "Start over" and the three steps below the video.
+// "Switch camera", "Start over" and the three steps below the video.
 
 import type { SessionState } from '@/lib/session';
 import { bigButton, ghostButton, primaryButton } from './ui';
@@ -12,10 +12,11 @@ interface ControlsProps {
   onMain: () => void;
   onFile: (file: File) => void;
   onReset: () => void;
+  onSwitchCamera: () => void;
 }
 
-export function Controls({ state, movesCount, onMain, onFile, onReset }: ControlsProps) {
-  const { source, judging, finished, busy } = state;
+export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
+  const { source, judging, finished, busy, cameraCount } = state;
   const label = !source ? 'Turn on camera' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
   const step = !source ? 1 : !judging && !finished ? 2 : 3;
 
@@ -23,12 +24,13 @@ export function Controls({ state, movesCount, onMain, onFile, onReset }: Control
     <>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <button className={`${primaryButton} ${bigButton} w-full sm:w-auto`} disabled={busy} onClick={onMain}>{label}</button>
-        <label className="cursor-pointer font-semibold text-accent underline underline-offset-[3px]">
+        <label className={`font-semibold text-accent underline underline-offset-[3px] ${busy ? 'cursor-default opacity-45' : 'cursor-pointer'}`}>
           or use a video
           <input
             type="file"
             accept="video/*"
-            hidden
+            className="sr-only"
+            disabled={busy}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) onFile(file);
@@ -36,6 +38,9 @@ export function Controls({ state, movesCount, onMain, onFile, onReset }: Control
             }}
           />
         </label>
+        {source === 'camera' && cameraCount > 1 && !judging && (
+          <button className={ghostButton} disabled={busy} onClick={onSwitchCamera}>Switch camera</button>
+        )}
         {source && movesCount > 0 && !judging && (
           <button className={ghostButton} onClick={onReset}>Start over</button>
         )}

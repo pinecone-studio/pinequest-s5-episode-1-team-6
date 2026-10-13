@@ -62,6 +62,17 @@ test('a move the judge rejects has no deductions in the report', () => {
   assertEqual(r.summary.totalDeduction, 0.3);
 });
 
+test('the report counts moves no judge has checked yet', () => {
+  const sb = routine();
+  const total = sb.events.length;
+  assertEqual(buildReport(sb).summary.notReviewed, total);
+  sb.setRejected(sb.events[0].id, false);
+  sb.setRejected(sb.events[1].id, true);
+  const r = buildReport(sb);
+  assertEqual(r.summary.notReviewed, total - 2);
+  assert(r.moves[0].reviewed && r.moves[1].reviewed);
+});
+
 test('requirement text from the rulebook is included for each move', () => {
   const r = buildReport(routine());
   assert(r.moves[1].requirement?.includes('Horizontal position of the free leg'));

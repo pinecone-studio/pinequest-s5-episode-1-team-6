@@ -52,6 +52,13 @@ body {
   outline-offset: 2px;
 }
 
+/* File buttons are a <label> around a visually hidden file input (class sr-only): the input gets the
+   keyboard focus, so show the focus ring on the label that people see. */
+label:has(> input[type="file"]:focus-visible) {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 details > summary {
   cursor: pointer;
   font-weight: 600;
