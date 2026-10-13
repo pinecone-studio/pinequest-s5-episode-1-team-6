@@ -11,6 +11,9 @@ export const primaryButton = `${button} bg-accent text-on-fill`;
 export const secondaryButton = `${button} bg-accent-soft text-accent`;
 /** Outline only, for small actions (Close, Print, ...). */
 export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
+/** Small and quiet, for the navbar (Sign in, Settings): text only until hovered. */
+export const navButton = 'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3 text-sm font-semibold whitespace-nowrap text-muted hover:bg-card hover:text-ink';
+
 /** Add to a button to make it the big one. */
 export const bigButton = 'min-h-14 px-8 text-[19px]';
 
