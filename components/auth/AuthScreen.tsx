@@ -6,7 +6,8 @@
 import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
-import { CheckingAccount, SetupNeeded } from './AuthMessages';
+import { SetupNeeded } from './AuthMessages';
+import { AuthFormSkeleton } from '../Skeletons';
 import { useNextPath } from './useNextPath';
 
 export function AuthScreen({ children }: { children: ReactNode }) {
@@ -20,5 +21,5 @@ export function AuthScreen({ children }: { children: ReactNode }) {
 
   if (state.status === 'setup-needed') return <SetupNeeded missing={state.missing} />;
   if (state.status === 'signed-out') return children;
-  return <CheckingAccount />;
+  return <AuthFormSkeleton />;
 }

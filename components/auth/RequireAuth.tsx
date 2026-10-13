@@ -7,7 +7,8 @@ import { useEffect, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { loginPath } from '@/lib/ui/loginRedirect';
 import { useAuth } from './AuthProvider';
-import { CheckingAccount, SetupNeeded } from './AuthMessages';
+import { SetupNeeded } from './AuthMessages';
+import { JudgingPageSkeleton, ToolPageSkeleton } from '../Skeletons';
 
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { state } = useAuth();
@@ -19,6 +20,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   }, [state.status, pathname, router]);
 
   if (state.status === 'setup-needed') return <SetupNeeded missing={state.missing} />;
-  if (state.status !== 'signed-in') return <CheckingAccount />;
+  if (state.status !== 'signed-in') {
+    return pathname.startsWith('/tools/') ? <ToolPageSkeleton /> : <JudgingPageSkeleton />;
+  }
   return children;
 }

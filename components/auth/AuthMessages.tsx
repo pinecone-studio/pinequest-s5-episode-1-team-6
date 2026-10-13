@@ -1,4 +1,5 @@
-// Full-page pieces of the sign-in screens: the frame around the forms and the waiting / setup messages.
+// Full-page pieces of the sign-in screens: the frame around the forms and the setup message.
+// While the account is being checked, components/Skeletons.tsx is shown instead.
 
 import type { ReactNode } from 'react';
 import type { FirebasePublicKey } from '@/lib/firebase/config';
@@ -28,14 +29,6 @@ export function ErrorText({ error }: { error: string | null }) {
   return (
     <p className="m-0 text-sm text-bad" role="alert">
       {error}
-    </p>
-  );
-}
-
-export function CheckingAccount() {
-  return (
-    <p className="px-[clamp(16px,4vw,40px)] pt-16 text-center text-muted" role="status">
-      Checking your account…
     </p>
   );
 }
