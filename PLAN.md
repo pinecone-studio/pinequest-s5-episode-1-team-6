@@ -29,6 +29,8 @@
 - [x] White minimalist UI redesign
 - [x] Live feedback: video overlay (pose, match, hold timer, live deduction, hints), card after each
       move, running total; focus mode (only the 3 balances)
+- [x] Practice: leg angles on the video (split at the hips, each knee), green / amber / red by the
+      deduction bands (`lib/draw.ts`)
 - [x] Deduction report on Stop judging, with rulebook quotes and pages; print / PDF
 - [x] Pose library + "Teach poses" (record 3 s / photos, export/import)
 - [x] Simple redesign after the judges' review (2026-10-09): Practice / Judge tabs, one main button,
@@ -45,6 +47,8 @@
 - [ ] Check detectors on 5-10 labeled side-on video clips per element; record agreement in
       `docs/validation.md`. **Owner: team + Claude**
 - [x] README
+- [x] Videos of every move, mistakes marked red, correct moves green: download, Saved videos page (2026-10-13)
+- [ ] Try the move videos with a real camera on a laptop and a phone. **Owner: team**
 - [ ] Demo script, pitch. **Owner: team**
 
 ## Hosting
@@ -52,7 +56,8 @@
   once). Tests: `npm test`.
 - Sign-in: Firebase Authentication (email and password, Google, or guest for demos) in the browser. Google on the
   live site needs the Vercel domain in Firebase → Authentication → Settings → Authorized domains. The public
-  `NEXT_PUBLIC_FIREBASE_*` values are committed in `.env`, so Vercel needs no extra settings.
+  `NEXT_PUBLIC_FIREBASE_*` values are not committed (2026-10-13): copy `.env.example` to `.env`, and set the
+  same four in Vercel → Project → Settings → Environment Variables.
 
 ## Migration to Next.js (2026-10-12)
 Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScript repo, in steps:

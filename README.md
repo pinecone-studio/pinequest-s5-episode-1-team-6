@@ -12,17 +12,19 @@ browser) finds her joints in every frame. **Rules from the FIG Code of Points** 
 
 **Live URL: https://pinequest-s5-episode-1-team-6.vercel.app** (from `main`). Deploys are manual:
 run `npm run deploy` (Vercel CLI; log in once with `npx vercel login`). GitHub Actions runs the type
-check, lint and tests. The first load downloads the pose model
-(about 10 MB). Video stays on your device.
+check, lint and tests. The first visit downloads the pose model (30 MB) and its runtime (9 MB) in
+the background while the page is open. Video stays on your device.
 
 ## Run it locally
 
 Requires Node.js 20 or newer and Chrome, Edge or Safari. Internet is needed on first load: the pose
-model is downloaded from Google's CDN (the default "Heavy" model is 30 MB, about 30 s the first time;
-the browser keeps it afterwards). If the video looks slow, choose "Faster" under Settings → Camera accuracy.
+model is downloaded from Google's CDN (the default "Heavy" model is 30 MB). It starts downloading as
+soon as the page opens, so "Turn on camera" is quick, and is kept in the browser's Cache Storage, so it
+downloads only once (`lib/modelCache.ts`; skipped when the browser asks to save data). If the video looks slow, choose "Faster" under Settings → Camera accuracy.
 
 ```sh
 npm install
+cp .env.example .env   # then fill in the four Firebase values (Firebase console → Project settings → Your apps)
 npm run dev
 ```
 
@@ -30,14 +32,22 @@ The first screen is **Sign in** at `/login` (Firebase Authentication: email and 
 **Forgot password?**) or **Create account** at `/signup` (name, email and password). Both also offer
 **Continue with Google** and **Try without an account** (one click, for demos). A guest has no Sign out:
 the header shows **Sign in** instead. After signing in you go back to the page you opened.
-The camera stays off until you are signed in. The Firebase web settings are public and committed in
-`.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
+The camera stays off until you are signed in. The Firebase web settings are not committed: `.env.example`
+lists them, `.env` / `.env.local` hold them on your computer (git-ignored), and Vercel holds them under
+Project → Settings → Environment Variables (needed for `npm run deploy`).
 
 Open <http://localhost:3000>, then:
 
 1. Pick a tab at the top: **Practice** (gymnast / coach) or **Judge**.
 2. Press **Turn on camera** and allow access (or **or use a video** for a recorded routine).
+   The camera starts at once; if the pose model is still downloading, the video shows how far it is
+   ("40%") and judging can start when it is done.
    On a phone or tablet, **Switch camera** uses the back camera to film someone else.
+   **Full screen** (button on the video) shows the video, skeleton and boxes on the whole screen, with
+   Start / Finish on it; **Exit full screen** or Esc leaves, and Finish leaves by itself so the results
+   show. On iPhone Safari, which can't put a page part in full screen, the video covers the page instead.
+   A phone turned sideways works too: the video fits the screen height (the page scrolls to it when
+   the camera starts), Start / Finish is on the video, and the boxes on it are the small phone ones.
 3. Stand **sideways** to the camera, whole body and both feet in the picture.
 4. Press **Start** and hold each balance for at least 1 second (or do a stag leap or an attitude turn). The box on the video shows the balance
    it sees, four dots that fill up in one second, and "Looks good" or one tip ("Open the split more
@@ -46,8 +56,14 @@ Open <http://localhost:3000>, then:
    tip for every move. **Show rulebook details** adds the codes, measurements and rule quotes.
    In the **Judge** tab, enter Artistry and penalties, press Agree / Disagree on each call, and get
    the final score.
-6. **Settings** holds everything else: camera accuracy, judging all moves, Teach poses, downloading
-   the record, technical details and the developer tools.
+   Every move gets a **short video** (1 s before to 1 s after the move, with the skeleton and leg
+   angles); a correct move is marked green. While a move that lost points is held, the body part is **red** with a
+   tag ("Thigh 6° low −0.10"), a badge says "Points lost here", and a strip along the top shows
+   when it happens. **Download video** saves it.
+   They are kept in this browser (IndexedDB, newest 10 routines; nothing is uploaded) and listed on
+   **Saved videos** (`/saved`, also linked from Settings).
+6. **Settings** holds everything else: camera accuracy, judging all moves, Teach poses, saved videos,
+   downloading the record, technical details and the developer tools.
 
 The camera only works on `localhost` or HTTPS (browser rule). To use it from another device, use the
 Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all.
@@ -120,9 +136,11 @@ app/
 components/
   RhymnastApp.tsx            page layout: header, video, controls, side panels, results, settings
   useJudgingSession.ts       connects React to lib/session.ts
-  Stage.tsx                  video + skeleton overlay, live box, move cards
+  Stage.tsx                  video + skeleton overlay, live box, move cards, full screen (useFullscreen.ts)
   SidePanels.tsx             Practice and Judge panels;  MoveRow.tsx: one move in a list
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
+  MoveMedia.tsx              video (mistakes marked) and download of one move
+  SavedVideos.tsx            the Saved videos page (app/(app)/saved): delete one routine or all
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
   auth/                      sign-in UI: AuthProvider (useAuth), RequireAuth, AuthScreen, SignInForm,
@@ -146,6 +164,8 @@ lib/
   report.ts                  end-of-routine deduction report (data)
   ui/plain.ts                plain-language texts and tips (keep new UI text in this style)
   tools/                     photo / video analysis used by the developer tools
+  recording/                 move videos: record the routine while judging, cut out every move with
+                             mistakes marked (annotate.ts), save in IndexedDB (newest 10)
 tests/                       unit tests (vitest)
 scripts/build-library.ts     regenerates lib/library/defaultLibrary.json
 docs/rules.md                rules we automate, quoted from the Code with page numbers

@@ -8,7 +8,7 @@ import { firebaseConfigFromProcessEnv, type FirebasePublicKey } from '@/lib/fire
 import { currentAccount, watchAccount, type Account } from '@/lib/firebase/auth';
 
 export type AuthState =
-  | { status: 'setup-needed'; missing: FirebasePublicKey[] } // Firebase settings missing from .env
+  | { status: 'setup-needed'; missing: FirebasePublicKey[] } // Firebase settings missing (see .env.example)
   | { status: 'checking' } // waiting for Firebase to say who is signed in
   | { status: 'signed-out' }
   | { status: 'signed-in'; account: Account };

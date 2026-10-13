@@ -42,7 +42,9 @@ Known limits (be honest in the UI and README):
 
 ## Decisions (made 2026-10-08)
 1. **Pose inference: in the browser** with MediaPipe Pose Landmarker (`@mediapipe/tasks-vision@0.10.14`,
-   pinned in package.json; WASM and model weights from pinned CDN URLs). No backend.
+   pinned in package.json; WASM and model weights from pinned CDN URLs). No backend. The judging page
+   preloads the model when it opens and keeps it in Cache Storage (`lib/modelCache.ts`, 2026-10-13):
+   Google serves the weights with only a 1-hour browser cache.
    Frontend: **Next.js 16 (App Router) + React 19 + TypeScript + Tailwind 4** (user, 2026-10-12; replaces
    the plain-JS `web/` app of 2026-10-08, kept in the old Rhymnast repo). Judging logic is plain
    TypeScript in `lib/` with no React in it; UI in `components/` (client components) and `app/`.
@@ -86,11 +88,19 @@ Known limits (be honest in the UI and README):
    are not signed in to `/login?next=...` (2026-10-13). Who is signed in: `useAuth()` from
    `components/auth/AuthProvider.tsx` (root layout). Firebase calls live in `lib/firebase/auth.ts` (no React).
    Sign-up asks for a name; "Forgot password?" sends Firebase's reset email; closing the Google window
-   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are committed in `.env`
-   (user, 2026-10-12): the browser receives them anyway, and local dev and Vercel then need no setup.
-   `.env.local` (not committed) overrides them on one computer. Never commit server secrets
+   shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are NOT committed (user, 2026-10-13;
+   they were committed in `.env` before): `.env.example` lists the names, each computer copies it to
+   `.env` (or `.env.local`), and Vercel has them under Project → Settings → Environment Variables.
+   `.env*` is git-ignored except `.env.example`. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
    Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
+10. **Move videos (user, 2026-10-13):** while judging, the routine is recorded (video + skeleton + leg
+   angles, `lib/recording/routineRecorder.ts`). After Finish, every move is cut out (also correct ones, marked green; user 2026-10-13),
+   1 s before to 1 s after the move (`clipCutter.ts`), with a photo from the middle of the hold as its
+   cover. While the move is held, the video marks the mistake (`annotate.ts`, user 2026-10-13): the body
+   part in red with a tag, a "Points lost here" badge, a strip along the top showing when. The results show the video
+   and Download video (no Watch / Download photo buttons, user 2026-10-13). Saved in IndexedDB (localStorage is too
+   small), newest 10 routines, on the Saved videos page (`/saved`). Nothing is uploaded.
 
 10. **Next three elements (user, 2026-10-13):** arabesque balance, attitude pivot, stag leap (jump with
    front leg folded, back leg stretched). Order: arabesque (reuses attitude code), stag leap (reuses

@@ -1,16 +1,22 @@
 // Results after "Finish", built from report data (lib/report.ts).
 //   Practice: "You did 3 moves. Points lost: 0.40" + each move with reason and tip.
 //   Judge:    the score (difficulty, execution, artistry, final) + each move.
+//   Every move gets a video (mistakes marked red, a correct move green) and a download (made after Finish).
 //   "Show rulebook details" adds codes, measurements, the rule text and pages.
 
+import Link from 'next/link';
 import type { Report } from '@/lib/report';
+import type { MoveVideo } from '@/lib/session';
 import { describeMove } from '@/lib/ui/plain';
 import { describeMeasurements, formatTime } from '@/lib/ui/format';
 import type { Tab } from './Header';
+import { MoveMedia, MoveMediaStatus } from './MoveMedia';
 import { chip, ghostButton, smallText, toneBorder } from './ui';
 
 interface ResultsProps {
   report: Report;
+  videos: Record<number, MoveVideo>; // by move id
+  videosSaved: boolean | null;
   mode: Tab;
   details: boolean;
   onDetails: () => void;
@@ -21,7 +27,7 @@ const headline = 'm-0 rounded-card bg-accent-soft px-[22px] py-5 text-xl font-se
 const headlineSmall = 'mt-1 block text-[15px] font-normal text-muted';
 const detailsLine = 'm-0 text-[13px] text-muted';
 
-export function ResultsView({ report, mode, details, onDetails, onClose }: ResultsProps) {
+export function ResultsView({ report, videos, videosSaved, mode, details, onDetails, onClose }: ResultsProps) {
   return (
     <section className="mx-auto mb-10 grid max-w-[1000px] gap-[18px] px-[clamp(16px,4vw,40px)] py-6 print:p-0" aria-labelledby="report-title">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -34,12 +40,30 @@ export function ResultsView({ report, mode, details, onDetails, onClose }: Resul
           <button className={ghostButton} onClick={onClose}>Close</button>
         </div>
       </div>
-      <ReportBody report={report} mode={mode} details={details} />
+      <ReportBody report={report} videos={videos} mode={mode} details={details} />
+      <SavedNote saved={videosSaved} />
     </section>
   );
 }
 
-function ReportBody({ report, mode, details }: { report: Report; mode: Tab; details: boolean }) {
+/** Where the move videos are kept. */
+function SavedNote({ saved }: { saved: boolean | null }) {
+  if (saved === null) return null;
+  return (
+    <p className={`${smallText} print:hidden`}>
+      {saved ? (
+        <>
+          The videos are kept in this browser (newest 10 routines):{' '}
+          <Link className="font-semibold text-accent" href="/saved">Saved videos</Link>.
+        </>
+      ) : (
+        'This browser could not keep the videos. Use Download to keep the ones you need.'
+      )}
+    </p>
+  );
+}
+
+function ReportBody({ report, videos, mode, details }: { report: Report; videos: Record<number, MoveVideo>; mode: Tab; details: boolean }) {
   const s = report.summary;
   const judged = report.moves.filter((m) => !m.rejected);
 
@@ -106,6 +130,7 @@ function ReportBody({ report, mode, details }: { report: Report; mode: Tab; deta
               ))}
               {d.reasons.length === 0 && !m.rejected && <p className="m-0 text-[15px]">Correct shape, held for 1 second.</p>}
               {d.notes.map((n) => <p key={n} className="m-0 text-sm text-warn">{n}</p>)}
+              <MoveVideoPart video={videos[m.id]} name={d.name} />
 
               {details && (
                 <>
@@ -133,4 +158,10 @@ function ReportBody({ report, mode, details }: { report: Report; mode: Tab; deta
       )}
     </>
   );
+}
+
+function MoveVideoPart({ video, name }: { video: MoveVideo | undefined; name: string }) {
+  if (!video) return null;
+  if (video.status === 'ready') return <MoveMedia files={video} name={name} />;
+  return <MoveMediaStatus status={video.status} />;
 }

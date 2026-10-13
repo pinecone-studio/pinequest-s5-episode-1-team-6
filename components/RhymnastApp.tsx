@@ -7,11 +7,12 @@
 //   Judge: final score, artistry entry, agree / disagree with each call, full report
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { buildReport } from '@/lib/report';
 import { useJudgingSession } from './useJudgingSession';
 import { Header, type Tab } from './Header';
 import { Stage } from './Stage';
-import { Controls } from './Controls';
+import { Controls, mainButtonLabel } from './Controls';
 import { JudgePanel, PracticePanel, type JudgeForm } from './SidePanels';
 import { ResultsView } from './ResultsView';
 import { SettingsDrawer } from './SettingsDrawer';
@@ -32,6 +33,9 @@ export function RhymnastApp() {
 
   // Connect the session to the video once the page is in the browser.
   useEffect(() => session.attach(videoRef.current!, canvasRef.current!, stageRef.current!), [session]);
+
+  // Practice shows the leg angles on the video; the Judge view stays clean.
+  useEffect(() => session.setAnglesVisible(tab === 'practice'), [session, tab]);
 
   // Remember the last tab (per browser). Read after the first render to match the server HTML.
   useEffect(() => {
@@ -71,6 +75,8 @@ export function RhymnastApp() {
             judging={state.judging}
             live={state.live}
             cards={state.cards}
+            source={state.source}
+            main={{ label: mainButtonLabel(state), onClick: () => session.onMainButton() }}
           />
           <Controls
             state={state}
@@ -100,6 +106,8 @@ export function RhymnastApp() {
         {report && (
           <ResultsView
             report={report}
+            videos={state.moveVideos}
+            videosSaved={state.videosSaved}
             mode={tab}
             details={details}
             onDetails={() => setDetails(!details)}
@@ -114,7 +122,8 @@ export function RhymnastApp() {
 
       <footer className="border-t border-line px-[clamp(16px,4vw,40px)] pt-4 pb-7 text-center text-[13px] text-muted print:hidden">
         Rhymnast helps judges and coaches; it doesn&apos;t replace them. Rules: FIG Rhythmic Gymnastics Code of Points
-        2025–2028. Your video stays on this device.
+        2025–2028. Your video stays on this device: the videos of your moves are kept in this browser
+        (<Link className="text-accent" href="/saved">Saved videos</Link>).
       </footer>
     </>
   );

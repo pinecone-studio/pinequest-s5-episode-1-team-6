@@ -46,6 +46,26 @@ const SEGMENTS: Record<string, { problem: (deg: number | undefined) => string; t
   trunkAbove: { problem: (d) => `The upper body was ${d}° above horizontal.`, tip: 'Bring the chest down to horizontal.' },
 };
 
+// Short words for the red tag on a move's video, next to the body part.
+const SHORT: Record<string, (deg: number | undefined) => string> = {
+  split: (d) => `Split ${d}° short`,
+  leapSplit: (d) => `Split ${d}° short`,
+  leapStag: (d) => `Stag ${d}° short`,
+  foot: (d) => `Foot ${d}° below head`,
+  thigh: (d) => `Thigh ${d}° low`,
+  passeThigh: (d) => `Thigh ${d}° low`,
+  trunk: (d) => `Leaning ${d}°`,
+  trunkAbove: (d) => `Chest ${d}° too high`,
+};
+
+/** "Thigh 6° low −0.10": the tag on a move's video. */
+export function mistakeLabel(p: Pick<Penalty, 'segment' | 'value'> & Partial<Penalty>): string {
+  const what = p.segment === 'hold'
+    ? `Held ${((p.holdMs ?? 0) / 1000).toFixed(1)} s, needs 1 s`
+    : SHORT[p.segment]?.(p.measuredDeg) ?? p.reason ?? 'Mistake';
+  return `${what}  −${p.value.toFixed(2)}`;
+}
+
 export interface Explanation {
   text: string;
   tip: string | null;
@@ -158,4 +178,11 @@ export function pivotMessage(rotationDeg: number): { pose: string; tone: Tone | 
   return deg >= 360
     ? { pose: 'Attitude turn', tone: 'good', text: `Full turn ✓ (${deg}°)` }
     : { pose: 'Attitude turn', tone: 'idle', text: `Turning… ${deg}°` };
+}
+
+/** Loader line while the pose model downloads: "40%". Without a known size there is no percent. */
+export function modelDownloadText(loaded: number, total: number | null): string {
+  if (!total) return 'Downloading…';
+  if (loaded >= total) return 'Downloaded. Starting it up…';
+  return `${Math.floor((loaded / total) * 100)}%`;
 }

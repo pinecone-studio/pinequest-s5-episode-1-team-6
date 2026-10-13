@@ -5,7 +5,7 @@
 // One main button walks people through the app:
 //   Turn on camera  ->  Start  ->  Finish  ->  Try again
 
-import { createPoseTracker, type ModelVariant, type PoseTracker } from './pose';
+import { createPoseTracker, preloadPoseModel, watchModelDownload, type ModelVariant, type PoseTracker } from './pose';
 import { LandmarkSmoother } from './oneEuro';
 import { legLengthRatios, type Landmarks } from './geometry';
 import { SplitLeapDetector, legsFullLength } from './elements/splitLeap';
@@ -14,9 +14,13 @@ import { AttitudePivotDetector } from './elements/attitudePivot';
 import { BalanceDetector, setPoseLibrary } from './elements/balances';
 import { Scoreboard, type JudgeInputs } from './scoring';
 import { ELEMENTS, RULE_SOURCE } from './rules';
-import { drawSkeleton } from './draw';
+import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { liveMessage, pivotMessage, type Tone } from './ui/plain';
+import { describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
+import { RoutineRecorder } from './recording/routineRecorder';
+import { cutClip } from './recording/clipCutter';
+import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
+import { saveRoutine, type SavedMove } from './recording/clipStore';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
 import { downloadFile } from './ui/download';
@@ -31,6 +35,7 @@ export type CameraFacing = 'user' | 'environment';
 export interface StageMessage {
   title: string;
   detail: string;
+  progress?: number; // 0..1, shown as a bar (model download)
 }
 
 /** The box on the video: which balance, hold dots, one plain sentence. */
@@ -59,11 +64,18 @@ export interface TechReadout {
   state: string;
 }
 
+/** The video of a move, with any mistake marked on it, and its cover photo (made after Finish). */
+export type MoveVideo =
+  | { status: 'preparing' }
+  | { status: 'failed' }
+  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photoUrl: string };
+
 export interface SessionState {
   source: Source;
   judging: boolean;
   finished: boolean;
   busy: boolean; // the camera / model is loading
+  modelReady: boolean; // the pose model is loaded (judging needs it; the camera can run without it)
   facing: CameraFacing;
   cameraCount: number; // cameras on this device (the switch button needs 2 or more)
   message: StageMessage | null;
@@ -78,6 +90,8 @@ export interface SessionState {
   resultsOpen: boolean;
   resultsDurationMs: number | null;
   resultsRequest: number; // goes up each time results are opened by an action (to scroll to them)
+  moveVideos: Record<number, MoveVideo>; // by event id: every judged move
+  videosSaved: boolean | null; // saved in this browser (null: not tried yet)
 }
 
 const START_MESSAGE: StageMessage = {
@@ -94,6 +108,7 @@ export class JudgingSession {
     judging: false,
     finished: false,
     busy: false,
+    modelReady: false,
     facing: 'user',
     cameraCount: 0,
     message: START_MESSAGE,
@@ -108,6 +123,8 @@ export class JudgingSession {
     resultsOpen: false,
     resultsDurationMs: null,
     resultsRequest: 0,
+    moveVideos: {},
+    videosSaved: null,
   };
   private listeners = new Set<() => void>();
 
@@ -119,6 +136,9 @@ export class JudgingSession {
   private pivot: AttitudePivotDetector;
   private balance: BalanceDetector;
   private recorder: TeachRecorder;
+  private routineRecorder = new RoutineRecorder();
+  private videoRun = 0; // goes up when a new routine starts, so older video work stops
+  private videoUrls: string[] = [];
   private tracker: PoseTracker | null = null;
   private trackerVariant: ModelVariant | null = null;
   private fileName: string | null = null;
@@ -129,6 +149,7 @@ export class JudgingSession {
   private fpsSince = 0;
   private nextCardId = 1;
   private techVisible = false;
+  private anglesVisible = false;
   private lastLiveKey = '';
   private lastTechKey = '';
 
@@ -168,7 +189,13 @@ export class JudgingSession {
 
   // ---------- Page elements ----------
 
-  /** Connects the session to the page and starts the frame loop. Returns a function that stops it. */
+  /**
+   * Connects the session to the page and starts the frame loop. Returns a function that stops it.
+   * With cacheComponents, Next.js hides a page on navigation instead of unmounting it (<Activity>):
+   * the stop function runs, but this session, the results and the page's DOM stay, and attach runs
+   * again on return. So stopping turns the camera off and clears what it drew (stopSource), but keeps
+   * the results and their move videos.
+   */
   attach(video: HTMLVideoElement, canvas: HTMLCanvasElement, stage: HTMLElement): () => void {
     this.video = video;
     this.canvas = canvas;
@@ -176,6 +203,8 @@ export class JudgingSession {
     // Recognize poses with the library: shipped examples + the ones your team taught.
     setPoseLibrary(currentLibrary());
     this.fpsSince = performance.now();
+    // Download the model now, while the person reads the page, so "Turn on camera" is quick.
+    preloadPoseModel(this.state.model);
 
     // Jumping in a clip breaks motion tracking; the end of a clip finishes the routine.
     const onSeeked = () => this.resetTracking();
@@ -197,6 +226,8 @@ export class JudgingSession {
       this.tracker?.close();
       this.tracker = null;
       this.trackerVariant = null;
+      this.set({ modelReady: false });
+      this.routineRecorder.discard();
     };
   }
 
@@ -205,21 +236,42 @@ export class JudgingSession {
   private async ensureTracker(): Promise<void> {
     const variant = this.state.model;
     if (this.tracker && this.trackerVariant === variant) return;
-    this.setMessage('Getting ready…',variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
     // Take the old model out of the frame loop before closing it: a closed model must never be called.
     const old = this.tracker;
     this.tracker = null;
     this.trackerVariant = null;
+    this.set({ modelReady: false });
     old?.close();
-    this.tracker = await createPoseTracker(variant);
+
+    // Loader on the video: "40%" and a bar while it downloads (usually already preloaded).
+    const title = 'Loading the pose model…';
+    this.set({ message: { title, detail: 'Almost ready…' } });
+    let shown = '';
+    const stopWatching = watchModelDownload(variant, ({ loaded, total }) => {
+      const detail = modelDownloadText(loaded, total);
+      const progress = total ? Math.min(1, loaded / total) : undefined;
+      const key = `${detail}|${progress === undefined ? '' : Math.floor(progress * 100)}`;
+      if (key === shown) return; // at most one update per percent
+      shown = key;
+      this.set({ message: { title, detail, progress } });
+    });
+    try {
+      this.tracker = await createPoseTracker(variant);
+    } finally {
+      stopWatching();
+    }
     this.trackerVariant = variant;
+    this.set({ modelReady: true });
     this.setMessage(null);
   }
 
   /** Settings → Camera accuracy. Loads the new model at once if a camera or video is running. */
   async setModel(model: ModelVariant): Promise<void> {
     this.set({ model });
-    if (!this.state.source) return;
+    if (!this.state.source) {
+      preloadPoseModel(model);
+      return;
+    }
     this.set({ busy: true });
     try {
       await this.ensureTracker();
@@ -238,10 +290,10 @@ export class JudgingSession {
 
   private async startCamera(): Promise<void> {
     const video = this.video!;
-    this.set({ busy: true }); // the model can take a while to load the first time
+    this.set({ busy: true });
+    // Camera first, so the person sees themselves (and gets in position) while the model finishes loading.
     try {
       this.stopSource();
-      await this.ensureTracker();
       this.setMessage('Turning on the camera…', 'If your browser asks, allow the camera.');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: this.state.facing },
@@ -257,7 +309,27 @@ export class JudgingSession {
       const blocked = err instanceof DOMException && err.name === 'NotAllowedError';
       this.setMessage(blocked ? 'The camera is blocked' : 'The camera could not start',
         blocked ? 'Allow camera access in your browser, then press the button again.' : errorText(err));
+      this.set({ busy: false });
+      return;
     }
+    await this.loadModelForCamera();
+    this.set({ busy: false });
+  }
+
+  /** Loads the model while the camera runs. If it fails, the main button becomes "Try loading again". */
+  private async loadModelForCamera(): Promise<void> {
+    try {
+      await this.ensureTracker();
+    } catch (err) {
+      console.error(err);
+      this.setMessage('The pose model could not load', `${errorText(err)}. Check your internet, then press "Try loading again".`);
+    }
+  }
+
+  /** "Try loading again": the camera is on but the model failed to load. */
+  private async retryModel(): Promise<void> {
+    this.set({ busy: true });
+    await this.loadModelForCamera();
     this.set({ busy: false });
   }
 
@@ -309,7 +381,10 @@ export class JudgingSession {
     if (video.src) URL.revokeObjectURL(video.src);
     video.removeAttribute('src');
     video.srcObject = null;
-    this.set({ source: null, live: null });
+    // Clear the last skeleton: nothing redraws the overlay without a camera or video.
+    const canvas = this.canvas;
+    canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    this.set({ source: null, live: null, cards: [], message: START_MESSAGE });
     this.setJudging(false, { quiet: true });
   }
 
@@ -363,7 +438,12 @@ export class JudgingSession {
     this.balance.update({ t, lm, airborne: this.leap.live.airborne, turning: this.pivot.live.turning });
 
     const ctx = this.canvas?.getContext('2d');
-    if (ctx) drawSkeleton(ctx, lm, this.legColor());
+    if (ctx) {
+      drawSkeleton(ctx, lm, this.legColor());
+      if (this.anglesVisible) drawLegAngles(ctx, lm);
+    }
+    // The routine video shows the skeleton and the leg angles (drawn here if the page hides them).
+    if (this.routineRecorder.recording) this.routineRecorder.addFrame(t, video, this.canvas, lm, !this.anglesVisible);
     if (this.techVisible) this.updateTech(lm);
     this.updateLive(this.recorder.capture(lm, this.leap.live.airborne));
     this.countFps();
@@ -402,6 +482,11 @@ export class JudgingSession {
       this.fpsFrames = 0;
       this.fpsSince = now;
     }
+  }
+
+  /** Practice tab: show the leg angles on the video so students see where they are short of 180°. */
+  setAnglesVisible(visible: boolean): void {
+    this.anglesVisible = visible;
   }
 
   /** Settings → Technical details is open: keep its numbers up to date. */
@@ -459,6 +544,7 @@ export class JudgingSession {
   onMainButton(): void {
     const { source, judging, finished } = this.state;
     if (!source) void this.startCamera();
+    else if (!this.state.modelReady) void this.retryModel();
     else if (!judging && finished) {
       this.newRoutine();
       this.setJudging(true);
@@ -482,9 +568,12 @@ export class JudgingSession {
       if (this.state.source === 'camera' && this.scoreboard.events.length === 0) this.routineStartMs = performance.now();
     }
     this.set(patch);
+    if (on && this.video) this.routineRecorder.start(this.video);
+    if (stopping && quiet) this.routineRecorder.discard();
     if (stopping && !quiet) {
       this.set({ finished: true });
       this.openResults();
+      void this.makeMoveVideos();
     }
   }
 
@@ -494,6 +583,7 @@ export class JudgingSession {
     this.routineStartMs = this.state.source === 'camera' ? performance.now() : 0;
     this.stoppedAt = null;
     this.resetTracking();
+    this.forgetMoveVideos();
     this.set({ finished: false, resultsOpen: false, cards: [], scoreVersion: this.state.scoreVersion + 1 });
   }
 
@@ -521,12 +611,92 @@ export class JudgingSession {
     this.set({ resultsOpen: false });
   }
 
+  // ---------- Videos of the moves ----------
+
+  /**
+   * After Finish: cuts every move out of the routine recording (video + photo, mistakes marked),
+   * shows them in the results and saves them in this browser (lib/recording/clipStore.ts).
+   */
+  private async makeMoveVideos(): Promise<void> {
+    const run = ++this.videoRun;
+    const recording = await this.routineRecorder.stop();
+    const events = [...this.scoreboard.events].sort((a, b) => a.t - b.t);
+    const moves = events; // every move: the ones that lost points, and the correct ones (user, 2026-10-13)
+    if (!recording || moves.length === 0) return;
+    this.set({ moveVideos: Object.fromEntries(moves.map((e) => [e.id, { status: 'preparing' } as MoveVideo])), videosSaved: null });
+
+    const when = new Date();
+    const routineId = `${when.getTime()}`;
+    const saved: SavedMove[] = [];
+    for (const event of moves) {
+      const number = events.indexOf(event) + 1; // same numbers as the report
+      const described = describeMove(event);
+      let video: MoveVideo = { status: 'failed' };
+      const part = clipWindow(event, recording.timeline, recording.durationMs);
+      try {
+        if (!part) throw new Error('The move is not in the recording');
+        const mistakes = event.penalties.map((p) => ({ segment: p.segment, label: mistakeLabel(p) }));
+        const media = await cutClip(recording, part, mistakes, described.pointsLost);
+        if (run !== this.videoRun) return; // a new routine started meanwhile
+        video = {
+          status: 'ready',
+          clip: media.clip,
+          clipUrl: this.keepUrl(media.clip),
+          clipName: clipFileName(when, number, described.name, videoExtension(media.clipType)),
+          photoUrl: this.keepUrl(media.photo), // the video's cover picture (and what prints)
+        };
+        saved.push({
+          id: `${routineId}-${number}`,
+          routineId,
+          number,
+          name: described.name,
+          result: described.result,
+          tone: described.tone,
+          reasons: described.reasons.map((r) => r.text),
+          clip: media.clip,
+          clipType: media.clipType,
+          photo: media.photo,
+        });
+      } catch (err) {
+        console.warn(`No video for move ${number}`, err);
+        if (run !== this.videoRun) return;
+      }
+      this.set({ moveVideos: { ...this.state.moveVideos, [event.id]: video } });
+    }
+
+    if (saved.length === 0) return;
+    const pointsLost = this.scoreboard.compute({}).breakdown.autoE;
+    const ok = await saveRoutine({ id: routineId, createdAt: when.getTime(), pointsLost, videos: saved.length }, saved);
+    if (run === this.videoRun) this.set({ videosSaved: ok });
+  }
+
+  private keepUrl(blob: Blob): string {
+    const url = URL.createObjectURL(blob);
+    this.videoUrls.push(url);
+    return url;
+  }
+
+  /** Drops the videos shown in the results (saved ones stay in the browser) and stops recording. */
+  private forgetMoveVideos(): void {
+    this.videoRun++;
+    this.routineRecorder.discard();
+    this.videoUrls.forEach((url) => URL.revokeObjectURL(url));
+    this.videoUrls = [];
+    if (Object.keys(this.state.moveVideos).length > 0 || this.state.videosSaved !== null) {
+      this.set({ moveVideos: {}, videosSaved: null });
+    }
+  }
+
   // ---------- Teach poses ----------
 
   /** Record 3 s: needs a running camera or video, and not while judging. */
   startTeachRecording(label: PoseLabel): void {
     if (this.state.source === null || this.state.judging) {
       this.set({ teachStatus: 'Start the camera first, and stop judging while you teach.' });
+      return;
+    }
+    if (!this.state.modelReady) {
+      this.set({ teachStatus: 'Wait until the pose model has loaded, then record.' });
       return;
     }
     this.recorder.start(label);

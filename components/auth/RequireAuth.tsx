@@ -21,7 +21,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (state.status === 'setup-needed') return <SetupNeeded missing={state.missing} />;
   if (state.status !== 'signed-in') {
-    return pathname.startsWith('/tools/') ? <ToolPageSkeleton /> : <JudgingPageSkeleton />;
+    return pathname === '/' ? <JudgingPageSkeleton /> : <ToolPageSkeleton />;
   }
   return children;
 }
