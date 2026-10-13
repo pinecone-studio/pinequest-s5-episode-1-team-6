@@ -13,7 +13,7 @@ import { PasseDetector } from './elements/passe';
 import { BalanceDetector, setPoseLibrary } from './elements/balances';
 import { Scoreboard, type JudgeInputs } from './scoring';
 import { RULE_SOURCE } from './rules';
-import { drawSkeleton } from './draw';
+import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
 import { liveMessage, type Tone } from './ui/plain';
 import { TeachRecorder } from './ui/teachRecorder';
@@ -127,6 +127,7 @@ export class JudgingSession {
   private fpsSince = 0;
   private nextCardId = 1;
   private techVisible = false;
+  private anglesVisible = false;
   private lastLiveKey = '';
   private lastTechKey = '';
 
@@ -357,7 +358,10 @@ export class JudgingSession {
     this.balance.update({ t, lm, airborne: this.leap.live.airborne });
 
     const ctx = this.canvas?.getContext('2d');
-    if (ctx) drawSkeleton(ctx, lm, this.legColor());
+    if (ctx) {
+      drawSkeleton(ctx, lm, this.legColor());
+      if (this.anglesVisible) drawLegAngles(ctx, lm);
+    }
     if (this.techVisible) this.updateTech(lm);
     this.updateLive(this.recorder.capture(lm, this.leap.live.airborne));
     this.countFps();
@@ -393,6 +397,11 @@ export class JudgingSession {
       this.fpsFrames = 0;
       this.fpsSince = now;
     }
+  }
+
+  /** Practice tab: show the leg angles on the video so students see where they are short of 180°. */
+  setAnglesVisible(visible: boolean): void {
+    this.anglesVisible = visible;
   }
 
   /** Settings → Technical details is open: keep its numbers up to date. */
