@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import { AccountButton } from './AuthGate';
+import { ThemeToggle } from './ThemeToggle';
 import { ghostButton } from './ui';
 
 export type Tab = 'practice' | 'judge';
@@ -9,7 +10,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'judge', label: 'Judge' },
 ];
 
-/** Name, the Practice / Judge tabs, the account and the Settings button. */
+/** Name, the Practice / Judge tabs, the account, the Settings button and the dark mode switch. */
 export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab) => void; onSettings: () => void }) {
   // Arrow keys move between the tabs (WAI-ARIA tabs pattern); only the selected tab is in the Tab order.
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
@@ -50,6 +51,7 @@ export function Header({ tab, onTab, onSettings }: { tab: Tab; onTab: (tab: Tab)
       <div className="flex min-w-0 items-center gap-2.5">
         <AccountButton />
         <button className={ghostButton} aria-controls="settings" onClick={onSettings}>Settings</button>
+        <ThemeToggle />
       </div>
     </header>
   );

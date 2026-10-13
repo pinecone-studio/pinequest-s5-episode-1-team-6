@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { restoreThemeScript } from "@/lib/ui/theme";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -15,7 +16,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${figtree.variable} antialiased`}>
+    // suppressHydrationWarning: the theme script may add the "dark" class before React starts.
+    <html lang="en" className={`${figtree.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: restoreThemeScript }} />
+      </head>
       <body className="font-sans">{children}</body>
     </html>
   );

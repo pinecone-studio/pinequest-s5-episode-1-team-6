@@ -17,6 +17,7 @@ import {
 import { firebaseConfigFromProcessEnv, type FirebasePublicKey } from '@/lib/firebase/config';
 import { authErrorText, firebaseErrorCode } from '@/lib/firebase/errors';
 import { getClientAuth } from '@/lib/firebase/client';
+import { ThemeToggle } from './ThemeToggle';
 import { ghostButton, input, primaryButton, secondaryButton, smallText } from './ui';
 
 type Mode = 'sign-in' | 'sign-up';
@@ -40,15 +41,27 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }, [setup.ok]);
 
-  if (!setup.ok) return <SetupNeeded missing={setup.missing} />;
+  if (!setup.ok) return <><ThemeCorner /><SetupNeeded missing={setup.missing} /></>;
   if (!ready) {
     return (
-      <p className="px-[clamp(16px,4vw,40px)] pt-16 text-center text-muted">Checking your account…</p>
+      <>
+        <ThemeCorner />
+        <p className="px-[clamp(16px,4vw,40px)] pt-16 text-center text-muted">Checking your account…</p>
+      </>
     );
   }
-  if (!user) return <AuthForm />;
+  if (!user) return <><ThemeCorner /><AuthForm /></>;
 
   return <AccountContext.Provider value={user}>{children}</AccountContext.Provider>;
+}
+
+/** The dark mode switch in the top right corner of the pages before sign-in (they have no header). */
+function ThemeCorner() {
+  return (
+    <div className="fixed top-4 right-[clamp(16px,4vw,40px)] z-10">
+      <ThemeToggle />
+    </div>
+  );
 }
 
 /** Who is signed in, and Sign out. For page headers inside <AuthGate>. */

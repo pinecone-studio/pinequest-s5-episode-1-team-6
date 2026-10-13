@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { setPoseLibrary } from '@/lib/elements/balances';
 import { currentLibrary } from '@/lib/ui/libraryStore';
 import { AccountButton } from '../AuthGate';
+import { ThemeToggle } from '../ThemeToggle';
 import { smallText } from '../ui';
 
 export function ToolPage({ title, intro, children }: { title: string; intro: ReactNode; children: ReactNode }) {
@@ -18,7 +19,10 @@ export function ToolPage({ title, intro, children }: { title: string; intro: Rea
           <p className="m-0 text-[13px] font-semibold text-muted">
             <Link className="text-accent" href="/">Rhymnast</Link> · Developer tool
           </p>
-          <AccountButton />
+          <div className="flex min-w-0 items-center gap-2.5">
+            <AccountButton />
+            <ThemeToggle />
+          </div>
         </div>
         <h1 className="m-0 text-4xl leading-tight font-bold">{title}</h1>
         <p className={smallText}>{intro}</p>
