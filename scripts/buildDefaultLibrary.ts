@@ -5,7 +5,7 @@
 //   - synthetic skeletons of each pose over the range of angles judges see (clean and faulty, so a
 //     faulty attempt is still recognized and then judged), both facing directions, varied body
 //     width, trunk lean and relevé, plus random measurement noise;
-//   - "not these" poses the app must reject (standing, passé, arabesque, ring, back split with help,
+//   - "not these" poses the app must reject (standing, passé, arabesque with trunk forward, ring, back split with help,
 //     trunk-forward and trunk-back splits, leg forward at the horizontal);
 //   - the real competition photos in lib/library/examples/real-balances.json.
 
@@ -46,17 +46,18 @@ export function buildDefaultLibrary({ includePhotos = true, perPose = 160, perNe
     }
   };
 
-  // ---------- The three poses (clean and with faults up to ~25°) ----------
+  // ---------- Our poses (clean and with faults up to ~25°) ----------
   add('frontSplitHelp', () => frontSplitBalance({ ...common(), help: true, splitDeg: between(155, 188), trunkTilt: between(-40, 10) }), perPose);
   add('frontSplit', () => frontSplitBalance({ ...common(), help: false, splitDeg: between(155, 188), trunkTilt: between(-40, 10) }), perPose);
   add('backSplitFootAboveHead', () => backSplitBalance({ ...common(), legDeg: between(130, 178), trunkTilt: between(12, 50) }), perPose);
   add('backSplitTrunkForward', () => backSplitBalance({ ...common(), legDeg: between(150, 186), trunkTilt: between(70, 125) }), perPose);
+  add('arabesque', () => arabesqueBalance({ ...common(), legDeg: between(65, 118), trunkTilt: between(0, 40) }), perPose);
   add('attitude', () => attitudeBalance({ ...common(), thighDeg: between(65, 115), kneeDeg: between(70, 125), trunkTilt: between(0, 30) }), perPose);
 
   // ---------- Not one of these ----------
   add('none', () => standing({ width: between(0.1, 0.7) }), perNegative);
   add('none', () => passePose({ ...common(), thighDeg: between(65, 105) }), perNegative);
-  add('none', () => arabesqueBalance({ ...common(), legDeg: between(80, 110) }), perNegative);
+  add('none', () => arabesqueBalance({ ...common(), legDeg: between(80, 110), trunkTilt: between(70, 100) }), perNegative); // arabesque, trunk forward (2.903)
   add('none', () => attitudeBalance({ ...common(), help: true, thighDeg: between(90, 140), kneeDeg: between(40, 90) }), perNegative); // ring with help
   add('none', () => attitudeBalance({ ...common(), thighDeg: between(125, 150), kneeDeg: between(35, 60) }), perNegative); // ring without help
   add('none', () => backSplitBalance({ ...common(), help: true, legDeg: between(150, 178), trunkTilt: between(12, 60) }), perNegative); // back split with help

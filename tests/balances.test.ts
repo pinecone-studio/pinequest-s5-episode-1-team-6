@@ -114,7 +114,7 @@ test('backward bent leg held by the hand (ring-like) is not an attitude', () => 
 });
 
 test('arabesque (leg only horizontal) is not a back split', () => {
-  assertEqual(run(hold(40, () => arabesqueBalance())).length, 0);
+  assertEqual(only(run(hold(40, () => arabesqueBalance()))).code, '2.902');
 });
 
 // ---------- Back split, trunk forward (row 11; the team's video) ----------
@@ -167,6 +167,41 @@ test('attitude with trunk leaning 30°: large trunk deviation, DB NOT valid', ()
 
 test('attitude facing left is recognized', () => {
   assertEqual(only(run(hold(40, () => attitudeBalance({ facing: -1 })))).code, '2.1202');
+});
+
+// ---------- Arabesque (row 9; the team's video, 2026-10-13) ----------
+
+test('arabesque, thigh horizontal, trunk upright: 2.902, DB 0.20, no penalty', () => {
+  const e = only(run(hold(40, () => arabesqueBalance({ legDeg: 92 }))));
+  assertEqual(e.code, '2.902');
+  assert(e.dbValid && e.dbValue === 0.2);
+  assertEqual(e.penalties.length, 0);
+});
+
+test('arabesque, leg 16° below horizontal: medium thigh deviation (13° after the margin), E -0.30', () => {
+  const e = only(run(hold(40, () => arabesqueBalance({ legDeg: 74 }))));
+  assertEqual(e.code, '2.902');
+  assertEqual(JSON.stringify(penaltyValues(e)), JSON.stringify([0.3]));
+});
+
+test('arabesque with the trunk leaning 15°: medium trunk deviation, valid', () => {
+  const e = only(run(hold(40, () => arabesqueBalance({ trunkTilt: 15, facing: -1 }))));
+  assert(e.dbValid);
+  assertEqual(JSON.stringify(penaltyValues(e)), JSON.stringify([0.3]));
+});
+
+test('arabesque with the trunk forward at the horizontal (2.903) is not scored', () => {
+  assertEqual(run(hold(40, () => arabesqueBalance({ trunkTilt: 85 }))).length, 0);
+});
+
+test('leg passing arabesque height on its way up to a back split: one move, the back split', () => {
+  const seq = [
+    ...repeat(10, () => standing()),
+    ...repeat(15, () => arabesqueBalance()), // 0.5 s on the way up
+    ...repeat(40, () => backSplitBalance({ legDeg: 180, trunkTilt: 108 })),
+    ...repeat(10, () => standing()),
+  ];
+  assertEqual(only(run(seq)).code, '2.1104');
 });
 
 test('a balance that ends by leaving the camera view is still judged', () => {

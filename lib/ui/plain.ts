@@ -11,6 +11,7 @@ const NAMES: Record<string, string> = {
   '2.305': 'Front split, no hands',
   '2.1005': 'Back split, foot above the head',
   '2.1104': 'Back split, body forward',
+  '2.902': 'Arabesque',
   '2.1202': 'Attitude',
   '1.2103': 'Split leap',
   '2.101': 'Passé balance',
@@ -23,6 +24,7 @@ const LIVE_NAMES: Record<string, string> = {
   frontSplit: 'Front split, no hands',
   backSplitFootAboveHead: 'Back split, foot above the head',
   backSplitTrunkForward: 'Back split, body forward',
+  arabesque: 'Arabesque',
   attitude: 'Attitude',
 };
 

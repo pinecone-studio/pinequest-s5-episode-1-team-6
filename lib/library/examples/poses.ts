@@ -162,9 +162,9 @@ export function backSplitBalance({ legDeg = 170, trunkTilt = 20, ...opts }: Bala
   return balanceBody({ ...opts, trunkTilt }, (lm, hip) => straightLeg(lm, 'L', hip, -facing * legDeg));
 }
 
-/** Arabesque: straight free leg backward at the horizontal (not one of our three shapes). */
+/** Arabesque: straight free leg backward at the horizontal (`legDeg` from straight down). Trunk upright by default. */
 export function arabesqueBalance(opts: BalanceOptions & { legDeg?: number } = {}): Landmarks {
-  return backSplitBalance({ legDeg: 95, ...opts });
+  return backSplitBalance({ legDeg: 95, trunkTilt: 0, ...opts });
 }
 
 /** Attitude: free thigh backward at `thighDeg`, knee bent to `kneeDeg`, shin rising. */

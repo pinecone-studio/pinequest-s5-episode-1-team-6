@@ -126,7 +126,7 @@ export interface BalanceRule {
   requiredThighDeg?: number;
 }
 
-// The three balances the team focuses on. VALUES NOT YET VERIFIED (verified: false):
+// The balances the team focuses on. VALUES NOT YET VERIFIED (verified: false):
 // the PDF text does not say which pictogram sits in which value column, so each value is
 // mapped by the order of the variants in the row title. A teammate must check p. 88-89.
 // `box` = the table row; a difficulty from the same box can only count once (#2.4.1).
@@ -167,6 +167,19 @@ export const BALANCES = {
     requirement: 'Back split, trunk forward at the horizontal or below (table #11 row 11, p. 89): split position required; the trunk at the horizontal or below (same shape as the rotation, p. 97).',
     verified: false,
     ref: 'Balances #10 (p. 82-84), table #11 row 11 (p. 89), shape as rotation p. 97',
+  },
+  ARABESQUE: {
+    box: '2.9',
+    // Table #11 row 9 "Arabesque: Free leg horizontal backward, also with trunk forward at the horizontal,
+    // also with back bend of the trunk" (p. 89): 2.902, 2.903, 2.904. We assume the plain arabesque =
+    // 0.20 (first in the row title); trunk forward (0.30) and back bend (0.40) are not detected.
+    plain: { code: '2.902', name: 'Arabesque balance', value: 0.2 },
+    // "Free leg horizontal forward (straight or bent), side, or backward (Arabesque): Horizontal
+    //  position of the free leg (thigh) and the maximum vertical position of the body" (p. 86).
+    requiredThighDeg: 90,
+    requirement: 'Arabesque: "Horizontal position of the free leg (thigh) and the maximum vertical position of the body". (Technique, p. 86)',
+    verified: false,
+    ref: 'Balances #10 (p. 82-84), technique p. 86, table #11 row 9 (p. 89)',
   },
   ATTITUDE: {
     box: '2.12',
