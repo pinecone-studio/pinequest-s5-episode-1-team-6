@@ -5,9 +5,10 @@
 // Dev convenience: /tools/video-analyze?src=<same-origin video>&model=heavy&snap=3.5,9
 
 import { useEffect, useRef, useState } from 'react';
-import { analyzeVideo, type SheetFrame } from '@/lib/tools/videoAnalysis';
+import { analyzeVideo, type SheetFrame, type VideoAnalysis } from '@/lib/tools/videoAnalysis';
+import { downloadFile } from '@/lib/ui/download';
 import type { ModelVariant } from '@/lib/pose';
-import { input, secondaryButton } from '../ui';
+import { ghostButton, input, secondaryButton } from '../ui';
 import { ToolPage, useAppPoseLibrary } from './ToolPage';
 
 export function VideoAnalyze() {
@@ -18,11 +19,13 @@ export function VideoAnalyze() {
   const [status, setStatus] = useState('Choose a video.');
   const [summary, setSummary] = useState('–');
   const [sheet, setSheet] = useState<SheetFrame[]>([]);
+  const [result, setResult] = useState<VideoAnalysis | null>(null);
 
   async function analyze(src: string, opts: { model: ModelVariant; fps: number; snapshotTimes?: number[] }) {
     const result = await analyzeVideo(videoRef.current!, src, opts, setStatus, (frame) => setSheet((s) => [...s, frame]));
     (window as unknown as { analysis: unknown }).analysis = result; // for scripted checks
     setSummary(result.summary);
+    setResult(result);
   }
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export function VideoAnalyze() {
   return (
     <ToolPage
       title="Video analysis"
-      intro="Steps through a recorded routine frame by frame with the same pipeline as the live app (pose model → smoothing → balance detector) and shows what is recognized, when, and why not. Nothing is uploaded. Use it to find where tracking or recognition fails."
+      intro="Steps through a recorded routine frame by frame with the same pipeline as the live app (pose model → smoothing → leap, pivot and balance detectors) and shows what is recognized, when, and why not. Nothing is uploaded. Use it to find where tracking or recognition fails. Export body points saves the numbers (no images) for npm run replay."
     >
       <div className="flex flex-wrap items-center gap-3">
         <label className={`${secondaryButton} cursor-pointer`}>
@@ -74,6 +77,14 @@ export function VideoAnalyze() {
             <option value={30}>30</option>
           </select>
         </label>
+        <button
+          className={ghostButton}
+          disabled={!result}
+          title="Body points only (numbers, no images): replay them with npm run replay"
+          onClick={() => result && downloadFile(`${(result.recording.src ?? 'video').replace(/\.[^.]+$/, '')}.landmarks.json`, JSON.stringify(result.recording))}
+        >
+          Export body points
+        </button>
         <span className="text-sm text-muted">{status}</span>
       </div>
       <pre className="m-0 overflow-x-auto bg-card p-3.5 text-xs whitespace-pre-wrap">{summary}</pre>

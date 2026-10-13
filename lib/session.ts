@@ -10,12 +10,13 @@ import { LandmarkSmoother } from './oneEuro';
 import { legLengthRatios, type Landmarks } from './geometry';
 import { SplitLeapDetector, legsFullLength } from './elements/splitLeap';
 import { PasseDetector } from './elements/passe';
+import { AttitudePivotDetector } from './elements/attitudePivot';
 import { BalanceDetector, setPoseLibrary } from './elements/balances';
 import { Scoreboard, type JudgeInputs } from './scoring';
-import { RULE_SOURCE } from './rules';
+import { ELEMENTS, RULE_SOURCE } from './rules';
 import { drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { liveMessage, type Tone } from './ui/plain';
+import { liveMessage, pivotMessage, type Tone } from './ui/plain';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
 import { downloadFile } from './ui/download';
@@ -70,7 +71,7 @@ export interface SessionState {
   cards: MoveCardData[];
   scoreVersion: number; // goes up whenever the scoreboard changes
   model: ModelVariant;
-  focusOnly: boolean; // only judge the three balances
+  focusOnly: boolean; // only judge the focus moves (balances, stag leap, attitude pivot)
   teachRecording: boolean;
   teachStatus: string;
   tech: TechReadout;
@@ -115,6 +116,7 @@ export class JudgingSession {
   private smoother = new LandmarkSmoother();
   private leap: SplitLeapDetector;
   private passe: PasseDetector;
+  private pivot: AttitudePivotDetector;
   private balance: BalanceDetector;
   private recorder: TeachRecorder;
   private tracker: PoseTracker | null = null;
@@ -137,13 +139,15 @@ export class JudgingSession {
   private frameRequest = 0;
 
   constructor() {
-    // Only the three balances count unless the setting says otherwise; leap and passé still run
-    // (the leap detector also tells the balance detector when she is in the air).
+    // Only the focus moves count unless the setting says otherwise: the balances, the stag leap and the
+    // attitude pivot. Split leap and passé still run (the leap detector also tells the balance detector
+    // when she is in the air).
     const onOtherEvent = (event: ElementEvent) => {
-      if (!this.state.focusOnly) this.onEvent(event);
+      if (!this.state.focusOnly || event.code === ELEMENTS.STAG_LEAP.code) this.onEvent(event);
     };
     this.leap = new SplitLeapDetector(onOtherEvent);
     this.passe = new PasseDetector(onOtherEvent);
+    this.pivot = new AttitudePivotDetector((event) => this.onEvent(event));
     this.balance = new BalanceDetector((event) => this.onEvent(event));
     this.recorder = new TeachRecorder((label, signatures) => this.finishTeachRecording(label, signatures));
   }
@@ -354,7 +358,9 @@ export class JudgingSession {
     // leaving the frame is still closed and judged.
     this.leap.update({ t, lm });
     this.passe.update({ t, lm, airborne: this.leap.live.airborne });
-    this.balance.update({ t, lm, airborne: this.leap.live.airborne });
+    this.pivot.update({ t, lm });
+    // Turning in an attitude is a pivot, not a balance.
+    this.balance.update({ t, lm, airborne: this.leap.live.airborne, turning: this.pivot.live.turning });
 
     const ctx = this.canvas?.getContext('2d');
     if (ctx) drawSkeleton(ctx, lm, this.legColor());
@@ -365,7 +371,7 @@ export class JudgingSession {
 
   private legColor(): string {
     if (this.leap.live.airborne) return '#f08c9c';
-    if (this.passe.live.inShape || this.balance.live.shape) return '#4cc38a'; // green: holding a balance
+    if (this.passe.live.inShape || this.pivot.live.turning || this.balance.live.shape) return '#4cc38a'; // green: in a shape
     return '#7aa7ff';
   }
 
@@ -374,6 +380,9 @@ export class JudgingSession {
     let live: LiveView;
     if (teachMessage) {
       live = { pose: 'Teaching', showDots: false, dots: 0, tone: 'idle', text: teachMessage };
+    } else if (this.pivot.live.turning) {
+      const m = pivotMessage(this.pivot.live.rotationDeg);
+      live = { pose: m.pose, showDots: false, dots: 0, tone: m.tone, text: m.text };
     } else {
       const m = liveMessage(this.balance.live);
       live = { pose: m.pose ?? 'Watching', showDots: Boolean(m.pose), dots: m.dots, tone: m.tone, text: m.text };
@@ -411,7 +420,7 @@ export class JudgingSession {
         fps,
         view: legsFullLength(legLengthRatios(lm)) ? 'yes' : 'no',
         split: leap.live.splitDeg == null ? '–' : `${Math.round(leap.live.splitDeg)}°`,
-        shape: balance.live.label ?? (passe.live.inShape ? 'passé' : '–'),
+        shape: this.pivot.live.turning ? `attitude turn ${Math.round(this.pivot.live.rotationDeg)}°` : balance.live.label ?? (passe.live.inShape ? 'passé' : '–'),
         releve: passe.live.releve == null ? '?' : passe.live.releve ? 'yes' : 'no',
         state: leap.live.airborne ? 'in the air' : balance.live.shape || passe.live.inShape ? 'balance' : 'on the floor',
       };
@@ -461,6 +470,7 @@ export class JudgingSession {
     const stopping = !on && this.state.judging;
     if (stopping) {
       this.passe.flush(); // judge a balance still being held
+      this.pivot.flush();
       this.balance.flush();
       this.stoppedAt = this.currentTimeMs();
       if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
@@ -491,6 +501,7 @@ export class JudgingSession {
     this.smoother.reset();
     this.leap.reset();
     this.passe.reset();
+    this.pivot.reset();
     this.balance.reset();
     this.lastVideoTime = -1;
   }

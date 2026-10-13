@@ -14,6 +14,8 @@ const NAMES: Record<string, string> = {
   '2.902': 'Arabesque',
   '2.1202': 'Attitude',
   '1.2103': 'Split leap',
+  '1.2702': 'Stag leap',
+  '3.1203': 'Attitude turn',
   '2.101': 'Passé balance',
   '3.101': 'Passé turn',
 };
@@ -36,6 +38,7 @@ export function friendlyName(event: { code: string; element: string }): string {
 const SEGMENTS: Record<string, { problem: (deg: number | undefined) => string; tip: string }> = {
   split: { problem: (d) => `The legs were ${d}° short of a straight line.`, tip: 'Open the split more.' },
   leapSplit: { problem: (d) => `In the air, the legs were ${d}° short of a straight line.`, tip: 'Open the split more at the top of the jump.' },
+  leapStag: { problem: (d) => `In the air, the front thigh and the back leg were ${d}° short of a straight line.`, tip: 'Lift the front knee and stretch the back leg further at the top of the jump.' },
   foot: { problem: (d) => `The foot was ${d}° short of being fully above the head.`, tip: 'Lift the leg higher, past the top of the head.' },
   thigh: { problem: (d) => `The raised thigh was ${d}° below hip height.`, tip: 'Lift the knee up to hip height.' },
   passeThigh: { problem: (d) => `The raised thigh was ${d}° below hip height.`, tip: 'Lift the knee up to hip height.' },
@@ -95,7 +98,7 @@ export function describeMove(event: DescribableMove, status?: string): MoveDescr
   const reasons = penalties.map(explainPenalty);
   const notes: string[] = [];
   if (event.flatFoot) notes.push('Done on a flat foot: this balance is worth 0.10 less. Rise onto the toes.');
-  if (status === 'repeat') notes.push('Not counted again: this balance was already done earlier.');
+  if (status === 'repeat') notes.push('Not counted again: this move was already done earlier.');
   if (event.dbValid === false || status === 'not valid') notes.push('Too far from the required shape to count as a difficulty.');
   if (event.lowConfidence) notes.push('The camera was unsure about the raised leg: worth a second look.');
   return {
@@ -133,7 +136,7 @@ export interface LiveMessage {
 /** What to say on the video right now. Takes balance.live from BalanceDetector (or part of it). */
 export function liveMessage(live: Partial<BalanceLive> | null | undefined): LiveMessage {
   if (!live?.shape) {
-    return { pose: null, dots: 0, tone: 'idle', text: plainHint(live?.hint) ?? 'Ready. Hold a front split, back split or attitude.' };
+    return { pose: null, dots: 0, tone: 'idle', text: plainHint(live?.hint) ?? 'Ready. Hold a balance, do a stag leap or an attitude turn.' };
   }
   const dots = Math.min(4, Math.floor(((live.holdMs ?? 0) / 1000) * 4));
   const worst = [...(live.penalties ?? [])].sort((a, b) => b.value - a.value)[0];
@@ -147,4 +150,12 @@ export function liveMessage(live: Partial<BalanceLive> | null | undefined): Live
     tone: worst.value >= 0.5 ? 'bad' : 'warn',
     text: `${e.tip} (−${worst.value.toFixed(2)})`,
   };
+}
+
+/** What to say on the video while she turns in an attitude. */
+export function pivotMessage(rotationDeg: number): { pose: string; tone: Tone | 'idle'; text: string } {
+  const deg = Math.round(rotationDeg);
+  return deg >= 360
+    ? { pose: 'Attitude turn', tone: 'good', text: `Full turn ✓ (${deg}°)` }
+    : { pose: 'Attitude turn', tone: 'idle', text: `Turning… ${deg}°` };
 }
