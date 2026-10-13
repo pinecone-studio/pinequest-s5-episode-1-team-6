@@ -16,8 +16,8 @@ interface ControlsProps {
 }
 
 export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
-  const { source, judging, finished, busy, cameraCount } = state;
-  const label = busy ? 'Please wait…' : !source ? 'Turn on camera' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
+  const { source, judging, finished, busy, cameraCount, modelReady } = state;
+  const label = busy ? 'Please wait…' : !source ? 'Turn on camera' : !modelReady ? 'Try loading again' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
   const step = !source ? 1 : !judging && !finished ? 2 : 3;
 
   return (

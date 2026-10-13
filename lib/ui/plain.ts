@@ -146,3 +146,10 @@ export function liveMessage(live: Partial<BalanceLive> | null | undefined): Live
     text: `${e.tip} (−${worst.value.toFixed(2)})`,
   };
 }
+
+/** Loader line while the pose model downloads: "12 of 31 MB". */
+export function modelDownloadText(loaded: number, total: number | null): string {
+  const mb = (bytes: number) => Math.round(bytes / 1_000_000);
+  if (total && loaded >= total) return 'Downloaded. Starting it up…';
+  return total ? `${mb(loaded)} of ${mb(total)} MB` : `${mb(loaded)} MB downloaded`;
+}

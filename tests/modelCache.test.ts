@@ -1,6 +1,6 @@
 import { afterEach, vi } from 'vitest';
 import { test, assertEqual } from './harness';
-import { cachedDownload, forgetOtherFiles } from '../lib/modelCache';
+import { cachedDownload, forgetOtherFiles, watchDownload } from '../lib/modelCache';
 
 // A pretend network and Cache Storage, so we can count downloads.
 function fakeBrowser({ withCache = true, status = 200 } = {}) {
@@ -58,4 +58,14 @@ test('files no longer in use are removed from the cache', async () => {
   await cachedDownload('https://models.example/new.task');
   await forgetOtherFiles(['https://models.example/new.task']);
   assertEqual([...stored.keys()].join(), 'https://models.example/new.task');
+});
+
+test('progress is reported while a model downloads, also to someone who joins late', async () => {
+  fakeBrowser({ withCache: false });
+  const seen: number[] = [];
+  const stop = watchDownload('https://models.example/e.task', ({ loaded }) => seen.push(loaded));
+  await cachedDownload('https://models.example/e.task');
+  stop();
+  assertEqual(seen[0], 0);
+  assertEqual(seen[seen.length - 1], 3);
 });

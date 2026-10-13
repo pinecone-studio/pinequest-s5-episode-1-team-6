@@ -6,7 +6,7 @@
 // so "Turn on camera" does not wait for a 30 MB download.
 
 import type { NormalizedLandmark, PoseLandmarker as PoseLandmarkerType } from '@mediapipe/tasks-vision';
-import { cachedDownload, forgetOtherFiles } from './modelCache';
+import { cachedDownload, forgetOtherFiles, watchDownload, type DownloadProgress } from './modelCache';
 
 const VERSION = '0.10.14'; // keep equal to the @mediapipe/tasks-vision version in package.json
 const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${VERSION}/wasm`;
@@ -62,6 +62,11 @@ export function preloadPoseModel(variant: ModelVariant): void {
     await Promise.all([warm(fileset.wasmLoaderPath), warm(fileset.wasmBinaryPath), cachedDownload(MODELS[variant])]);
   })().catch((err) => console.warn('Pose model preload failed; it loads when the camera starts', err));
   void forgetOtherFiles(Object.values(MODELS)).catch(() => undefined);
+}
+
+/** Calls back while the model downloads (see watchDownload). Returns a function that stops listening. */
+export function watchModelDownload(variant: ModelVariant, listener: (progress: DownloadProgress) => void): () => void {
+  return watchDownload(MODELS[variant], listener);
 }
 
 /**

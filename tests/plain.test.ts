@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness';
-import { describeMove, explainPenalty, liveMessage, plainHint } from '../lib/ui/plain';
+import { describeMove, explainPenalty, liveMessage, modelDownloadText, plainHint } from '../lib/ui/plain';
 import { BalanceDetector } from '../lib/elements/balances';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
@@ -52,4 +52,10 @@ test('live message: hold dots fill to 4 in one second, tip when something is off
 test('technical hints are translated', () => {
   assertEqual(plainHint('Turn side-on to the camera'), 'Turn sideways to the camera.');
   assert(liveMessage({ shape: null, hint: 'Whole body and both feet must be in view' }).text.includes('Step back'));
+});
+
+test('model loader says how much has downloaded', () => {
+  assertEqual(modelDownloadText(12_400_000, 30_664_242), '12 of 31 MB');
+  assertEqual(modelDownloadText(30_664_242, 30_664_242), 'Downloaded. Starting it up…');
+  assertEqual(modelDownloadText(5_000_000, null), '5 MB downloaded');
 });

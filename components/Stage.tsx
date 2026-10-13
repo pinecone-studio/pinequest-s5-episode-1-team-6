@@ -1,7 +1,7 @@
 'use client';
 
 // The video with everything drawn on top of it: skeleton, message (with a spinner while the
-// camera / model loads), "Watching" badge,
+// camera / model loads, and a bar while the model downloads), "Watching" badge,
 // the live box (which balance, hold dots, one tip) and a card after every move.
 // On phones (below the sm breakpoint) the boxes are smaller and only the newest card shows,
 // so the gymnast stays visible.
@@ -31,11 +31,12 @@ export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, l
 
       {shown && (
         <div
-          className={`absolute inset-0 grid place-content-center justify-items-center gap-2 p-6 text-center text-white ${busy ? 'bg-stage/70' : ''}`}
+          className={`absolute inset-0 grid place-content-center justify-items-center gap-2 p-6 text-center text-white ${busy ? 'bg-stage/60' : ''}`}
           role="status"
         >
           {busy && <Spinner />}
           <b className="text-[clamp(20px,2.6vw,28px)]">{shown.title}</b>
+          {shown.progress !== undefined && <ProgressBar value={shown.progress} />}
           {shown.detail && <span className="text-stage-text">{shown.detail}</span>}
         </div>
       )}
@@ -60,6 +61,26 @@ function Spinner() {
       className="mb-2 h-11 w-11 rounded-full border-4 border-white/25 border-t-white motion-safe:animate-spin max-sm:h-8 max-sm:w-8 max-sm:border-[3px]"
       aria-hidden="true"
     />
+  );
+}
+
+/** How much of the model has downloaded. The video area is dark in both themes, so white works. */
+function ProgressBar({ value }: { value: number }) {
+  const percent = Math.round(value * 100);
+  return (
+    <div
+      className="mt-1 h-2 w-[min(280px,60vw)] overflow-hidden rounded-full bg-white/25"
+      role="progressbar"
+      aria-label="Pose model download"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={percent}
+    >
+      <div
+        className="h-full rounded-full bg-white transition-[width] duration-300 motion-reduce:transition-none"
+        style={{ width: `${percent}%` }}
+      />
+    </div>
   );
 }
 
