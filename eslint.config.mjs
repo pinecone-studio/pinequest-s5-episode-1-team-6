@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Output of `vercel build` (see .github/workflows/deploy.yml):
+    // Vercel CLI folder (project link and `vercel build` output):
     ".vercel/**",
   ]),
 ]);
