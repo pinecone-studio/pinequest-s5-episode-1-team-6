@@ -56,7 +56,8 @@
   once). Tests: `npm test`.
 - Sign-in: Firebase Authentication (email and password, Google, or guest for demos) in the browser. Google on the
   live site needs the Vercel domain in Firebase → Authentication → Settings → Authorized domains. The public
-  `NEXT_PUBLIC_FIREBASE_*` values are committed in `.env`, so Vercel needs no extra settings.
+  `NEXT_PUBLIC_FIREBASE_*` values are not committed (2026-10-13): copy `.env.example` to `.env`, and set the
+  same four in Vercel → Project → Settings → Environment Variables.
 
 ## Migration to Next.js (2026-10-12)
 Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScript repo, in steps:

@@ -24,6 +24,7 @@ downloads only once (`lib/modelCache.ts`; skipped when the browser asks to save 
 
 ```sh
 npm install
+cp .env.example .env   # then fill in the four Firebase values (Firebase console → Project settings → Your apps)
 npm run dev
 ```
 
@@ -31,8 +32,9 @@ The first screen is **Sign in** at `/login` (Firebase Authentication: email and 
 **Forgot password?**) or **Create account** at `/signup` (name, email and password). Both also offer
 **Continue with Google** and **Try without an account** (one click, for demos). A guest has no Sign out:
 the header shows **Sign in** instead. After signing in you go back to the page you opened.
-The camera stays off until you are signed in. The Firebase web settings are public and committed in
-`.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
+The camera stays off until you are signed in. The Firebase web settings are not committed: `.env.example`
+lists them, `.env` / `.env.local` hold them on your computer (git-ignored), and Vercel holds them under
+Project → Settings → Environment Variables (needed for `npm run deploy`).
 
 Open <http://localhost:3000>, then:
 
