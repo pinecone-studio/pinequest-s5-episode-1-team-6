@@ -1,7 +1,7 @@
 // Results after "Finish", built from report data (lib/report.ts).
 //   Practice: "You did 3 balances. Points lost: 0.40" + each move with reason and tip.
 //   Judge:    the score (difficulty, execution, artistry, final) + each move.
-//   Moves that lost points get a photo, a video and downloads (made by the session after Finish).
+//   Moves that lost points get a video with the mistake marked on it, and a download (made after Finish).
 //   "Show rulebook details" adds codes, measurements, the rule text and pages.
 
 import Link from 'next/link';

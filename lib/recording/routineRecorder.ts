@@ -14,6 +14,7 @@ export interface Recording {
   mimeType: string;
   timeline: TimelinePoint[];
   durationMs: number;
+  scale: number; // original video pixels -> recording pixels (for the landmarks in the timeline)
 }
 
 /**
@@ -37,6 +38,7 @@ export class RoutineRecorder {
   private timeline: TimelinePoint[] = [];
   private startedAt = 0;
   private mimeType = '';
+  private scale = 1;
 
   get recording(): boolean {
     return this.media !== null;
@@ -70,6 +72,7 @@ export class RoutineRecorder {
     this.canvas = canvas;
     this.ctx = ctx;
     this.mimeType = mimeType;
+    this.scale = scale;
     this.startedAt = performance.now();
     return true;
   }
@@ -85,7 +88,9 @@ export class RoutineRecorder {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     if (overlay) ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
     if (withAngles && lm) ctx.drawImage(this.anglesLayer(video, lm), 0, 0, canvas.width, canvas.height);
-    this.timeline.push({ t, recMs: performance.now() - this.startedAt });
+    // A copy of the body seen, so the clip can mark the body part that lost points.
+    const body = lm ? lm.map((p) => ({ x: p.x, y: p.y, visibility: p.visibility })) : null;
+    this.timeline.push({ t, recMs: performance.now() - this.startedAt, lm: body });
   }
 
   /** Leg angles drawn at full video size, so the labels look the same as on the page. */
@@ -115,6 +120,7 @@ export class RoutineRecorder {
       mimeType: this.mimeType,
       timeline: this.timeline,
       durationMs: performance.now() - this.startedAt,
+      scale: this.scale,
     };
     this.reset();
     return recording.timeline.length > 0 ? recording : null;

@@ -15,7 +15,7 @@ import { Scoreboard, type JudgeInputs } from './scoring';
 import { RULE_SOURCE } from './rules';
 import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { describeMove, liveMessage, modelDownloadText, type Tone } from './ui/plain';
+import { describeMove, liveMessage, mistakeLabel, modelDownloadText, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
 import { clipFileName, clipWindow, movesNeedingClips, videoExtension } from './recording/clipWindows';
@@ -63,11 +63,11 @@ export interface TechReadout {
   state: string;
 }
 
-/** The video and photo of a move that lost points (made after Finish). */
+/** The video of a move that lost points, with the mistake marked on it, and its cover photo (made after Finish). */
 export type MoveVideo =
   | { status: 'preparing' }
   | { status: 'failed' }
-  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photo: Blob; photoUrl: string; photoName: string };
+  | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photoUrl: string };
 
 export interface SessionState {
   source: Source;
@@ -615,16 +615,15 @@ export class JudgingSession {
       const part = clipWindow(event, recording.timeline, recording.durationMs);
       try {
         if (!part) throw new Error('The move is not in the recording');
-        const media = await cutClip(recording, part);
+        const mistakes = event.penalties.map((p) => ({ segment: p.segment, label: mistakeLabel(p) }));
+        const media = await cutClip(recording, part, mistakes, described.pointsLost);
         if (run !== this.videoRun) return; // a new routine started meanwhile
         video = {
           status: 'ready',
           clip: media.clip,
           clipUrl: this.keepUrl(media.clip),
           clipName: clipFileName(when, number, described.name, videoExtension(media.clipType)),
-          photo: media.photo,
-          photoUrl: this.keepUrl(media.photo),
-          photoName: clipFileName(when, number, described.name, 'jpg'),
+          photoUrl: this.keepUrl(media.photo), // the video's cover picture (and what prints)
         };
         saved.push({
           id: `${routineId}-${number}`,

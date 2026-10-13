@@ -1,8 +1,9 @@
 // Cuts one move out of the routine recording: takes a photo in the middle of the hold, then plays
-// that part in a hidden video, draws it on a canvas and records it again, so each move is its own
-// small file. Takes about as long as the clip itself. Browser only.
+// that part in a hidden video, draws it on a canvas with the mistake marked (annotate.ts) and records
+// it again, so each move is its own small file. Takes about as long as the clip itself. Browser only.
 
-import type { ClipWindow } from './clipWindows';
+import { drawMistakeMarks, type Mistake, type MistakeMarks } from './annotate';
+import { landmarksAt, type ClipWindow } from './clipWindows';
 import { pickVideoType, type Recording } from './routineRecorder';
 
 export interface MoveMedia {
@@ -14,7 +15,11 @@ export interface MoveMedia {
 const FPS = 30;
 const EXTRA_WAIT_MS = 10_000; // give up when a clip takes this much longer than its length
 
-export async function cutClip(recording: Recording, part: ClipWindow): Promise<MoveMedia> {
+/**
+ * @param mistakes the move's deductions, marked on the video while the move is held
+ * @param pointsLost the move's total, for the "Points lost here" badge
+ */
+export async function cutClip(recording: Recording, part: ClipWindow, mistakes: Mistake[], pointsLost: number): Promise<MoveMedia> {
   const clipType = pickVideoType('mp4');
   if (!clipType) throw new Error('This browser cannot record video');
 
@@ -30,14 +35,27 @@ export async function cutClip(recording: Recording, part: ClipWindow): Promise<M
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d')!;
+    const marks: MistakeMarks = {
+      mistakes,
+      pointsLost,
+      clipFromMs: part.fromMs,
+      clipToMs: part.toMs,
+      holdFromMs: part.holdFromMs,
+      holdToMs: part.holdToMs,
+    };
+    const draw = () => {
+      const recMs = video.currentTime * 1000;
+      ctx.drawImage(video, 0, 0);
+      drawMistakeMarks(ctx, landmarksAt(recording.timeline, recMs), recording.scale, marks, recMs);
+    };
 
     await seek(video, part.photoMs / 1000);
-    ctx.drawImage(video, 0, 0);
+    draw();
     const photo = await toJpeg(canvas);
 
     await seek(video, part.fromMs / 1000);
-    ctx.drawImage(video, 0, 0);
-    const clip = await recordPart(video, canvas, ctx, clipType, part);
+    draw();
+    const clip = await recordPart(video, canvas, draw, clipType, part);
     return { clip, clipType, photo };
   } finally {
     video.removeAttribute('src');
@@ -50,7 +68,7 @@ export async function cutClip(recording: Recording, part: ClipWindow): Promise<M
 async function recordPart(
   video: HTMLVideoElement,
   canvas: HTMLCanvasElement,
-  ctx: CanvasRenderingContext2D,
+  drawFrame: () => void,
   clipType: string,
   part: ClipWindow,
 ): Promise<Blob> {
@@ -80,7 +98,7 @@ async function recordPart(
     };
     const onEnded = () => finish();
     const draw = () => {
-      ctx.drawImage(video, 0, 0);
+      drawFrame();
       if (atEnd()) finish();
       else frame = requestAnimationFrame(draw);
     };
