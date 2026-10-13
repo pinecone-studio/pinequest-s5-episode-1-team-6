@@ -52,7 +52,7 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
 
   return (
     <>
-      <div className="fixed inset-0 z-10 bg-ink/35 print:hidden" onClick={onClose} />
+      <div className="fixed inset-0 z-10 bg-stage/35 print:hidden" onClick={onClose} />
       <aside
         ref={panelRef}
         id="settings"

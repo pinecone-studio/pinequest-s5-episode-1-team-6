@@ -25,13 +25,13 @@ interface StageProps {
 export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, live, cards }: StageProps) {
   const shown = message ?? (busy ? { title: 'Getting ready…', detail: '' } : null);
   return (
-    <div ref={stageRef} className="relative aspect-video max-w-full overflow-hidden rounded-card bg-ink">
+    <div ref={stageRef} className="relative aspect-video max-w-full overflow-hidden rounded-card bg-stage">
       <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-contain" />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" />
 
       {shown && (
         <div
-          className={`absolute inset-0 grid place-content-center justify-items-center gap-2 p-6 text-center text-white ${busy ? 'bg-ink/70' : ''}`}
+          className={`absolute inset-0 grid place-content-center justify-items-center gap-2 p-6 text-center text-white ${busy ? 'bg-stage/70' : ''}`}
           role="status"
         >
           {busy && <Spinner />}
@@ -41,7 +41,7 @@ export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, l
       )}
 
       {judging && (
-        <div className="absolute top-3 left-3 rounded-full bg-bad px-3 py-1.5 text-sm font-semibold text-white max-sm:top-2 max-sm:left-2 max-sm:px-2 max-sm:py-1 max-sm:text-xs">● Watching</div>
+        <div className="absolute top-3 left-3 rounded-full bg-bad px-3 py-1.5 text-sm font-semibold text-on-fill max-sm:top-2 max-sm:left-2 max-sm:px-2 max-sm:py-1 max-sm:text-xs">● Watching</div>
       )}
 
       {live && <LiveBox live={live} />}
@@ -67,7 +67,7 @@ function Spinner() {
 function LiveBox({ live }: { live: LiveView }) {
   return (
     <div
-      className={`absolute top-3 right-3 w-[min(340px,calc(100%-24px))] rounded-xl border-l-[6px] bg-white/95 px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.18)] max-sm:top-2 max-sm:right-2 max-sm:w-[min(240px,calc(100%-110px))] max-sm:border-l-4 max-sm:px-2.5 max-sm:py-1.5 ${toneBorder[live.tone]}`}
+      className={`absolute top-3 right-3 w-[min(340px,calc(100%-24px))] rounded-xl border-l-[6px] bg-overlay/95 px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.18)] max-sm:top-2 max-sm:right-2 max-sm:w-[min(240px,calc(100%-110px))] max-sm:border-l-4 max-sm:px-2.5 max-sm:py-1.5 ${toneBorder[live.tone]}`}
       aria-live="polite"
     >
       <div className="flex items-center justify-between gap-2.5">
@@ -90,7 +90,7 @@ function MoveCard({ card, newest }: { card: MoveCardData; newest: boolean }) {
   const m = describeMove(card.event);
   return (
     <div
-      className={`animate-card-in rounded-xl border-l-[6px] bg-white px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.2)] transition-[opacity,transform] duration-500 motion-reduce:animate-none motion-reduce:transition-none max-sm:border-l-4 max-sm:px-2.5 max-sm:py-1.5 ${toneBorder[m.tone]} ${
+      className={`animate-card-in rounded-xl border-l-[6px] bg-overlay px-4 py-3 shadow-[0_6px_24px_rgba(0,0,0,0.2)] transition-[opacity,transform] duration-500 motion-reduce:animate-none motion-reduce:transition-none max-sm:border-l-4 max-sm:px-2.5 max-sm:py-1.5 ${toneBorder[m.tone]} ${
         card.leaving ? 'translate-y-1.5 opacity-0' : ''
       } ${newest ? '' : 'max-sm:hidden'}`}
     >

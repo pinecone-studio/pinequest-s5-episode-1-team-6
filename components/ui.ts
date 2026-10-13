@@ -6,7 +6,7 @@ import type { Tone } from '@/lib/ui/plain';
 const button = 'inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-[18px] text-base leading-none font-semibold not-disabled:hover:brightness-105 disabled:cursor-default disabled:opacity-45';
 
 /** Blue main action. */
-export const primaryButton = `${button} bg-accent text-white`;
+export const primaryButton = `${button} bg-accent text-on-fill`;
 /** Light blue, for second actions. */
 export const secondaryButton = `${button} bg-accent-soft text-accent`;
 /** Outline only, for small actions (Close, Print, ...). */

@@ -14,7 +14,7 @@ interface MoveRowProps {
 export function MoveRow({ event: e, status, forJudge, onReject }: MoveRowProps) {
   const d = describeMove(e, status);
   const first = d.reasons[0];
-  const pressed = 'aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-white';
+  const pressed = 'aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-fill';
   return (
     <li className={`grid gap-1.5 rounded-xl border-l-[6px] bg-bg px-4 py-3.5 ${e.rejected ? 'border-l-warn opacity-50' : toneBorder[d.tone]}`}>
       <div className="flex items-baseline justify-between gap-2.5">

@@ -70,7 +70,7 @@ function Steps({ current }: { current: number }) {
           >
             <span
               className={`grid h-[26px] w-[26px] flex-none place-items-center rounded-full text-sm font-bold ${
-                done ? 'bg-good text-white' : isCurrent ? 'bg-accent text-white' : 'bg-line text-muted'
+                done ? 'bg-good text-on-fill' : isCurrent ? 'bg-accent text-on-fill' : 'bg-line text-muted'
               }`}
             >
               {done ? '✓' : n}
