@@ -17,6 +17,9 @@ export function AuthFrame({ intro, children }: { intro: string; children: ReactN
   );
 }
 
+/** The card around a sign-in form. */
+export const formCard = 'grid gap-3 rounded-card bg-card p-5';
+
 /** Text-style button under a form ("New here? Create an account"). */
 export const linkButton = 'cursor-pointer border-0 bg-transparent p-0 text-left text-sm font-semibold text-accent';
 

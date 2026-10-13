@@ -25,9 +25,9 @@ npm install
 npm run dev
 ```
 
-The first screen is **Sign in** / **Create account** at `/login` (Firebase Authentication: name, email
-and password, with **Forgot password?**), **Continue with Google**, or **Try without an account** (one
-click, for demos). After signing in you go back to the page you opened.
+The first screen is **Sign in** at `/login` (Firebase Authentication: email and password, with
+**Forgot password?**) or **Create account** at `/signup` (name, email and password). Both also offer
+**Continue with Google** and **Try without an account** (one click, for demos). After signing in you go back to the page you opened.
 The camera stays off until you are signed in. The Firebase web settings are public and committed in
 `.env`; to use another Firebase project on your computer, put the same names in `.env.local`.
 
@@ -105,7 +105,9 @@ TypeScript with no React in it, so it can be tested without a browser.
 ```
 app/
   layout.tsx                 root layout; <AuthProvider> knows who is signed in on every page
-  login/page.tsx             /login: the sign-in page
+  (auth)/layout.tsx          sign-in pages; someone already signed in goes straight on
+  (auth)/login/page.tsx      /login: sign in (and "Forgot password?")
+  (auth)/signup/page.tsx     /signup: create an account
   (app)/layout.tsx           pages that need sign-in (the "(app)" folder is not part of the URL)
   (app)/page.tsx             the judging page (renders components/RhymnastApp.tsx)
   (app)/tools/*/page.tsx     developer tools: image-check, validate, video-analyze
@@ -118,8 +120,9 @@ components/
   ResultsView.tsx            results after Finish (plain words, optional rulebook details)
   SettingsDrawer.tsx         camera accuracy, focus mode, Teach poses, record download, tech details
   ui.ts                      shared Tailwind classes for buttons, inputs and colors
-  auth/                      sign-in UI: AuthProvider (useAuth), RequireAuth, LoginScreen, LoginForm,
-                             ResetPasswordForm, PasswordInput, AccountButton
+  auth/                      sign-in UI: AuthProvider (useAuth), RequireAuth, AuthScreen, SignInForm,
+                             SignUpForm, ResetPasswordForm, OtherSignInOptions (Google, guest),
+                             Fields, AccountButton
   tools/                     the three developer tools
 lib/
   firebase/                  Firebase web config check, browser Auth client, sign-in actions (auth.ts)

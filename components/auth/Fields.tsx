@@ -1,11 +1,40 @@
 'use client';
 
-// Password field with a Show / Hide button, so you can check what you typed on a phone.
+// Input fields of the sign-in forms: a labelled text field, and a password field with Show / Hide.
 
-import { useId, useState } from 'react';
+import { useId, useState, type HTMLInputAutoCompleteAttribute } from 'react';
 import { input } from '../ui';
 
-export function PasswordInput({
+export function TextField({
+  label,
+  type,
+  autoComplete,
+  value,
+  onChange,
+}: {
+  label: string;
+  type: 'text' | 'email';
+  autoComplete: HTMLInputAutoCompleteAttribute;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="grid gap-1 text-sm font-semibold">
+      {label}
+      <input
+        className={input}
+        type={type}
+        autoComplete={autoComplete}
+        value={value}
+        required
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
+  );
+}
+
+/** Password with a Show / Hide button, so you can check what you typed on a phone. */
+export function PasswordField({
   value,
   onChange,
   autoComplete,

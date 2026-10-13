@@ -77,7 +77,8 @@ Known limits (be honest in the UI and README):
    button; plain texts live in `lib/ui/plain.ts`. Keep new UI text in that style.
 9. **Sign-in (user, 2026-10-12):** Firebase Authentication, email and password, Google (popup) or
    "Try without an account" (Firebase Anonymous, for demos), in the browser
-   (`firebase` client SDK, no backend). Sign-in is its own page, `/login` (`app/login/`); every other page
+   (`firebase` client SDK, no backend). Sign in (`/login`) and Create account (`/signup`) are their own pages in
+   `app/(auth)/`; every other page
    lives in the route group `app/(app)/`, whose layout (`components/auth/RequireAuth.tsx`) sends people who
    are not signed in to `/login?next=...` (2026-10-13). Who is signed in: `useAuth()` from
    `components/auth/AuthProvider.tsx` (root layout). Firebase calls live in `lib/firebase/auth.ts` (no React).

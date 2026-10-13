@@ -5,8 +5,9 @@
 import { useState, type FormEvent } from 'react';
 import { sendPasswordReset } from '@/lib/firebase/auth';
 import { useAuthAction } from './useAuthAction';
-import { AuthFrame, ErrorText, linkButton } from './AuthMessages';
-import { input, primaryButton } from '../ui';
+import { AuthFrame, ErrorText, formCard, linkButton } from './AuthMessages';
+import { TextField } from './Fields';
+import { primaryButton } from '../ui';
 
 export function ResetPasswordForm({ initialEmail, onBack }: { initialEmail: string; onBack: () => void }) {
   const { busy, error, run } = useAuthAction();
@@ -20,18 +21,8 @@ export function ResetPasswordForm({ initialEmail, onBack }: { initialEmail: stri
 
   return (
     <AuthFrame intro="Forgot your password? We will email you a link to choose a new one.">
-      <form className="grid gap-3 rounded-[14px] bg-card p-5" onSubmit={(event) => void onSubmit(event)}>
-        <label className="grid gap-1 text-sm font-semibold">
-          Email
-          <input
-            className={input}
-            type="email"
-            autoComplete="email"
-            value={email}
-            required
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
+      <form className={formCard} onSubmit={(event) => void onSubmit(event)}>
+        <TextField label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
         {sentTo && (
           <p className="m-0 text-sm text-good" role="status">
             If {sentTo} has an account, a link is on its way. Open it, choose a new password, then sign in here.
