@@ -1,5 +1,5 @@
 # Runs the type check, lint and unit tests on every push and pull request.
-# Deployment is done by deploy.yml.
+# Deployment is manual: npm run deploy (see README).
 name: Tests
 
 on:

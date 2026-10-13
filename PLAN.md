@@ -41,7 +41,6 @@
 - [ ] Shoot and label attitude + back split photos (`data/README.md`), run /tools/validate, send results.
       **Owner: team**; tune rules from mismatches. **Owner: Claude**
 - [x] Deploy to Vercel: https://pinequest-s5-episode-1-team-6.vercel.app (live site checked 2026-10-13)
-- [ ] Add the repo secret `VERCEL_TOKEN` so pushes auto-deploy (`.github/workflows/deploy.yml`). **Owner: user**
 - [ ] Decide on a 2-3° measurement tolerance before the first −0.10 band. **Owner: user**
 - [ ] Check detectors on 5-10 labeled side-on video clips per element; record agreement in
       `docs/validation.md`. **Owner: team + Claude**
@@ -49,8 +48,8 @@
 - [ ] Demo script, pitch. **Owner: team**
 
 ## Hosting
-- Vercel (Hobby), repo private. GitHub Actions deploys with a Vercel token (the Vercel GitHub app is not
-  installed on the pinecone-studio org): `main` → production, other branches → preview. Tests: `npm test`.
+- Vercel (Hobby). Deploys are manual: `npm run deploy` from an up-to-date `main` (needs `npx vercel login`
+  once). Tests: `npm test`.
 - Sign-in: Firebase Authentication (email and password, Google, or guest for demos) in the browser. Google on the
   live site needs the Vercel domain in Firebase → Authentication → Settings → Authorized domains. The public
   `NEXT_PUBLIC_FIREBASE_*` values are committed in `.env`, so Vercel needs no extra settings.

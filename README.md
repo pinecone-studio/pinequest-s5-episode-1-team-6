@@ -10,9 +10,9 @@ browser) finds her joints in every frame. **Rules from the FIG Code of Points** 
 
 ## Live demo
 
-**Live URL: https://pinequest-s5-episode-1-team-6.vercel.app** (from `main`). GitHub Actions deploys
-every push to Vercel (`.github/workflows/deploy.yml`): `main` goes live, other branches get a preview
-URL shown in the run summary. It also runs the type check, lint and tests. The first load downloads the pose model
+**Live URL: https://pinequest-s5-episode-1-team-6.vercel.app** (from `main`). Deploys are manual:
+run `npm run deploy` (Vercel CLI; log in once with `npx vercel login`). GitHub Actions runs the type
+check, lint and tests. The first load downloads the pose model
 (about 10 MB). Video stays on your device.
 
 ## Run it locally
