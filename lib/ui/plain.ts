@@ -146,3 +146,10 @@ export function liveMessage(live: Partial<BalanceLive> | null | undefined): Live
     text: `${e.tip} (−${worst.value.toFixed(2)})`,
   };
 }
+
+/** Loader line while the pose model downloads: "40%". Without a known size there is no percent. */
+export function modelDownloadText(loaded: number, total: number | null): string {
+  if (!total) return 'Downloading…';
+  if (loaded >= total) return 'Downloaded. Starting it up…';
+  return `${Math.floor((loaded / total) * 100)}%`;
+}

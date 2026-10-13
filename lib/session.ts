@@ -5,7 +5,7 @@
 // One main button walks people through the app:
 //   Turn on camera  ->  Start  ->  Finish  ->  Try again
 
-import { createPoseTracker, type ModelVariant, type PoseTracker } from './pose';
+import { createPoseTracker, preloadPoseModel, watchModelDownload, type ModelVariant, type PoseTracker } from './pose';
 import { LandmarkSmoother } from './oneEuro';
 import { legLengthRatios, type Landmarks } from './geometry';
 import { SplitLeapDetector, legsFullLength } from './elements/splitLeap';
@@ -15,7 +15,7 @@ import { Scoreboard, type JudgeInputs } from './scoring';
 import { RULE_SOURCE } from './rules';
 import { drawLegAngles, drawSkeleton } from './draw';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { liveMessage, type Tone } from './ui/plain';
+import { liveMessage, modelDownloadText, type Tone } from './ui/plain';
 import { TeachRecorder } from './ui/teachRecorder';
 import { POSE_NAMES, type PoseLabel } from './library/recognizer';
 import { downloadFile } from './ui/download';
@@ -30,6 +30,7 @@ export type CameraFacing = 'user' | 'environment';
 export interface StageMessage {
   title: string;
   detail: string;
+  progress?: number; // 0..1, shown as a bar (model download)
 }
 
 /** The box on the video: which balance, hold dots, one plain sentence. */
@@ -63,6 +64,7 @@ export interface SessionState {
   judging: boolean;
   finished: boolean;
   busy: boolean; // the camera / model is loading
+  modelReady: boolean; // the pose model is loaded (judging needs it; the camera can run without it)
   facing: CameraFacing;
   cameraCount: number; // cameras on this device (the switch button needs 2 or more)
   message: StageMessage | null;
@@ -93,6 +95,7 @@ export class JudgingSession {
     judging: false,
     finished: false,
     busy: false,
+    modelReady: false,
     facing: 'user',
     cameraCount: 0,
     message: START_MESSAGE,
@@ -173,6 +176,8 @@ export class JudgingSession {
     // Recognize poses with the library: shipped examples + the ones your team taught.
     setPoseLibrary(currentLibrary());
     this.fpsSince = performance.now();
+    // Download the model now, while the person reads the page, so "Turn on camera" is quick.
+    preloadPoseModel(this.state.model);
 
     // Jumping in a clip breaks motion tracking; the end of a clip finishes the routine.
     const onSeeked = () => this.resetTracking();
@@ -194,6 +199,7 @@ export class JudgingSession {
       this.tracker?.close();
       this.tracker = null;
       this.trackerVariant = null;
+      this.set({ modelReady: false });
     };
   }
 
@@ -202,21 +208,42 @@ export class JudgingSession {
   private async ensureTracker(): Promise<void> {
     const variant = this.state.model;
     if (this.tracker && this.trackerVariant === variant) return;
-    this.setMessage('Getting ready…',variant === 'heavy' ? 'The first time this takes about half a minute.' : '');
     // Take the old model out of the frame loop before closing it: a closed model must never be called.
     const old = this.tracker;
     this.tracker = null;
     this.trackerVariant = null;
+    this.set({ modelReady: false });
     old?.close();
-    this.tracker = await createPoseTracker(variant);
+
+    // Loader on the video: "40%" and a bar while it downloads (usually already preloaded).
+    const title = 'Loading the pose model…';
+    this.set({ message: { title, detail: 'Almost ready…' } });
+    let shown = '';
+    const stopWatching = watchModelDownload(variant, ({ loaded, total }) => {
+      const detail = modelDownloadText(loaded, total);
+      const progress = total ? Math.min(1, loaded / total) : undefined;
+      const key = `${detail}|${progress === undefined ? '' : Math.floor(progress * 100)}`;
+      if (key === shown) return; // at most one update per percent
+      shown = key;
+      this.set({ message: { title, detail, progress } });
+    });
+    try {
+      this.tracker = await createPoseTracker(variant);
+    } finally {
+      stopWatching();
+    }
     this.trackerVariant = variant;
+    this.set({ modelReady: true });
     this.setMessage(null);
   }
 
   /** Settings → Camera accuracy. Loads the new model at once if a camera or video is running. */
   async setModel(model: ModelVariant): Promise<void> {
     this.set({ model });
-    if (!this.state.source) return;
+    if (!this.state.source) {
+      preloadPoseModel(model);
+      return;
+    }
     this.set({ busy: true });
     try {
       await this.ensureTracker();
@@ -235,10 +262,10 @@ export class JudgingSession {
 
   private async startCamera(): Promise<void> {
     const video = this.video!;
-    this.set({ busy: true }); // the model can take a while to load the first time
+    this.set({ busy: true });
+    // Camera first, so the person sees themselves (and gets in position) while the model finishes loading.
     try {
       this.stopSource();
-      await this.ensureTracker();
       this.setMessage('Turning on the camera…', 'If your browser asks, allow the camera.');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: this.state.facing },
@@ -254,7 +281,27 @@ export class JudgingSession {
       const blocked = err instanceof DOMException && err.name === 'NotAllowedError';
       this.setMessage(blocked ? 'The camera is blocked' : 'The camera could not start',
         blocked ? 'Allow camera access in your browser, then press the button again.' : errorText(err));
+      this.set({ busy: false });
+      return;
     }
+    await this.loadModelForCamera();
+    this.set({ busy: false });
+  }
+
+  /** Loads the model while the camera runs. If it fails, the main button becomes "Try loading again". */
+  private async loadModelForCamera(): Promise<void> {
+    try {
+      await this.ensureTracker();
+    } catch (err) {
+      console.error(err);
+      this.setMessage('The pose model could not load', `${errorText(err)}. Check your internet, then press "Try loading again".`);
+    }
+  }
+
+  /** "Try loading again": the camera is on but the model failed to load. */
+  private async retryModel(): Promise<void> {
+    this.set({ busy: true });
+    await this.loadModelForCamera();
     this.set({ busy: false });
   }
 
@@ -459,6 +506,7 @@ export class JudgingSession {
   onMainButton(): void {
     const { source, judging, finished } = this.state;
     if (!source) void this.startCamera();
+    else if (!this.state.modelReady) void this.retryModel();
     else if (!judging && finished) {
       this.newRoutine();
       this.setJudging(true);
@@ -525,6 +573,10 @@ export class JudgingSession {
   startTeachRecording(label: PoseLabel): void {
     if (this.state.source === null || this.state.judging) {
       this.set({ teachStatus: 'Start the camera first, and stop judging while you teach.' });
+      return;
+    }
+    if (!this.state.modelReady) {
+      this.set({ teachStatus: 'Wait until the pose model has loaded, then record.' });
       return;
     }
     this.recorder.start(label);

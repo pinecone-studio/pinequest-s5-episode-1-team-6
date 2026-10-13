@@ -42,7 +42,9 @@ Known limits (be honest in the UI and README):
 
 ## Decisions (made 2026-10-08)
 1. **Pose inference: in the browser** with MediaPipe Pose Landmarker (`@mediapipe/tasks-vision@0.10.14`,
-   pinned in package.json; WASM and model weights from pinned CDN URLs). No backend.
+   pinned in package.json; WASM and model weights from pinned CDN URLs). No backend. The judging page
+   preloads the model when it opens and keeps it in Cache Storage (`lib/modelCache.ts`, 2026-10-13):
+   Google serves the weights with only a 1-hour browser cache.
    Frontend: **Next.js 16 (App Router) + React 19 + TypeScript + Tailwind 4** (user, 2026-10-12; replaces
    the plain-JS `web/` app of 2026-10-08, kept in the old Rhymnast repo). Judging logic is plain
    TypeScript in `lib/` with no React in it; UI in `components/` (client components) and `app/`.
