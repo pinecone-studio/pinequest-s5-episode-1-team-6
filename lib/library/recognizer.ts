@@ -1,4 +1,4 @@
-// Pose library: recognizes the three balances by comparing a frame's pose signature with many
+// Pose library: recognizes the balances by comparing a frame's pose signature with many
 // labeled examples of the correct poses (and of poses that are NOT ours), nearest neighbours.
 // Nothing is trained in the machine-learning sense: adding examples is the "learning".
 
@@ -6,8 +6,8 @@ import { FEATURES } from './signature';
 
 export const LIBRARY_VERSION = 1;
 
-// Pose labels. 'none' examples teach the library what to reject (standing, passé, arabesque…).
-export const POSES = ['frontSplitHelp', 'frontSplit', 'backSplitFootAboveHead', 'backSplitTrunkForward', 'attitude', 'none'] as const;
+// Pose labels. 'none' examples teach the library what to reject (standing, passé, ring…).
+export const POSES = ['frontSplitHelp', 'frontSplit', 'backSplitFootAboveHead', 'backSplitTrunkForward', 'arabesque', 'attitude', 'none'] as const;
 export type PoseLabel = (typeof POSES)[number];
 
 export const POSE_NAMES: Record<PoseLabel, string> = {
@@ -15,6 +15,7 @@ export const POSE_NAMES: Record<PoseLabel, string> = {
   frontSplit: 'Front split without help',
   backSplitFootAboveHead: 'Back split, foot above head',
   backSplitTrunkForward: 'Back split, trunk forward',
+  arabesque: 'Arabesque',
   attitude: 'Attitude',
   none: 'Not one of these',
 };

@@ -102,6 +102,18 @@ Known limits (be honest in the UI and README):
    and Download video (no Watch / Download photo buttons, user 2026-10-13). Saved in IndexedDB (localStorage is too
    small), newest 10 routines, on the Saved videos page (`/saved`). Nothing is uploaded.
 
+10. **Next three elements (user, 2026-10-13):** arabesque balance, attitude pivot, stag leap (jump with
+   front leg folded, back leg stretched). Order: arabesque (reuses attitude code), stag leap (reuses
+   `splitLeap.ts`), attitude pivot (attitude shape + turn counter from `passe.ts`; riskiest, the shape is
+   only side-on for part of each turn). Team videos go in `data/validation/videos/<element>/` (see
+   `data/README.md`). CoP codes and D values need a human check before they go into `lib/rules.ts`.
+   **Built 2026-10-13** (branch `15-new-elements`): arabesque 2.902 (0.20) in `balances.ts`; stag leap
+   1.2702 (0.20) in `splitLeap.ts` (the leap detector decides split vs stag); attitude pivot 3.1203
+   (0.30, +0.20 per extra turn) in `attitudePivot.ts`. Values by row order, still `verified: false`.
+   Pivot rotation = facing angle from the shoulders' left/right order + nose offset (the old body-width
+   method counted 180° for a full turn), plus one frame of turning as sampling margin.
+   The team's clips replay as tests: `npm run replay`, `tests/videos.test.ts` (body points only).
+
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare
 them with the FIG Code of Points. Example: split leap needs a 180° split at the highest point. Deviation
@@ -114,6 +126,8 @@ lengths), not body width: gymnasts open shoulders/hips to the audience even when
 Show warnings in the UI and skip low-visibility frames.
 
 ## Open decisions (ask the user before assuming)
-- None right now.
+- Arabesque/attitude trunk: the code reads "maximum vertical position of the body" literally (trunk lean
+  from vertical = a deviation), so the team's arabesque (24-27° lean) is a large deviation, not valid.
+  Keep, or allow a natural forward lean before deducting?
 
 See PLAN.md for the phased build order.

@@ -72,6 +72,26 @@ export function splitPose(splitDeg: number, { rise = 40, width = 0.15 } = {}): L
 }
 
 /**
+ * Stag leap in the air: front (left) leg bent to `kneeDeg`, back (right) leg straight,
+ * `splitDeg` between the front thigh and the back leg, symmetric around the trunk.
+ */
+export function stagPose(splitDeg: number, { kneeDeg = 60, rise = 40, width = 0.15 } = {}): Landmarks {
+  const lm = body({ width: 0, rise });
+  const hip = lm[LM.L_HIP];
+  const thighAngle = splitDeg / 2; // from straight down, + = forward
+  const knee = p(hip.x + THIGH * Math.sin(rad(thighAngle)), hip.y + THIGH * Math.cos(rad(thighAngle)));
+  const shinAngle = thighAngle - (180 - kneeDeg); // shin folds back under the thigh
+  const ankle = p(knee.x + SHIN * Math.sin(rad(shinAngle)), knee.y + SHIN * Math.cos(rad(shinAngle)));
+  lm[LM.L_KNEE] = knee;
+  lm[LM.L_ANKLE] = ankle;
+  lm[LM.L_FOOT] = p(ankle.x + 10 * Math.sin(rad(shinAngle)), ankle.y + 10 * Math.cos(rad(shinAngle)));
+  lm[LM.L_HEEL] = p(ankle.x - 3 * Math.sin(rad(shinAngle)), ankle.y - 3 * Math.cos(rad(shinAngle)));
+  straightLeg(lm, 'R', lm[LM.R_HIP], -splitDeg / 2);
+  widen(lm, width);
+  return lm;
+}
+
+/**
  * Passé on the right (support) leg; the left thigh raised `thighDeg` from straight down.
  * releve: heel lifted. width: body width ratio (changes as the gymnast turns).
  */
@@ -162,9 +182,9 @@ export function backSplitBalance({ legDeg = 170, trunkTilt = 20, ...opts }: Bala
   return balanceBody({ ...opts, trunkTilt }, (lm, hip) => straightLeg(lm, 'L', hip, -facing * legDeg));
 }
 
-/** Arabesque: straight free leg backward at the horizontal (not one of our three shapes). */
+/** Arabesque: straight free leg backward at the horizontal (`legDeg` from straight down). Trunk upright by default. */
 export function arabesqueBalance(opts: BalanceOptions & { legDeg?: number } = {}): Landmarks {
-  return backSplitBalance({ legDeg: 95, ...opts });
+  return backSplitBalance({ legDeg: 95, trunkTilt: 0, ...opts });
 }
 
 /** Attitude: free thigh backward at `thighDeg`, knee bent to `kneeDeg`, shin rising. */
@@ -182,6 +202,46 @@ export function attitudeBalance(
     lm[LM.L_FOOT] = p(ankle.x + 10 * Math.sin(rad(shinAngle)), ankle.y + 10 * Math.cos(rad(shinAngle)));
     lm[LM.L_HEEL] = p(ankle.x - 3 * Math.sin(rad(shinAngle)), ankle.y - 3 * Math.cos(rad(shinAngle)));
   });
+}
+
+/**
+ * Attitude seen while turning: a 3D body rotated `turnDeg` around the vertical axis and projected
+ * onto the image (0 = facing the camera, 90 = side-on, 180 = back to the camera). Free leg = left,
+ * thigh `thighDeg` from straight down (backward), knee bent to `kneeDeg`; support leg = right, straight.
+ * Shoulders 0.6 torso lengths apart and the nose 0.35 ahead, as geometry.ts facingAngle() expects.
+ */
+export function attitudeTurnPose(turnDeg: number, { thighDeg = 90, kneeDeg = 90 } = {}): Landmarks {
+  const c = Math.cos(rad(turnDeg));
+  const s = Math.sin(rad(turnDeg));
+  // Body directions in the image: x of "her left" and of "her front" (depth is dropped).
+  const leftX = c;
+  const frontX = -s;
+  const at = (lateral: number, front: number, y: number) => p(CX + lateral * leftX + front * frontX, y);
+  const lm = Array.from({ length: 33 }, () => at(0, 0, HIP_Y - TORSO * 1.3));
+  lm[LM.L_SHOULDER] = at(30, 0, HIP_Y - TORSO);
+  lm[LM.R_SHOULDER] = at(-30, 0, HIP_Y - TORSO);
+  lm[LM.NOSE] = at(0, 35, HIP_Y - TORSO - 30);
+  lm[LM.L_HIP] = at(15, 0, HIP_Y);
+  lm[LM.R_HIP] = at(-15, 0, HIP_Y);
+  // Support leg (right) straight down, on relevé.
+  lm[LM.R_KNEE] = at(-15, 0, HIP_Y + THIGH);
+  lm[LM.R_ANKLE] = at(-15, 0, HIP_Y + THIGH + SHIN - 6);
+  lm[LM.R_FOOT] = at(-15, 10, FLOOR_Y);
+  lm[LM.R_HEEL] = at(-15, -4, FLOOR_Y - 12);
+  // Free leg (left): angles from straight down, + = backward.
+  const legPoint = (from: Landmark, fromFront: number, len: number, deg: number) => ({
+    front: fromFront - len * Math.sin(rad(deg)),
+    y: from.y + len * Math.cos(rad(deg)),
+  });
+  const knee = legPoint(lm[LM.L_HIP], 0, THIGH, thighDeg);
+  lm[LM.L_KNEE] = at(15, knee.front, knee.y);
+  const shinDeg = thighDeg + (180 - kneeDeg); // the shin rises behind her
+  const ankle = legPoint(lm[LM.L_KNEE], knee.front, SHIN, shinDeg);
+  lm[LM.L_ANKLE] = at(15, ankle.front, ankle.y);
+  const toe = legPoint(lm[LM.L_ANKLE], ankle.front, 10, shinDeg);
+  lm[LM.L_FOOT] = at(15, toe.front, toe.y);
+  lm[LM.L_HEEL] = at(15, ankle.front, ankle.y);
+  return lm;
 }
 
 /** Moves one ankle (and its foot) toward the hip: a leg pointing at the camera. */

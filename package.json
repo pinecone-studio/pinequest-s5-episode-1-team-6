@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build-library": "vite-node scripts/build-library.ts",
-    "deploy": "npx --yes vercel@63.1.2 deploy --prod"
+    "deploy": "npx --yes vercel@63.1.2 deploy --prod",
+    "replay": "vite-node scripts/replay.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",

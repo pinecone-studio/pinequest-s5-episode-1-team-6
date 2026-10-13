@@ -1,5 +1,5 @@
 // Results after "Finish", built from report data (lib/report.ts).
-//   Practice: "You did 3 balances. Points lost: 0.40" + each move with reason and tip.
+//   Practice: "You did 3 moves. Points lost: 0.40" + each move with reason and tip.
 //   Judge:    the score (difficulty, execution, artistry, final) + each move.
 //   Every move gets a video (mistakes marked red, a correct move green) and a download (made after Finish).
 //   "Show rulebook details" adds codes, measurements, the rule text and pages.
@@ -70,7 +70,7 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
   if (report.moves.length === 0) {
     return (
       <p className={headline}>
-        No balance was recognized.
+        No move was recognized.
         <small className={headlineSmall}>
           Stand sideways to the camera with your whole body and both feet in the picture, and hold each balance for at least 1 second.
         </small>
@@ -81,7 +81,7 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
   return (
     <>
       <p className={headline}>
-        {`You did ${judged.length} balance${judged.length === 1 ? '' : 's'}. `}
+        {`You did ${judged.length} move${judged.length === 1 ? '' : 's'}. `}
         {s.totalDeduction === 0 ? 'No points lost. Well done!' : `Points lost: ${s.totalDeduction.toFixed(2)}.`}
         <small className={headlineSmall}>
           {`${s.cleanMoves} without mistakes`}{report.durationMs ? ` · ${formatTime(report.durationMs)} long` : ''}

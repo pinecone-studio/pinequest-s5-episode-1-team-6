@@ -49,6 +49,7 @@ test('the red marks go on the body part that lost points', () => {
   assertEqual(thigh[0][1], lm[raisedLeft ? LM.L_KNEE : LM.R_KNEE]); // the raised knee, not the standing one
   assertEqual(bonesFor('trunk', lm).length, 1);
   assertEqual(bonesFor('split', lm).length, 4); // both legs
+  assertEqual(bonesFor('leapStag', lm).length, 4); // stag: front thigh to back leg, both legs
   assertEqual(bonesFor('hold', lm).length, 0); // no body part: shown in the badge
 });
 

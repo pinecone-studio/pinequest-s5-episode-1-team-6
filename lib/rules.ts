@@ -73,6 +73,18 @@ export const ELEMENTS = {
     requirement: 'A split position of 180° is required at the highest point of the leap. (Table #9, p. 74)',
     ref: 'Jumps #8.1, #9 item 21 (p. 72-78); deviations #2.5 (p. 25)',
   },
+  STAG_LEAP: {
+    code: '1.2702',
+    name: 'Stag leap',
+    // Table of jump/leap difficulties #9, item 27 "Stag leap, take-off from 1 or 2 feet, also with
+    // ring/back bend of the trunk" (p. 80): 1.2702 (0.20) plain, 1.2704 (0.40) with ring/back bend.
+    value: 0.2,
+    // "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart" (p. 75)
+    requiredSplitDeg: 180,
+    requirement: 'Stag leap: "The front leg must be maximally bent, foot close to the thigh. The legs must be 180° apart, the stag position may be horizontal and will also be accepted when the 180° position is maintained with 1 of the legs above and the other below a horizontal position." (Technique, p. 75)',
+    verified: false,
+    ref: 'Jumps #8.1, technique p. 75, #9 item 27 (p. 80); deviations #2.5 (p. 25)',
+  },
   PASSE_BALANCE: {
     code: '2.101',
     name: 'Passé balance',
@@ -103,6 +115,25 @@ export const ELEMENTS = {
   },
 };
 
+/**
+ * Attitude pivot (rotation table #13 row 12, p. 100): 3.1203 (0.30) plain attitude; 3.1205 (0.50)
+ * is ring without help / attitude with back bend (not detected). VALUE NOT YET VERIFIED.
+ */
+export const ATTITUDE_PIVOT = {
+  code: '3.1203',
+  name: 'Attitude pivot',
+  value: 0.3,
+  box: '3.12',
+  // Shape as the attitude balance: "Horizontal position of the free leg (thigh)" (p. 87).
+  requiredThighDeg: 90,
+  baseRotationDeg: 360, // #12.1.2 (p. 91)
+  // +0.20 per additional rotation for pivots with a base value of 0.20 or more (#12.2.6, p. 93).
+  perExtraRotation: 0.2,
+  requirement: 'Attitude pivot: attitude shape ("horizontal position of the free leg (thigh)", p. 87), minimum basic rotation 360° (#12.1.2, p. 91); +0.20 per additional rotation (#12.2.6, p. 93).',
+  verified: false,
+  ref: 'Rotations #12.1-12.2 (p. 91-93), #13 row 12 (p. 100); attitude technique p. 87; deviations #2.5 (p. 25)',
+};
+
 /** Rules shared by all balances on the foot (#10.1.2, #10.2.2, #10.3, p. 82-84). */
 export const BALANCE_RULES = {
   minHoldMs: 1000, // "Stop position fixed in the shape for a minimum of 1 second"
@@ -126,7 +157,7 @@ export interface BalanceRule {
   requiredThighDeg?: number;
 }
 
-// The three balances the team focuses on. VALUES NOT YET VERIFIED (verified: false):
+// The balances the team focuses on. VALUES NOT YET VERIFIED (verified: false):
 // the PDF text does not say which pictogram sits in which value column, so each value is
 // mapped by the order of the variants in the row title. A teammate must check p. 88-89.
 // `box` = the table row; a difficulty from the same box can only count once (#2.4.1).
@@ -167,6 +198,19 @@ export const BALANCES = {
     requirement: 'Back split, trunk forward at the horizontal or below (table #11 row 11, p. 89): split position required; the trunk at the horizontal or below (same shape as the rotation, p. 97).',
     verified: false,
     ref: 'Balances #10 (p. 82-84), table #11 row 11 (p. 89), shape as rotation p. 97',
+  },
+  ARABESQUE: {
+    box: '2.9',
+    // Table #11 row 9 "Arabesque: Free leg horizontal backward, also with trunk forward at the horizontal,
+    // also with back bend of the trunk" (p. 89): 2.902, 2.903, 2.904. We assume the plain arabesque =
+    // 0.20 (first in the row title); trunk forward (0.30) and back bend (0.40) are not detected.
+    plain: { code: '2.902', name: 'Arabesque balance', value: 0.2 },
+    // "Free leg horizontal forward (straight or bent), side, or backward (Arabesque): Horizontal
+    //  position of the free leg (thigh) and the maximum vertical position of the body" (p. 86).
+    requiredThighDeg: 90,
+    requirement: 'Arabesque: "Horizontal position of the free leg (thigh) and the maximum vertical position of the body". (Technique, p. 86)',
+    verified: false,
+    ref: 'Balances #10 (p. 82-84), technique p. 86, table #11 row 9 (p. 89)',
   },
   ATTITUDE: {
     box: '2.12',

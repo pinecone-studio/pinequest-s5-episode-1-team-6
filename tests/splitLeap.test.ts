@@ -1,7 +1,7 @@
 import { test, assert, assertEqual, assertClose } from './harness';
 import { SplitLeapDetector } from '../lib/elements/splitLeap';
 import type { ElementEvent } from '../lib/types';
-import { standing, splitPose, foreshortenLeg, frames, repeat } from '../lib/library/examples/poses';
+import { standing, splitPose, stagPose, foreshortenLeg, frames, repeat } from '../lib/library/examples/poses';
 
 /** Stand, leap with the given split, land. Returns detector events. */
 function leap(splitDeg: number, { flightFrames = 12, width = 0.15, foreshorten = 1 } = {}) {
@@ -75,4 +75,46 @@ test('shoulders/hips open to the audience but legs side-on: no camera warning', 
 test('one leg pointing at the camera (foreshortened): flagged as unreliable', () => {
   const [e] = leap(180, { foreshorten: 0.6 });
   assert(e.warnings.some((w) => w.includes('foreshortened')));
+});
+
+// ---------- Stag leap (#9 item 27; the team's video, 2026-10-13) ----------
+
+/** Stand, stag leap with the given thigh-to-back-leg angle and front knee, land. */
+function stag(splitDeg: number, kneeDeg = 60) {
+  const events: ElementEvent[] = [];
+  const detector = new SplitLeapDetector((e) => events.push(e));
+  const seq = [...repeat(15, () => standing()), ...repeat(12, () => stagPose(splitDeg, { kneeDeg })), ...repeat(15, () => standing())];
+  for (const f of frames(seq)) detector.update(f);
+  return events;
+}
+
+test('stag leap 180°, front knee bent: 1.2702, DB 0.20, no shape penalty', () => {
+  const [e, ...rest] = stag(180);
+  assert(e && rest.length === 0, 'expected exactly one event');
+  assertEqual(e.code, '1.2702');
+  assertClose(e.measurements.peakSplitDeg!, 180, 1);
+  assert(e.dbValid && e.dbValue === 0.2);
+  assertEqual(e.penalties.length, 0);
+});
+
+test('stag leap 165°: medium deviation, E -0.30, valid', () => {
+  const [e] = stag(165);
+  assertEqual(e.code, '1.2702');
+  assertEqual(e.penalties[0].value, 0.3);
+  assert(e.dbValid);
+});
+
+test('stag leap 150°: large deviation, DB NOT valid', () => {
+  const [e] = stag(150);
+  assertEqual(e.code, '1.2702');
+  assert(!e.dbValid && e.dbValue === 0);
+});
+
+test('a stag leap is not judged as a bad split leap', () => {
+  // The straight-leg split of a stag is far below 180°: before stag leaps existed this was a -0.50 split leap.
+  for (const e of stag(175)) assertEqual(e.code, '1.2702');
+});
+
+test('a straight-leg split leap is still a split leap', () => {
+  assertEqual(leap(178)[0].code, '1.2103');
 });

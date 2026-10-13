@@ -122,6 +122,30 @@ export function splitAngle(lm: Landmarks): number {
   return split;
 }
 
+export interface StagMeasure {
+  bentKnee: number; // knee angle of the more bent leg (the front leg in a stag), 180 = straight
+  otherKnee: number; // knee angle of the other leg
+  split: number; // angle between the bent leg's THIGH and the other leg (hip -> ankle)
+}
+
+/**
+ * Stag shape: the front leg is bent, so the "legs 180° apart" of a stag leap (CoP p. 75) is measured
+ * from the front THIGH (hip -> knee) to the straight back leg (hip -> ankle), through the bottom like
+ * splitAngle(). 2D only: reliable when the camera sees the leap side-on.
+ */
+export function stagMeasure(lm: Landmarks): StagMeasure {
+  const kneeL = jointAngle(lm[LM.L_HIP], lm[LM.L_KNEE], lm[LM.L_ANKLE]);
+  const kneeR = jointAngle(lm[LM.R_HIP], lm[LM.R_KNEE], lm[LM.R_ANKLE]);
+  const leftBent = kneeL < kneeR;
+  const hips = mid(lm[LM.L_HIP], lm[LM.R_HIP]);
+  const down = sub(hips, mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]));
+  const front = signedAngle(down, sub(leftBent ? lm[LM.L_KNEE] : lm[LM.R_KNEE], hips));
+  const back = signedAngle(down, sub(leftBent ? lm[LM.R_ANKLE] : lm[LM.L_ANKLE], hips));
+  let split = Math.abs(front - back);
+  if (split > 270) split = 360 - split;
+  return { bentKnee: Math.min(kneeL, kneeR), otherKnee: Math.max(kneeL, kneeR), split };
+}
+
 /**
  * How high a thigh is raised, in degrees: 0 = hanging straight down,
  * 90 = horizontal, 180 = straight up.
@@ -134,6 +158,33 @@ export function thighElevation(hip: Point, knee: Point, thighLength: number): nu
   if (!thighLength) return 0;
   const cos = clamp((knee.y - hip.y) / thighLength, -1, 1);
   return toDeg(Math.acos(cos));
+}
+
+/**
+ * Which way the body faces, in degrees around the vertical axis: 0 = facing the camera,
+ * ±180 = back to the camera, ±90 = side-on. Used to measure pivots.
+ *
+ * Two cues: the shoulders' left/right order (her left shoulder is on the image's right when she
+ * faces the camera, on the left when her back is to it) and how far the nose is ahead of the
+ * shoulders (largest when side-on). Each is divided by its typical size (shoulders ~0.6 torso
+ * lengths apart, nose ~0.35 ahead; checked on the team's pivot videos, 2026-10-13).
+ * Relies on the pose model keeping left and right apart from behind, as it did in those videos.
+ */
+export function facingAngle(lm: Landmarks): number {
+  const torso = torsoLength(lm);
+  if (!torso) return 0;
+  const shoulders = mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]);
+  const across = (lm[LM.L_SHOULDER].x - lm[LM.R_SHOULDER].x) / torso / 0.6;
+  const ahead = (lm[LM.NOSE].x - shoulders.x) / torso / 0.35;
+  return toDeg(Math.atan2(ahead, across));
+}
+
+/** Smallest signed change from angle a to angle b, in degrees (-180..180). */
+export function angleStep(a: number, b: number): number {
+  let d = b - a;
+  while (d > 180) d -= 360;
+  while (d < -180) d += 360;
+  return d;
 }
 
 /**

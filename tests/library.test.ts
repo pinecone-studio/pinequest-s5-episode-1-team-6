@@ -45,6 +45,7 @@ test('library recognizes new, unseen examples of each pose', () => {
   assertEqual(shapeOf(backSplitBalance({ legDeg: 161, trunkTilt: 22 })), 'backSplitFootAboveHead');
   assertEqual(shapeOf(attitudeBalance({ thighDeg: 87, kneeDeg: 97, trunkTilt: 8, facing: -1 })), 'attitude');
   assertEqual(shapeOf(backSplitBalance({ legDeg: 178, trunkTilt: 108, facing: -1 })), 'backSplitTrunkForward');
+  assertEqual(shapeOf(arabesqueBalance({ legDeg: 93, trunkTilt: 12, facing: -1 })), 'arabesque');
 });
 
 test('library still recognizes faulty versions, so they can be judged', () => {
@@ -57,7 +58,7 @@ test('library rejects look-alikes and other poses', () => {
   for (const [name, lm] of <[string, Landmarks][]>[
     ['standing', standing()],
     ['passé', passePose({ thighDeg: 92 })],
-    ['arabesque', arabesqueBalance({ legDeg: 97 })],
+    ['arabesque, trunk forward', arabesqueBalance({ legDeg: 97, trunkTilt: 85 })],
     ['ring with help', attitudeBalance({ help: true, thighDeg: 115, kneeDeg: 60 })],
     ['back split with help', backSplitBalance({ help: true, legDeg: 168 })],
     ['front split trunk bent back', frontSplitBalance({ help: true, trunkTilt: -60 })],

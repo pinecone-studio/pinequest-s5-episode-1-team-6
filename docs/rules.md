@@ -42,6 +42,22 @@ large deductions." So the app shows **measured angle + suggested band**; a judge
 over-splits read above 180°. Best value among frames near the top of the flight (hips ≥ 70% of max
 rise). Deviation = 180 − angle → band above. Warns when a leg is foreshortened (camera not side-on).
 
+## Stag leap: code 1.2702, value 0.20 ⚠️ value
+- Technique: "Stag leap (take-off from 1 or 2 feet): The front leg must be maximally bent, foot close to
+  the thigh. The legs must be 180° apart, the stag position may be horizontal and will also be accepted
+  when the 180° position is maintained with 1 of the legs above and the other below a horizontal
+  position." (#8.13, p. 75) ✅
+- Table #9 item 27 "Stag leap, take-off from 1 or 2 feet, also with ring/back bend of the trunk" lists
+  1.2702 (0.20) and 1.2704 (0.40) (p. 80). ⚠️ We assume the plain stag leap = 0.20 (ring/back bend adds).
+- **Measured as:** the leap detector (same take-off/landing as the split leap) looks at the frames near
+  the top of the flight. A frame is stag-shaped when one knee is bent ≤ 120° and the other ≥ 140°, and
+  split-shaped when both knees are ≥ 140°; the majority decides. Deviation = 180° − angle between the
+  front THIGH (hip → knee) and the back leg (hip → ankle) → #2.5 bands.
+- "Front leg maximally bent, foot close to the thigh" has no angle in the Code: used to recognize the
+  shape, not deducted (judges check it). Side-on check uses the straight back leg only.
+- Checked on the team's video (2026-10-13): 166° → medium, −0.30, valid. Before, the same leap was
+  judged as a split leap 132° (−0.50, not valid).
+
 ## Passé balance: code 2.101, value 0.10 ✅
 - Passé forward or side, thigh at horizontal (table #11 item 1, p. 88) ✅
 - "Stop position fixed in the shape for a minimum of 1 second" (#10.1.2) ✅
@@ -62,7 +78,47 @@ Shapes held under 0.3 s are treated as passing movements, not balance attempts.
 **Measured as:** rotations counted from the body's apparent width (wide when facing toward/away
 from the camera, narrow when side-on; each change ≈ 90°). Accuracy about ±45°.
 
-## How the three balances are recognized (pose library)
+## Attitude pivot: code 3.1203, value 0.30 ⚠️ value
+- Table #13 row 12 "Attitude, also ring without help/attitude with back bend" lists 3.1203 (0.30) and
+  3.1205 (0.50) (p. 100). ⚠️ We assume the plain attitude pivot = 0.30.
+- Shape: no separate rotation text; the balance technique applies: "Horizontal position of the free leg
+  (thigh) and the maximum vertical position of the body" (p. 87) ✅
+- Minimum basic rotation 360° (#12.1.2, p. 91) ✅. "+0.20 p. for each additional rotation above the base
+  360° for pivots with a base value 0.20 p. and more" (#12.2.6, p. 93) ✅
+- "The amount of rotation is evaluated from the moment that a well-defined shape is taken and until the
+  moment the gymnast starts leaving the shape" (#12.2.1, p. 91) ✅
+- High relevé (#12.1.1) and heel support (#12.2.3) ⚠️ not automated, as for the passé pivot.
+- **Shape, from any direction:** free thigh raised 55-135° (knee height vs hip, works while turning),
+  free ankle above the free knee (the shin rises behind; a passé foot hangs at the support knee), support
+  knee ≥ 150°. The 2D knee angle is NOT used: facing the camera it read anything from 5° to 163°.
+- **Rotation:** facing angle from the shoulders' left/right order (her left shoulder is on the image's
+  right when she faces the camera) and how far the nose is ahead of the shoulders; the frame-to-frame
+  steps are added up while the shape is held. The passé pivot's body-width method counted only 180° on
+  the team's full turn. Needs the pose model to keep left and right apart from behind (it did on both
+  videos). **Sampling margin:** one frame of turning is added (the shape started up to one frame before
+  the first frame seen and ended up to one frame after the last; ~23° at 15 frames/s), like the 3°
+  camera margin for angles. Within 45° of a full turn the app says "close to a full turn: check".
+- **Deduction:** thigh below horizontal only (median over the turn, #2.5 bands). Trunk lean can't be
+  seen when she faces the camera: judges check it.
+- 180-359° in the shape = "Attitude pivot (under 360°)", not valid. Less than 180° = an attitude
+  balance (balance detector). A hold that turns into a pivot is not judged as a balance as well.
+
+## Arabesque balance: row 9, code 2.902, value 0.20 ⚠️ value
+- Technique: "Free leg horizontal forward (straight or bent), side, or backward (Arabesque): Horizontal
+  position of the free leg (thigh) and the maximum vertical position of the body" (#10.11, p. 86) ✅
+- Table #11 row 9 "Arabesque: Free leg horizontal backward, also with trunk forward at the horizontal,
+  also with back bend of the trunk" lists 2.902, 2.903, 2.904 (p. 89). ⚠️ We assume the plain
+  arabesque = 0.20 (first in the row title); trunk forward (0.30) and back bend (0.40) are not scored.
+- **Measured as:** free leg backward, knee ≥ 150°, leg below back-split height (< 120° around the hip),
+  thigh ≥ 55°, trunk lean < 50° (more = arabesque with trunk forward, another element). Two segments,
+  like the attitude: **thigh** deviation = 90° − thigh elevation; **trunk** deviation = lean from vertical.
+- ⚠️ **Open decision:** read literally, "maximum vertical position of the body" makes any lean a
+  deviation. The team's arabesque leans 24-27° → large deviation, DB not valid. Real arabesques lean a
+  little to lift the leg; a judge may see this differently.
+- A shape held under 1 s that flows straight into another balance (the leg passing arabesque height on
+  its way up to a back split) is not judged on its own.
+
+## How the balances are recognized (pose library)
 Recognizing WHICH pose it is and measuring HOW FAR it is from the rulebook are separate steps.
 - **Which pose:** every frame becomes a pose signature (10 numbers: split angle, free knee, thigh
   height, leg height, signed trunk lean, leg in front or behind, hand on the leg, foot height vs hip
@@ -146,5 +202,5 @@ and large deductions" (p. 26). The app follows the bands, but does not punish ca
 ## Not automated yet (judges enter by hand)
 - Heavy landing; visibly arched back on landing; swing technique ("kip") (Execution table, p. 121) ⚠️
   penalty column to verify before automating
-- Other balances (arabesque, side split, etc.): value columns on p. 88-89 are pictogram-dependent ⚠️
+- Other balances (side split, etc.): value columns on p. 88-89 are pictogram-dependent ⚠️
 - Apparatus difficulties (DA), R elements, dance steps, apparatus faults, artistry

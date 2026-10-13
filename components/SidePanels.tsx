@@ -32,9 +32,9 @@ export function PracticePanel({ events, scores, hidden }: { events: StoredEvent[
       <ol className="m-0 grid list-none gap-2.5 p-0">
         {newestFirst.length
           ? newestFirst.map((e) => <MoveRow key={e.id} event={e} status={scores.status.get(e.id)} forJudge={false} />)
-          : <li className={emptyLine}>Press Start, then hold a balance for 1 second.</li>}
+          : <li className={emptyLine}>Press Start, then hold a balance for 1 second, jump or turn.</li>}
       </ol>
-      <p className={smallText}>The app watches three balances: front split, back split and attitude.</p>
+      <p className={smallText}>The app watches four balances (front split, back split, arabesque, attitude), the stag leap and the attitude turn.</p>
     </section>
   );
 }

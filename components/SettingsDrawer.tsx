@@ -1,6 +1,6 @@
 'use client';
 
-// Settings drawer: camera accuracy, "only the three balances", Teach poses, saved videos, the record download,
+// Settings drawer: camera accuracy, "only judge our moves", Teach poses, saved videos, the record download,
 // technical details and links to the developer tools.
 // A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
 // back to the Settings button.
@@ -89,7 +89,7 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
               checked={state.focusOnly}
               onChange={(e) => session.setFocusOnly(e.target.checked)}
             />
-            Only judge the three balances (front split, back split, attitude)
+            Only judge our moves (front split, back split, arabesque, attitude, stag leap, attitude turn)
           </label>
         </section>
 

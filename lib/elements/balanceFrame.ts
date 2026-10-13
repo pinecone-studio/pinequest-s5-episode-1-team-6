@@ -15,10 +15,13 @@ export const BALANCE_SETTINGS = {
   attitudeKneeMin: 60, // attitude free knee is bent between these angles
   attitudeKneeMax: 140,
   minAttitudeThighDeg: 55, // thigh raised at least this much (90 = horizontal)
-  minBackLegElevation: 120, // back split: leg at least 30° above horizontal (not an arabesque)
+  minBackLegElevation: 120, // back split: leg at least 30° above horizontal; lower = arabesque
   maxUprightTrunkTilt: 60, // back split with the trunk more upright than this = foot-above-head (row 10)
   minTrunkForwardLean: 65, // back split with the trunk leaning this far forward = trunk-forward (row 11)
   maxAttitudeTrunkTilt: 45, // more lean = another element (e.g. penché), not an attitude
+  minArabesqueThighDeg: 55, // arabesque: straight leg raised at least this much (90 = horizontal)
+  maxSupportLegTilt: 35, // support leg further from vertical than this = not standing on it (e.g. a leap photo)
+  maxArabesqueTrunkTilt: 50, // more lean = arabesque with trunk forward (2.903), another element
   minFreeLegVisibility: 0.03, // raised leg below this confidence is ignored even if plausible
   legLengthTolerance: [0.6, 1.4] as [number, number], // raised thigh and shin vs the support leg's, for a plausible leg
   helpDistance: 0.3, // hand within 0.3 torso lengths of the free shin/foot = help
@@ -87,6 +90,7 @@ export interface BalanceFrame {
   freeKnee: number;
   thighDeg: number;
   legUp: number;
+  supportTilt: number;
   headTop: number | null;
   footAtHead: boolean;
   footOverHead: number | null;
@@ -141,6 +145,7 @@ export function balanceFrame(lm: Landmarks, s = BALANCE_SETTINGS): BalanceFrame 
     freeKnee: jointAngle(free.hip, free.knee, free.ankle),
     thighDeg: thighElevation(free.hip, free.knee, thighLen),
     legUp: legElevation(hips, free.ankle),
+    supportTilt: legElevation(hips, support.ankle), // 0 = support foot straight under the hips
     headTop,
     footAtHead: headTop !== null && free.ankle.y < headTop + 0.25 * torso,
     // How far the lowest point of the free foot is above the head top, in torso lengths.

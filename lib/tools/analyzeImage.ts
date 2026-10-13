@@ -3,7 +3,7 @@
 
 import { createPoseTracker, type PoseTracker } from '../pose';
 import { LEG_POINTS, legLengthRatios, minVisibility, splitAngle, type Landmarks } from '../geometry';
-import { judgeSplitLeap, legsFullLength } from '../elements/splitLeap';
+import { judgeLeap, legsFullLength } from '../elements/splitLeap';
 import { measurePasse } from '../elements/passe';
 import { measureBalance, photoDeduction, shapeKey, type BalanceMeasurement } from '../elements/balances';
 import { legsUsable } from '../elements/balanceFrame';
@@ -35,7 +35,7 @@ export function analyzeLandmarks(lm: Landmarks, library?: PoseLibrary | null) {
   const visibility = minVisibility(lm, LEG_POINTS);
   const split = splitAngle(lm);
   const legRatios = legLengthRatios(lm);
-  const leap = judgeSplitLeap({
+  const leap = judgeLeap({
     tStart: 0, tPeak: 0, tEnd: 0, flightMs: 0, peakSplitDeg: split, visibility,
     sideOn: legsFullLength(legRatios),
   });

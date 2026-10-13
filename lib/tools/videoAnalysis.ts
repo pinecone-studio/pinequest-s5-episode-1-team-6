@@ -7,6 +7,8 @@ import { LandmarkSmoother } from '../oneEuro';
 import { LEG_POINTS, minVisibility, type Landmarks } from '../geometry';
 import { BalanceDetector, type BalanceLive } from '../elements/balances';
 import { SplitLeapDetector } from '../elements/splitLeap';
+import { AttitudePivotDetector } from '../elements/attitudePivot';
+import type { LandmarkRecording } from './replay';
 import { balanceFrame } from '../elements/balanceFrame';
 import { drawSkeleton } from '../draw';
 import type { ElementEvent } from '../types';
@@ -50,6 +52,7 @@ export interface VideoAnalysis {
   events: ElementEvent[];
   snapshots: Record<number, string>;
   summary: string;
+  recording: LandmarkRecording; // raw body points, for `npm run replay` and the video tests
 }
 
 /** A small picture of a frame for the contact sheet. */
@@ -77,8 +80,10 @@ export async function analyzeVideo(
 
   const smoother = new LandmarkSmoother();
   const events: ElementEvent[] = [];
-  const leap = new SplitLeapDetector(() => {});
+  const leap = new SplitLeapDetector((e) => events.push(e));
+  const pivot = new AttitudePivotDetector((e) => events.push(e));
   const balance = new BalanceDetector((e) => events.push(e));
+  const recording: LandmarkRecording = { src: src.split('/').pop(), w: 0, h: 0, fps, frames: [] };
   const frames: FrameRecord[] = [];
   const snapshots: Record<number, string> = {};
   const pending = [...snapshotTimes].sort((a, b) => a - b);
@@ -95,12 +100,17 @@ export async function analyzeVideo(
     ]);
     const raw = tracker.detect(video);
     const ms = t * 1000;
+    recording.frames.push({
+      t: Math.round(ms),
+      lm: raw ? raw.map((p) => [round1(p.x * w), round1(p.y * h), Math.round((p.visibility ?? 0) * 1000) / 1000]) : null,
+    });
     let lm: Landmarks | null = null;
     if (raw) {
       lm = smoother.smooth(raw.map((p) => ({ x: p.x * w, y: p.y * h, visibility: p.visibility ?? 0 })), t);
     } else smoother.reset();
     leap.update({ t: ms, lm });
-    balance.update({ t: ms, lm, airborne: leap.live.airborne });
+    pivot.update({ t: ms, lm });
+    balance.update({ t: ms, lm, airborne: leap.live.airborne, turning: pivot.live.turning });
     const live = balance.live;
     const f = lm ? balanceFrame(lm) : null;
     frames.push({
@@ -137,9 +147,16 @@ export async function analyzeVideo(
     }
     onProgress(`${model}: ${t.toFixed(1)} / ${duration.toFixed(1)} s`);
   }
+  pivot.flush();
   balance.flush();
+  events.sort((a, b) => a.tStart - b.tStart);
   onProgress(`Done (${model}).`);
-  return { model, fps, duration, width: w, height: h, frames, events, snapshots, summary: summarize(frames, events) };
+  Object.assign(recording, { w, h });
+  return { model, fps, duration, width: w, height: h, frames, events, snapshots, summary: summarize(frames, events), recording };
+}
+
+function round1(x: number): number {
+  return Math.round(x * 10) / 10;
 }
 
 function sheetFrame(video: HTMLVideoElement, t: number, lm: Landmarks | null, live: BalanceLive, w: number, h: number): SheetFrame {

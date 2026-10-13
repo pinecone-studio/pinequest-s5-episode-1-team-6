@@ -2,6 +2,7 @@
 //   - front split, with or without help             (row 3: "Split is required")
 //   - back split without help, trunk upright         (row 10: "whole foot above the head is required")
 //   - back split, trunk forward at/below horizontal   (row 11: split required, trunk horizontal or below)
+//   - arabesque                                      (row 9: straight leg back, thigh horizontal, body vertical)
 //   - attitude                                       (row 12: thigh horizontal, body vertical)
 //
 // Two separate questions per frame:
@@ -36,6 +37,7 @@ export const SHAPES: Record<Shape, { rule: BalanceRule; variant: BalanceVariant;
   frontSplit: { rule: BALANCES.FRONT_SPLIT, variant: BALANCES.FRONT_SPLIT.withoutHelp, label: 'Front split' },
   backSplitFootAboveHead: { rule: BALANCES.BACK_SPLIT, variant: BALANCES.BACK_SPLIT.footAboveHead, label: 'Back split · foot above head' },
   backSplitTrunkForward: { rule: BALANCES.BACK_SPLIT_TRUNK_FORWARD, variant: BALANCES.BACK_SPLIT_TRUNK_FORWARD.plain, label: 'Back split · trunk forward' },
+  arabesque: { rule: BALANCES.ARABESQUE, variant: BALANCES.ARABESQUE.plain, label: 'Arabesque' },
   attitude: { rule: BALANCES.ATTITUDE, variant: BALANCES.ATTITUDE.plain, label: 'Attitude' },
 };
 const FOCUS_POSES = Object.keys(SHAPES) as Shape[];
@@ -47,6 +49,7 @@ const FAMILY: Record<Shape, string> = {
   frontSplit: 'frontSplit',
   backSplitFootAboveHead: 'backSplit',
   backSplitTrunkForward: 'backSplitTrunkForward',
+  arabesque: 'arabesque',
   attitude: 'attitude',
 };
 
@@ -140,7 +143,13 @@ export class BalanceDetector {
     this.live = { shape: null, label: null, mainDeg: null, holdMs: 0, deduction: null, hint: null };
   }
 
-  update({ t, lm, airborne = false }: DetectorFrame): void {
+  update({ t, lm, airborne = false, turning = false }: DetectorFrame): void {
+    if (turning) {
+      // The hold became a pivot (judged by attitudePivot.ts): its start is no balance of its own.
+      this.segment = null;
+      this.candidate = null;
+      airborne = true; // and the turning frames are no balance either
+    }
     let m: BalanceMeasurement;
     const legs = legsUsable(lm, this.s);
     if (!lm) m = { shape: null, deviations: [], hint: 'Step into the camera view' };
@@ -161,8 +170,12 @@ export class BalanceDetector {
       if (this.candidate.tLast - this.candidate.tStart >= this.s.switchAfterMs) {
         // Keep the candidate's frames: endSegment() clears this.candidate.
         const next = this.candidate;
-        this.endSegment();
+        // Under 1 s and straight into another balance = the way into it (e.g. the leg passing
+        // arabesque height on its way up to a back split), not a balance of its own.
+        if (this.segment.tLast - this.segment.tStart < BALANCE_RULES.minHoldMs) this.segment = null;
+        else this.endSegment();
         this.segment = next;
+        this.candidate = null;
       }
     } else if (family) {
       this.candidate = null;
@@ -275,6 +288,8 @@ export function measureBalance(
   // Help is a measured fact (hand on the leg), so it picks the front split variant.
   if (shape === 'frontSplit' || shape === 'frontSplitHelp') shape = f.help ? 'frontSplitHelp' : 'frontSplit';
 
+  // Every balance stands on the support leg: legs spread in the air (a leap) are no balance.
+  if (f.supportTilt > s.maxSupportLegTilt) shape = null;
   if (!shape) return { ...base, recognizer, confidence, hint: hintFor(f) };
 
   // 2. How far from the rulebook shape?
@@ -288,10 +303,11 @@ function deviationsFor(shape: Shape, f: BalanceFrame): { deviations: Deviation[]
   if (shape === 'frontSplitHelp' || shape === 'frontSplit') {
     return { deviations: [{ segment: 'split', label: 'Split short of 180°', deg: 180 - f.split }], mainDeg: f.split };
   }
-  if (shape === 'attitude') {
+  if (shape === 'attitude' || shape === 'arabesque') {
+    // Same technique text for both (p. 86-87): thigh horizontal, body as vertical as possible.
     return {
       deviations: [
-        { segment: 'thigh', label: 'Thigh below horizontal', deg: BALANCES.ATTITUDE.requiredThighDeg - f.thighDeg },
+        { segment: 'thigh', label: 'Thigh below horizontal', deg: SHAPES[shape].rule.requiredThighDeg! - f.thighDeg },
         { segment: 'trunk', label: 'Trunk not vertical', deg: f.trunk },
       ],
       mainDeg: f.thighDeg,
@@ -325,6 +341,9 @@ export function ruleShape(f: BalanceFrame, s = BALANCE_SETTINGS): Shape | null {
       && f.thighDeg >= s.minAttitudeThighDeg && f.trunk < s.maxAttitudeTrunkTilt && !f.footAtHead) {
     return 'attitude';
   }
+  if (f.freeKnee >= s.straightKneeDeg && f.legUp < s.minBackLegElevation) {
+    return f.thighDeg >= s.minArabesqueThighDeg && f.trunk < s.maxArabesqueTrunkTilt ? 'arabesque' : null;
+  }
   if (f.freeKnee >= s.attitudeKneeMax && f.legUp >= s.minBackLegElevation) {
     if (f.lean >= s.minTrunkForwardLean && f.split >= s.minSplitToRecognize) return 'backSplitTrunkForward';
     if (f.trunk < s.maxUprightTrunkTilt) return 'backSplitFootAboveHead';
@@ -346,6 +365,7 @@ const SHAPE_KEYS: Record<Shape, string> = {
   frontSplit: 'front_split',
   backSplitFootAboveHead: 'back_split',
   backSplitTrunkForward: 'back_split_trunk_forward',
+  arabesque: 'arabesque',
   attitude: 'attitude',
 };
 const SHAPE_FROM_KEY = Object.fromEntries(Object.entries(SHAPE_KEYS).map(([k, v]) => [v, k])) as Record<string, Shape>;

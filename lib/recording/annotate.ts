@@ -43,6 +43,7 @@ export function bonesFor(segment: string, lm: Landmarks): Bone[] {
   switch (segment) {
     case 'split':
     case 'leapSplit':
+    case 'leapStag': // front thigh to back leg: both legs
       return [...leg('L'), ...leg('R')];
     case 'thigh':
     case 'passeThigh':
