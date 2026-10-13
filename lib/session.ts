@@ -4,6 +4,9 @@
 //
 // One main button walks people through the app:
 //   Turn on camera  ->  Start  ->  Finish  ->  Try again
+//
+// Two sports (lib/sport.ts): rhythmic gymnastics runs the balance / leap / pivot detectors in
+// lib/elements/, cheerleading the jump and motion detectors in lib/cheer/. Only one set runs at a time.
 
 import { createPoseTracker, preloadPoseModel, watchModelDownload, type ModelVariant, type PoseTracker } from './pose';
 import { LandmarkSmoother } from './oneEuro';
@@ -14,9 +17,13 @@ import { AttitudePivotDetector } from './elements/attitudePivot';
 import { BalanceDetector, setPoseLibrary } from './elements/balances';
 import { Scoreboard, type JudgeInputs } from './scoring';
 import { ELEMENTS, RULE_SOURCE } from './rules';
-import { drawLegAngles, drawSkeleton } from './draw';
+import { cheerAngles, drawLegAngles, drawSkeleton, legAngles, type AnglesFn } from './draw';
+import { CheerJumpDetector } from './cheer/jumps';
+import { MotionDetector } from './cheer/motions';
+import { CHEER_RULE_SOURCE } from './cheer/rules';
+import { SPORT_TEXT, type Sport } from './sport';
 import { currentLibrary, teach } from './ui/libraryStore';
-import { describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
+import { cheerLiveMessage, describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
 import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
@@ -71,6 +78,7 @@ export type MoveVideo =
   | { status: 'ready'; clip: Blob; clipUrl: string; clipName: string; photoUrl: string };
 
 export interface SessionState {
+  sport: Sport;
   source: Source;
   judging: boolean;
   finished: boolean;
@@ -94,16 +102,15 @@ export interface SessionState {
   videosSaved: boolean | null; // saved in this browser (null: not tried yet)
 }
 
-const START_MESSAGE: StageMessage = {
-  title: 'Turn on the camera to begin',
-  detail: 'Stand sideways to the camera, with your whole body in the picture.',
-};
+/** The message on the video before the camera is on. */
+const startMessage = (sport: Sport): StageMessage => SPORT_TEXT[sport].startMessage;
 
 const EMPTY_TECH: TechReadout = { fps: null, view: null, split: '–', shape: '–', releve: '–', state: '–' };
 
 export class JudgingSession {
   // ---------- State React shows ----------
   state: SessionState = {
+    sport: 'gymnastics',
     source: null,
     judging: false,
     finished: false,
@@ -111,7 +118,7 @@ export class JudgingSession {
     modelReady: false,
     facing: 'user',
     cameraCount: 0,
-    message: START_MESSAGE,
+    message: startMessage('gymnastics'),
     live: null,
     cards: [],
     scoreVersion: 0,
@@ -135,6 +142,8 @@ export class JudgingSession {
   private passe: PasseDetector;
   private pivot: AttitudePivotDetector;
   private balance: BalanceDetector;
+  private cheerJumps: CheerJumpDetector;
+  private motions: MotionDetector;
   private recorder: TeachRecorder;
   private routineRecorder = new RoutineRecorder();
   private videoRun = 0; // goes up when a new routine starts, so older video work stops
@@ -170,6 +179,8 @@ export class JudgingSession {
     this.passe = new PasseDetector(onOtherEvent);
     this.pivot = new AttitudePivotDetector((event) => this.onEvent(event));
     this.balance = new BalanceDetector((event) => this.onEvent(event));
+    this.cheerJumps = new CheerJumpDetector((event) => this.onEvent(event));
+    this.motions = new MotionDetector((event) => this.onEvent(event));
     this.recorder = new TeachRecorder((label, signatures) => this.finishTeachRecording(label, signatures));
   }
 
@@ -286,6 +297,22 @@ export class JudgingSession {
     this.set({ focusOnly });
   }
 
+  /**
+   * The sport picker / switch. Not while judging. A new sport starts a new routine: its moves are
+   * scored by other rules, so the two are never mixed in one score.
+   */
+  setSport(sport: Sport): void {
+    if (sport === this.state.sport || this.state.judging) return;
+    const showingStart = this.state.message === startMessage(this.state.sport);
+    this.set({ sport, live: null, ...(showingStart ? { message: startMessage(sport) } : {}) });
+    this.lastLiveKey = '';
+    this.newRoutine();
+  }
+
+  private get cheer(): boolean {
+    return this.state.sport === 'cheer';
+  }
+
   // ---------- Sources ----------
 
   private async startCamera(): Promise<void> {
@@ -384,7 +411,7 @@ export class JudgingSession {
     // Clear the last skeleton: nothing redraws the overlay without a camera or video.
     const canvas = this.canvas;
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
-    this.set({ source: null, live: null, cards: [], message: START_MESSAGE });
+    this.set({ source: null, live: null, cards: [], message: startMessage(this.state.sport) });
     this.setJudging(false, { quiet: true });
   }
 
@@ -431,25 +458,36 @@ export class JudgingSession {
     }
     // Detectors also get frames with nobody visible (lm = null), so a shape that ends by
     // leaving the frame is still closed and judged.
-    this.leap.update({ t, lm });
-    this.passe.update({ t, lm, airborne: this.leap.live.airborne });
-    this.pivot.update({ t, lm });
-    // Turning in an attitude is a pivot, not a balance.
-    this.balance.update({ t, lm, airborne: this.leap.live.airborne, turning: this.pivot.live.turning });
+    if (this.cheer) {
+      this.cheerJumps.update({ t, lm });
+      // In the air the arms belong to the jump, not to a motion.
+      this.motions.update({ t, lm, airborne: this.cheerJumps.live.airborne });
+    } else {
+      this.leap.update({ t, lm });
+      this.passe.update({ t, lm, airborne: this.leap.live.airborne });
+      this.pivot.update({ t, lm });
+      // Turning in an attitude is a pivot, not a balance.
+      this.balance.update({ t, lm, airborne: this.leap.live.airborne, turning: this.pivot.live.turning });
+    }
 
+    const angles: AnglesFn = this.cheer ? cheerAngles : legAngles;
     const ctx = this.canvas?.getContext('2d');
     if (ctx) {
       drawSkeleton(ctx, lm, this.legColor());
-      if (this.anglesVisible) drawLegAngles(ctx, lm);
+      if (this.anglesVisible) drawLegAngles(ctx, lm, angles);
     }
-    // The routine video shows the skeleton and the leg angles (drawn here if the page hides them).
-    if (this.routineRecorder.recording) this.routineRecorder.addFrame(t, video, this.canvas, lm, !this.anglesVisible);
+    // The routine video shows the skeleton and the angles (drawn here if the page hides them).
+    if (this.routineRecorder.recording) this.routineRecorder.addFrame(t, video, this.canvas, lm, this.anglesVisible ? null : angles);
     if (this.techVisible) this.updateTech(lm);
     this.updateLive(this.recorder.capture(lm, this.leap.live.airborne));
     this.countFps();
   }
 
   private legColor(): string {
+    if (this.cheer) {
+      if (this.cheerJumps.live.airborne) return '#f08c9c';
+      return this.motions.live.shape ? '#4cc38a' : '#7aa7ff'; // green: hitting a motion
+    }
     if (this.leap.live.airborne) return '#f08c9c';
     if (this.passe.live.inShape || this.pivot.live.turning || this.balance.live.shape) return '#4cc38a'; // green: in a shape
     return '#7aa7ff';
@@ -460,6 +498,9 @@ export class JudgingSession {
     let live: LiveView;
     if (teachMessage) {
       live = { pose: 'Teaching', showDots: false, dots: 0, tone: 'idle', text: teachMessage };
+    } else if (this.cheer) {
+      const m = cheerLiveMessage(this.motions.live, this.cheerJumps.live.airborne);
+      live = { pose: m.pose ?? 'Watching', showDots: false, dots: 0, tone: m.tone, text: m.text };
     } else if (this.pivot.live.turning) {
       const m = pivotMessage(this.pivot.live.rotationDeg);
       live = { pose: m.pose, showDots: false, dots: 0, tone: m.tone, text: m.text };
@@ -499,6 +540,14 @@ export class JudgingSession {
     let tech: TechReadout;
     if (!lm) {
       tech = { ...EMPTY_TECH, fps, state: 'nobody in view' };
+    } else if (this.cheer) {
+      const { cheerJumps, motions } = this;
+      tech = {
+        ...EMPTY_TECH,
+        fps,
+        shape: cheerJumps.live.airborne ? cheerJumps.live.shape ?? 'jump' : motions.live.name ?? '–',
+        state: cheerJumps.live.airborne ? 'in the air' : motions.live.shape ? 'motion' : 'on the floor',
+      };
     } else {
       const { leap, passe, balance } = this;
       tech = {
@@ -555,9 +604,10 @@ export class JudgingSession {
   private setJudging(on: boolean, { quiet = false } = {}): void {
     const stopping = !on && this.state.judging;
     if (stopping) {
-      this.passe.flush(); // judge a balance still being held
+      this.passe.flush(); // judge a balance (or a motion) still being held
       this.pivot.flush();
       this.balance.flush();
+      this.motions.flush();
       this.stoppedAt = this.currentTimeMs();
       if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
     }
@@ -593,6 +643,8 @@ export class JudgingSession {
     this.passe.reset();
     this.pivot.reset();
     this.balance.reset();
+    this.cheerJumps.reset();
+    this.motions.reset();
     this.lastVideoTime = -1;
   }
 
@@ -733,7 +785,8 @@ export class JudgingSession {
   exportAudit(judge: JudgeInputs): void {
     const audit = this.scoreboard.toAudit(judge, {
       app: 'Rhymnast',
-      ruleSource: RULE_SOURCE,
+      sport: this.state.sport,
+      ruleSource: this.cheer ? CHEER_RULE_SOURCE : RULE_SOURCE,
       source: this.state.source === 'file' ? `file: ${this.fileName}` : this.state.source,
       poseModel: `MediaPipe Pose Landmarker (${this.trackerVariant}, ${this.tracker?.delegate})`,
     });

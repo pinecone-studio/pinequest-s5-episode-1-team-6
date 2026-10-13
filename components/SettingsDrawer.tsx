@@ -1,7 +1,8 @@
 'use client';
 
 // Settings drawer: camera accuracy, "only judge our moves", Teach poses, saved videos, the record download,
-// technical details and links to the developer tools.
+// technical details and links to the developer tools. "Only judge our moves" and Teach poses are for
+// rhythmic gymnastics (the balance pose library); cheer doesn't use them.
 // A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
 // back to the Settings button.
 
@@ -41,14 +42,18 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
   }, [session, onClose]);
 
   const tech = state.tech;
-  const techItems: [string, string, string?][] = [
-    ['Frames per second', tech.fps == null ? '–' : String(tech.fps), tech.fps == null ? '' : tech.fps >= 15 ? 'text-good' : 'text-bad'],
-    ['Legs seen side-on', tech.view ?? '–', tech.view === 'yes' ? 'text-good' : tech.view === 'no' ? 'text-warn' : ''],
-    ['Split angle', tech.split],
-    ['Shape', tech.shape],
-    ['On the toes', tech.releve],
-    ['State', tech.state],
-  ];
+  const fps: [string, string, string?] = ['Frames per second', tech.fps == null ? '–' : String(tech.fps), tech.fps == null ? '' : tech.fps >= 15 ? 'text-good' : 'text-bad'];
+  // Cheer has no splits or relevé: only what its detectors see.
+  const techItems: [string, string, string?][] = state.sport === 'cheer'
+    ? [fps, ['Shape', tech.shape], ['State', tech.state]]
+    : [
+      fps,
+      ['Legs seen side-on', tech.view ?? '–', tech.view === 'yes' ? 'text-good' : tech.view === 'no' ? 'text-warn' : ''],
+      ['Split angle', tech.split],
+      ['Shape', tech.shape],
+      ['On the toes', tech.releve],
+      ['State', tech.state],
+    ];
 
   return (
     <>
@@ -75,27 +80,31 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
             disabled={state.busy}
             onChange={(e) => void session.setModel(e.target.value as ModelVariant)}
           >
-            <option value="heavy">Best for splits (slower to load)</option>
+            <option value="heavy">Most accurate (slower to load)</option>
             <option value="full">Faster</option>
             <option value="lite">Fastest (older laptops)</option>
           </select>
         </section>
 
-        <section className={setting}>
-          <label className="flex items-start gap-2.5 text-base">
-            <input
-              type="checkbox"
-              className="mt-0.5 h-5 w-5 accent-accent"
-              checked={state.focusOnly}
-              onChange={(e) => session.setFocusOnly(e.target.checked)}
-            />
-            Only judge our moves (front split, back split, arabesque, attitude, stag leap, attitude turn)
-          </label>
-        </section>
+        {state.sport === 'gymnastics' && (
+          <>
+            <section className={setting}>
+              <label className="flex items-start gap-2.5 text-base">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-5 w-5 accent-accent"
+                  checked={state.focusOnly}
+                  onChange={(e) => session.setFocusOnly(e.target.checked)}
+                />
+                Only judge our moves (front split, back split, arabesque, attitude, stag leap, attitude turn)
+              </label>
+            </section>
 
-        <section className={setting}>
-          <TeachPanel session={session} recording={state.teachRecording} status={state.teachStatus} />
-        </section>
+            <section className={setting}>
+              <TeachPanel session={session} recording={state.teachRecording} status={state.teachStatus} />
+            </section>
+          </>
+        )}
 
         <section className={setting}>
           <b>Saved videos</b>

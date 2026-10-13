@@ -15,17 +15,22 @@
 /* short:... = phones turned sideways: the video fits the screen height. */
 @custom-variant short (@media (max-height: 500px));
 
-/* Simple and friendly: white page, soft cards, one blue accent, traffic-light results,
+/* Simple and friendly: white page, soft cards, one accent color, traffic-light results,
    big buttons and plain words. A light theme (below) and a dark theme (.dark, further down).
+   Each sport has its own look (data-sport on <html>, lib/sport.ts), further down:
+     rhythmic gymnastics: violet with a pink ribbon, serif headings (also the default, before a sport is picked);
+     cheerleading: royal blue and gold varsity stripes, bold upper-case headings.
+   The traffic-light colors (good / warn / bad) stay the same in every sport: they mean the same thing.
    Use these as Tailwind classes: bg-card, text-muted, border-line, bg-accent, text-good, bg-bad-soft, ... */
 @theme {
-  --color-bg: #ffffff;
-  --color-card: #f5f7fa;
-  --color-ink: #1d2433;
-  --color-muted: #5d6779;
-  --color-line: #e3e8ef;
-  --color-accent: #2f6fed;
-  --color-accent-soft: #e8f0fe;
+  --color-bg: #fdfbff;
+  --color-card: #f5f1fb;
+  --color-ink: #241b35;
+  --color-muted: #675e7c;
+  --color-line: #e7e0f1;
+  --color-accent: #7438d6;
+  --color-accent-soft: #efe7fd;
+  --color-spark: #e0559f; /* the sport's second color, for decorations only (ribbon pink / cheer gold) */
   --color-good: #1f8a4c;
   --color-good-soft: #e5f5ec;
   --color-warn: #b26a00;
@@ -33,7 +38,7 @@
   --color-bad: #c62f3c;
   --color-bad-soft: #fdeaec;
   --color-stage-text: #c9d1de;
-  --color-stage: #1d2433; /* behind the video, and the dimmed page behind Settings */
+  --color-stage: #1f1730; /* behind the video, and the dimmed page behind Settings */
   --color-overlay: #ffffff; /* boxes on top of the video */
   --color-tab: #ffffff; /* the selected Practice / Judge tab */
   --color-on-fill: #ffffff; /* text on a colored fill (bg-accent, bg-good, bg-bad, ...) */
@@ -57,9 +62,31 @@
   }
 }
 
-/* The Figtree font is loaded in app/layout.tsx. */
+/* The fonts are loaded in app/layout.tsx. font-display = the sport's heading font (below). */
 @theme inline {
   --font-sans: var(--font-figtree), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--sport-display), var(--font-figtree), system-ui, sans-serif;
+}
+
+:root {
+  --sport-display: var(--font-playfair);
+  /* The stripe under the header and on the sport picker: a ribbon for gymnastics. */
+  --sport-stripe: linear-gradient(90deg, #7438d6, #e0559f 55%, #f4a35c);
+}
+
+/* Cheerleading, light. Rhythmic gymnastics is the default above. */
+[data-sport="cheer"] {
+  --sport-display: var(--font-bebas);
+  --sport-stripe: repeating-linear-gradient(90deg, #1d4ed8 0 28px, #f5b301 28px 40px, #0b1736 40px 52px);
+  --color-bg: #ffffff;
+  --color-card: #f2f5fc;
+  --color-ink: #0b1736;
+  --color-muted: #54607c;
+  --color-line: #dfe5f2;
+  --color-accent: #1d4ed8;
+  --color-accent-soft: #e2eaff;
+  --color-spark: #f5b301;
+  --color-stage: #0b1736;
 }
 
 :root {
@@ -72,24 +99,53 @@
 @media screen {
   .dark {
     color-scheme: dark;
-    --color-bg: #0f141d;
-    --color-card: #1a2130;
-    --color-ink: #e7ebf3;
-    --color-muted: #9aa5b8;
-    --color-line: #2a3445;
-    --color-accent: #7aa3ff;
-    --color-accent-soft: #1c2a47;
+    --color-bg: #120e1a;
+    --color-card: #1d1729;
+    --color-ink: #ece6f7;
+    --color-muted: #a99ebf;
+    --color-line: #30273f;
+    --color-accent: #b590ff;
+    --color-accent-soft: #2a2043;
+    --color-spark: #f07cba;
     --color-good: #5fd08f;
     --color-good-soft: #173222;
     --color-warn: #f0b45a;
     --color-warn-soft: #33270f;
     --color-bad: #ff7b86;
     --color-bad-soft: #3a1a1f;
-    --color-stage: #05080d;
-    --color-overlay: #1a2130;
-    --color-tab: #2b3548;
-    --color-on-fill: #0f141d;
+    --color-stage: #07050b;
+    --color-overlay: #1d1729;
+    --color-tab: #352a4c;
+    --color-on-fill: #120e1a;
   }
+
+  /* Cheerleading, dark (both on <html>, so this beats .dark alone; or a cheer card on the sport picker). */
+  .dark[data-sport="cheer"],
+  .dark [data-sport="cheer"] {
+    --color-bg: #070d1f;
+    --color-card: #101a35;
+    --color-ink: #e8edf9;
+    --color-muted: #9ba7c4;
+    --color-line: #1f2b4d;
+    --color-accent: #7aa2ff;
+    --color-accent-soft: #16244a;
+    --color-spark: #ffc933;
+    --color-stage: #03060f;
+    --color-overlay: #101a35;
+    --color-tab: #213160;
+    --color-on-fill: #070d1f;
+  }
+}
+
+/* Headings in the sport's font (Tailwind class font-display). Bebas (cheer) has one weight: no fake bold. */
+[data-sport="cheer"] .font-display {
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+/* The sport's stripe (header, sport picker). */
+.sport-stripe {
+  background: var(--sport-stripe);
 }
 
 body {

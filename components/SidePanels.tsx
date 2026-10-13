@@ -1,6 +1,7 @@
 // The two side panels: Practice (gymnast / coach) and Judge (score, artistry, agree / disagree).
 
 import type { ScoreResult } from '@/lib/scoring';
+import type { SportText } from '@/lib/sport';
 import type { StoredEvent } from '@/lib/types';
 import { MoveRow } from './MoveRow';
 import { input, secondaryButton, smallText } from './ui';
@@ -16,7 +17,14 @@ export interface JudgeForm {
 const card = 'grid gap-3.5 rounded-card bg-card p-5';
 const emptyLine = 'text-[15px] text-muted';
 
-export function PracticePanel({ events, scores, hidden }: { events: StoredEvent[]; scores: ScoreResult; hidden: boolean }) {
+interface PracticePanelProps {
+  text: SportText;
+  events: StoredEvent[];
+  scores: ScoreResult;
+  hidden: boolean;
+}
+
+export function PracticePanel({ text, events, scores, hidden }: PracticePanelProps) {
   const counted = events.filter((e) => !e.rejected);
   const lost = scores.breakdown.autoE;
   const total = counted.length === 0
@@ -27,19 +35,20 @@ export function PracticePanel({ events, scores, hidden }: { events: StoredEvent[
 
   return (
     <section className={card} id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden={hidden}>
-      <h2 className="m-0 text-xl leading-tight font-bold">Your moves</h2>
+      <h2 className="m-0 font-display text-[22px] leading-tight">Your moves</h2>
       <p className="m-0 text-lg font-semibold">{total}</p>
       <ol className="m-0 grid list-none gap-2.5 p-0">
         {newestFirst.length
           ? newestFirst.map((e) => <MoveRow key={e.id} event={e} status={scores.status.get(e.id)} forJudge={false} />)
-          : <li className={emptyLine}>Press Start, then hold a balance for 1 second, jump or turn.</li>}
+          : <li className={emptyLine}>{text.emptyPractice}</li>}
       </ol>
-      <p className={smallText}>The app watches four balances (front split, back split, arabesque, attitude), the stag leap and the attitude turn.</p>
+      <p className={smallText}>{text.watches}</p>
     </section>
   );
 }
 
 interface JudgePanelProps {
+  text: SportText;
   events: StoredEvent[];
   scores: ScoreResult;
   form: JudgeForm;
@@ -49,7 +58,7 @@ interface JudgePanelProps {
   hidden: boolean;
 }
 
-export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport, hidden }: JudgePanelProps) {
+export function JudgePanel({ text, events, scores: r, form, onForm, onReject, onReport, hidden }: JudgePanelProps) {
   const newestFirst = [...events].reverse();
   const checked = events.filter((e) => e.reviewed).length;
   const noMoves = events.length === 0; // show "–" instead of a score made only of the empty 10.00 execution
@@ -85,22 +94,22 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
       <div className="grid grid-cols-3 gap-2">
         {part('Difficulty', score(r.D), 'from the app')}
         {part('Execution', score(r.E), r.breakdown.autoE ? `from the app (−${r.breakdown.autoE.toFixed(2)})` : 'from the app')}
-        {part('Artistry', r.A.toFixed(2), 'your score')}
+        {part(text.artistry, r.A.toFixed(2), 'your score')}
       </div>
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {field('artistry', 'Artistry (0–10)', { max: 10, step: 0.05 })}
+        {field('artistry', `${text.artistry} (0–10)`, { max: 10, step: 0.05 })}
         {field('penalties', 'Penalties', { step: 0.05 })}
       </div>
       <details className="grid gap-2.5">
         <summary>Points the app can&apos;t see</summary>
-        <p className={`${smallText} mt-2`}>For apparatus work, dance steps and other moves the app doesn&apos;t judge.</p>
+        <p className={`${smallText} mt-2`}>{text.extraHelp}</p>
         <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {field('extraD', 'Extra difficulty', { step: 0.1 })}
           {field('extraE', 'Extra execution points lost', { step: 0.1 })}
         </div>
       </details>
       <div className="flex items-baseline justify-between gap-2.5">
-        <h2 className="m-0 text-xl leading-tight font-bold">Moves</h2>
+        <h2 className="m-0 font-display text-[22px] leading-tight">Moves</h2>
         {events.length > 0 && (
           <span className={`text-sm font-semibold ${checked === events.length ? 'text-good' : 'text-muted'}`}>
             {checked} of {events.length} checked
@@ -110,7 +119,7 @@ export function JudgePanel({ events, scores: r, form, onForm, onReject, onReport
       <ol className="m-0 grid list-none gap-2.5 p-0">
         {newestFirst.length
           ? newestFirst.map((e) => <MoveRow key={e.id} event={e} status={r.status.get(e.id)} forJudge onReject={onReject} />)
-          : <li className={emptyLine}>Moves appear here as the gymnast performs.</li>}
+          : <li className={emptyLine}>{`Moves appear here as the ${text.athlete} performs.`}</li>}
       </ol>
       <button className={`${secondaryButton} w-full`} onClick={onReport}>Open full report</button>
     </section>

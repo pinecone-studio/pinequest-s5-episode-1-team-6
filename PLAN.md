@@ -78,6 +78,15 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [x] `npm run replay` + "Export body points" in /tools/video-analyze; the team's clips are regression tests (`tests/videos.test.ts`)
 - [ ] Decide: arabesque/attitude trunk lean (literal "maximum vertical" makes the team's 24-27° lean a large deviation)
 - [ ] More videos: `not_these/` look-alikes, faults (small/medium/large), several people; a stag leap filmed from the start
+
+## Phase 6 - Cheerleading (user, 2026-10-14)
+- [x] Sport picker + header switch; separate gymnastics and cheer themes (light and dark)
+- [x] Cheer motions: High V, Low V, T, touchdown, diagonal, L motion, punch, broken T (`lib/cheer/motions.ts`)
+- [x] Cheer jumps: toe touch, pike, herkie, tuck, spread eagle (`lib/cheer/jumps.ts`)
+- [x] Team-made rubric with references (#C1-#C6), report and move videos for cheer, synthetic-pose tests
+- [ ] Film cheer motions and jumps (front and side) into `data/validation/videos/cheer/`; replay tests. **Owner: team**
+- [ ] A cheer judge or coach checks the rubric values and jump D values. **Owner: team**
+- [ ] Stretch: flyer body positions on the ground (liberty, heel stretch, scorpion) via the balance detector
 - [ ] Human check of CoP codes and D values for all three (p. 80, 89, 100)
 
 ## Later (not in the 2-week scope)

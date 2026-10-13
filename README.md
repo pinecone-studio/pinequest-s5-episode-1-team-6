@@ -1,4 +1,8 @@
-# Rhymnast: AI judging assistant for rhythmic gymnastics
+# Rhymnast: AI judging assistant for rhythmic gymnastics and cheerleading
+
+Two sports: pick one on the first visit, or switch with Gymnastics | Cheer in the header. Each has its
+own look (colors, heading font) and its own moves. Cheerleading is described in
+[`docs/cheer.md`](docs/cheer.md); the rest of this page is about rhythmic gymnastics.
 
 A gymnast performs in front of a camera. A **pretrained pose model** (Google MediaPipe Pose, in the
 browser) finds her joints in every frame. **Rules from the FIG Code of Points** measure the shapes
@@ -92,6 +96,10 @@ Rule text, page numbers and how each value was checked: [`docs/rules.md`](docs/r
 
 **Not automated** (judges add these by hand): apparatus difficulties (DA), R elements, dance steps,
 apparatus handling faults, artistry, other body difficulties.
+
+**Cheerleading** (`lib/cheer/`): 5 jumps (toe touch, pike, herkie, tuck, spread eagle) and 8 arm motions
+(High V, Low V, T, touchdown, diagonal, L motion, punch, broken T), judged with a team-made technique
+rubric (not an official score sheet). See [`docs/cheer.md`](docs/cheer.md).
 
 ## How it recognizes the poses (no model training)
 The pose model (MediaPipe, pretrained by Google) finds the body joints. Our code turns each frame into a

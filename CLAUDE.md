@@ -114,6 +114,16 @@ Known limits (be honest in the UI and README):
    method counted 180° for a full turn), plus one frame of turning as sampling margin.
    The team's clips replay as tests: `npm run replay`, `tests/videos.test.ts` (body points only).
 
+11. **Cheerleading (user, 2026-10-14):** a second sport. Sport picker on the first visit, Gymnastics | Cheer
+   switch in the header (`lib/sport.ts`, `components/useSport.ts`; saved in localStorage, `data-sport` on
+   `<html>` set before paint like the dark theme). Each sport has its own theme in `app/globals.css`:
+   gymnastics violet + ribbon pink, Playfair Display headings; cheer royal blue + gold varsity stripes,
+   Bebas Neue headings. Cheer detectors in `lib/cheer/`: `motions.ts` (8 arm motions, front view, held
+   ≥0.3 s) and `jumps.ts` (5 jumps, reusing the leap detector's airborne logic). Only one sport's
+   detectors run at a time; changing sport starts a new routine. Cheer has no official per-degree table,
+   so the values are OUR rubric (`lib/cheer/rules.ts`, #C1-#C6, `verified: false`), labeled as such in
+   the UI and report. Showmanship replaces Artistry for cheer. See `docs/cheer.md`.
+
 ## How scoring works
 The pretrained pose model gives body joints. **Our own rules** measure angles on those joints and compare
 them with the FIG Code of Points. Example: split leap needs a 180° split at the highest point. Deviation

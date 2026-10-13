@@ -2,6 +2,8 @@
 
 // The whole judging page. The session (lib/session.ts) runs the camera, pose model and judging;
 // this component lays out the page and passes clicks to it.
+// First the sport: until one is picked in this browser the sport picker shows (SportPicker.tsx);
+// the header switch changes it later, and the session then judges that sport's moves.
 // Two tabs show the same judging for two audiences:
 //   Practice (gymnast / coach): moves, points lost, one tip each
 //   Judge: final score, artistry entry, agree / disagree with each call, full report
@@ -9,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { buildReport } from '@/lib/report';
+import { SPORT_TEXT, type Sport } from '@/lib/sport';
 import { useJudgingSession } from './useJudgingSession';
 import { Header, type Tab } from './Header';
 import { Stage } from './Stage';
@@ -16,10 +19,17 @@ import { Controls, mainButtonLabel } from './Controls';
 import { JudgePanel, PracticePanel, type JudgeForm } from './SidePanels';
 import { ResultsView } from './ResultsView';
 import { SettingsDrawer } from './SettingsDrawer';
+import { SportPicker } from './SportPicker';
+import { useSport } from './useSport';
 
 const TAB_KEY = 'rhymnast.tab';
 
 export function RhymnastApp() {
+  const sport = useSport();
+  return sport ? <JudgingPage sport={sport} /> : <SportPicker />;
+}
+
+function JudgingPage({ sport }: { sport: Sport }) {
   const { session, state } = useJudgingSession();
   const stageRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -30,6 +40,9 @@ export function RhymnastApp() {
   const [details, setDetails] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [judgeForm, setJudgeForm] = useState<JudgeForm>({ artistry: '0', extraD: '0', extraE: '0', penalties: '0' });
+
+  // Judge the picked sport (a new sport starts a new routine).
+  useEffect(() => session.setSport(sport), [session, sport]);
 
   // Connect the session to the video once the page is in the browser.
   useEffect(() => session.attach(videoRef.current!, canvasRef.current!, stageRef.current!), [session]);
@@ -58,11 +71,14 @@ export function RhymnastApp() {
 
   const events = session.scoreboard.events;
   const scores = session.scoreboard.compute(judgeForm);
-  const report = state.resultsOpen ? buildReport(session.scoreboard, judgeForm, { durationMs: state.resultsDurationMs }) : null;
+  const report = state.resultsOpen
+    ? buildReport(session.scoreboard, judgeForm, { durationMs: state.resultsDurationMs, sport: state.sport })
+    : null;
+  const text = SPORT_TEXT[state.sport];
 
   return (
     <>
-      <Header tab={tab} onTab={setTab} onSettings={() => setSettingsOpen(true)} />
+      <Header sport={sport} judging={state.judging} tab={tab} onTab={setTab} onSettings={() => setSettingsOpen(true)} />
 
       <main className="mx-auto grid max-w-[1400px] grid-cols-1 gap-6 px-[clamp(16px,4vw,40px)] pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] print:hidden">
         <section className="grid min-w-0 content-start gap-4">
@@ -79,6 +95,7 @@ export function RhymnastApp() {
             main={{ label: mainButtonLabel(state), onClick: () => session.onMainButton() }}
           />
           <Controls
+            steps={text.steps}
             state={state}
             movesCount={events.length}
             onMain={() => session.onMainButton()}
@@ -89,8 +106,9 @@ export function RhymnastApp() {
         </section>
 
         <aside className="grid min-w-0 content-start gap-4">
-          <PracticePanel events={events} scores={scores} hidden={tab !== 'practice'} />
+          <PracticePanel text={text} events={events} scores={scores} hidden={tab !== 'practice'} />
           <JudgePanel
+            text={text}
             events={events}
             scores={scores}
             form={judgeForm}
@@ -105,6 +123,7 @@ export function RhymnastApp() {
       <div ref={resultsRef}>
         {report && (
           <ResultsView
+            text={text}
             report={report}
             videos={state.moveVideos}
             videosSaved={state.videosSaved}
@@ -121,8 +140,8 @@ export function RhymnastApp() {
       )}
 
       <footer className="border-t border-line px-[clamp(16px,4vw,40px)] pt-4 pb-7 text-center text-[13px] text-muted print:hidden">
-        Rhymnast helps judges and coaches; it doesn&apos;t replace them. Rules: FIG Rhythmic Gymnastics Code of Points
-        2025–2028. Your video stays on this device: the videos of your moves are kept in this browser
+        Rhymnast helps judges and coaches; it doesn&apos;t replace them. {text.footerRules} Your video stays on
+        this device: the videos of your moves are kept in this browser
         (<Link className="text-accent" href="/saved">Saved videos</Link>).
       </footer>
     </>
