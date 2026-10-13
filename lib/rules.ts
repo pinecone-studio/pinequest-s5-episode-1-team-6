@@ -54,6 +54,15 @@ export function judgedBand(measuredDeviationDeg: number, margin = MEASUREMENT_MA
   return { ...deviationBand(measuredDeviationDeg - margin), measuredDeg };
 }
 
+/**
+ * Natural trunk lean in arabesque and attitude (team decision, user 2026-10-13; NOT a Code value).
+ * The Code asks for "the maximum vertical position of the body" (p. 86-87) but gives no angle, and a
+ * gymnast leans forward a little to lift the leg behind. So the first 20° of lean are not a deviation;
+ * only the lean beyond that goes into the #2.5 bands (after the 3° camera margin, like every angle).
+ * The team's arabesque video leans 24-27°: small deviation or none.
+ */
+export const NATURAL_TRUNK_LEAN_DEG = 20;
+
 /** Difficulty components, Difficulty #1.5 (p. 21): highest 8 DB counted. */
 export const MAX_DB_COUNTED = 8;
 

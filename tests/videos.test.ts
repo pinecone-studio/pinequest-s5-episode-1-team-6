@@ -18,13 +18,15 @@ function replay(name: string): ElementEvent[] {
 
 const codes = (events: ElementEvent[]) => events.map((e) => e.code).join(',');
 
-test('video arabesque_1: two arabesque holds, thigh at the horizontal, trunk leaning 24-27°', () => {
+test('video arabesque_1: two valid arabesques, thigh at the horizontal, trunk 24-27° (4-7° past the natural 20°)', () => {
   const events = replay('arabesque_1');
   assertEqual(codes(events), '2.902,2.902');
   for (const e of events) {
     assert(e.measurements.holdMs! > 2000, 'held over 2 s');
     assert(e.measurements.thighDevDeg! <= 3, 'thigh horizontal');
-    assert(e.measurements.trunkDevDeg! >= 20 && e.measurements.trunkDevDeg! <= 30, 'trunk lean measured');
+    assert(e.measurements.trunkDevDeg! >= 3 && e.measurements.trunkDevDeg! <= 8, 'lean past the natural 20°');
+    assert(e.dbValid, 'valid');
+    assert(e.penalties.every((p) => p.value <= 0.1), 'at most a small deduction');
   }
 });
 

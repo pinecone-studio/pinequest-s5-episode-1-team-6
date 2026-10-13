@@ -19,7 +19,7 @@
 // split with the trunk bent back, ring balances. Film side-on.
 
 import { LEG_POINTS, minVisibility, type Landmarks } from '../geometry';
-import { BALANCES, BALANCE_RULES, judgedBand, round2, type BalanceRule, type BalanceVariant } from '../rules';
+import { BALANCES, BALANCE_RULES, NATURAL_TRUNK_LEAN_DEG, judgedBand, round2, type BalanceRule, type BalanceVariant } from '../rules';
 import { BALANCE_SETTINGS, balanceFrame, legsUsable, type BalanceFrame } from './balanceFrame';
 import { poseSignature } from '../library/signature';
 import type { PoseLabel, PoseLibrary } from '../library/recognizer';
@@ -305,10 +305,11 @@ function deviationsFor(shape: Shape, f: BalanceFrame): { deviations: Deviation[]
   }
   if (shape === 'attitude' || shape === 'arabesque') {
     // Same technique text for both (p. 86-87): thigh horizontal, body as vertical as possible.
+    // The first NATURAL_TRUNK_LEAN_DEG of lean are allowed (team decision, rules.ts).
     return {
       deviations: [
         { segment: 'thigh', label: 'Thigh below horizontal', deg: SHAPES[shape].rule.requiredThighDeg! - f.thighDeg },
-        { segment: 'trunk', label: 'Trunk not vertical', deg: f.trunk },
+        { segment: 'trunk', label: `Trunk leaning more than ${NATURAL_TRUNK_LEAN_DEG}°`, deg: Math.max(0, f.trunk - NATURAL_TRUNK_LEAN_DEG) },
       ],
       mainDeg: f.thighDeg,
     };

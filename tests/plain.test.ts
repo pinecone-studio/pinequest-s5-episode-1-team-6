@@ -22,7 +22,7 @@ test('clean move reads "No points lost" with a friendly name and no codes', () =
 });
 
 test('each deduction becomes one plain sentence with a tip', () => {
-  const m = describeMove(judged(() => attitudeBalance({ thighDeg: 84, trunkTilt: 15 })));
+  const m = describeMove(judged(() => attitudeBalance({ thighDeg: 84, trunkTilt: 35 })));
   assertEqual(m.result, '0.40 points lost');
   assertEqual(m.reasons.length, 2);
   assert(m.reasons.some((r) => r.text.includes('thigh') && r.tip?.includes('knee')));

@@ -18,10 +18,10 @@ export const BALANCE_SETTINGS = {
   minBackLegElevation: 120, // back split: leg at least 30° above horizontal; lower = arabesque
   maxUprightTrunkTilt: 60, // back split with the trunk more upright than this = foot-above-head (row 10)
   minTrunkForwardLean: 65, // back split with the trunk leaning this far forward = trunk-forward (row 11)
-  maxAttitudeTrunkTilt: 45, // more lean = another element (e.g. penché), not an attitude
+  maxAttitudeTrunkTilt: 60, // more lean = another element (e.g. penché); up to here a lean is judged (#2.5)
   minArabesqueThighDeg: 55, // arabesque: straight leg raised at least this much (90 = horizontal)
   maxSupportLegTilt: 35, // support leg further from vertical than this = not standing on it (e.g. a leap photo)
-  maxArabesqueTrunkTilt: 50, // more lean = arabesque with trunk forward (2.903), another element
+  maxArabesqueTrunkTilt: 60, // more lean = arabesque with trunk forward (2.903, ~90°), another element
   minFreeLegVisibility: 0.03, // raised leg below this confidence is ignored even if plausible
   legLengthTolerance: [0.6, 1.4] as [number, number], // raised thigh and shin vs the support leg's, for a plausible leg
   helpDistance: 0.3, // hand within 0.3 torso lengths of the free shin/foot = help

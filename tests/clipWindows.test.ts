@@ -62,7 +62,7 @@ test('marks show only while the move is held', () => {
 
 test('the tag on the video is short', () => {
   assertEqual(mistakeLabel({ segment: 'thigh', value: 0.1, measuredDeg: 6 }), 'Thigh 6° low  −0.10');
-  assertEqual(mistakeLabel({ segment: 'trunk', value: 0.3, measuredDeg: 15 }), 'Leaning 15°  −0.30');
+  assertEqual(mistakeLabel({ segment: 'trunk', value: 0.3, measuredDeg: 15 }), 'Leaning 15° too far  −0.30');
   assertEqual(mistakeLabel({ segment: 'hold', value: 0.3, holdMs: 600 }), 'Held 0.6 s, needs 1 s  −0.30');
 });
 
