@@ -65,3 +65,40 @@ split 4-5° short (−0.10 after the 3° margin) where heavy measured it clean.
 
 Over-deduction fixes from the same review (see `docs/rules.md` → Fair judging): one hold = one judgment
 (no repeat/short-hold penalties from flicker), 0.4 s dropout tolerance, 3° camera margin.
+
+## 2026-10-13: team videos (arabesque, stag leap, attitude pivot)
+Five side-on phone videos (1620×1080, 30 fps, 5-15 s), one dancer, a bystander sitting in the
+background. Body points from the MediaPipe heavy model at 15 frames/s, replayed through every detector
+(`npm run replay`; now regression tests in `tests/videos.test.ts`). The two 2026-10-09 videos give the
+same results as before.
+
+**Before:** no arabesque or attitude pivot recognized; the stag leap judged as a split leap 132°
+(−0.50, not valid).
+
+What was found and changed:
+1. Arabesque was a "not one of these" example. Now a shape (2.902). The leg passing arabesque height on
+   the way up to a back split was then judged as its own arabesque (−0.90) → a shape under 1 s that flows
+   straight into another balance is not judged on its own. A split-leap photo (legs horizontal in the
+   air) read as arabesque → every balance now needs the support foot under the hips.
+2. Stag leap: the leap detector now decides split vs stag (see `docs/rules.md`). Its side-on check
+   wrongly warned on every stag (the bent front leg looks short) → only the back leg is checked.
+3. Attitude pivot: rising into the pivot looked like a take-off (one glitchy frame + the support foot
+   standing farther from the camera than the learned floor), and the app stayed "in the air" for the
+   whole turn → a foot still for 200 ms is on the floor. The body-width turn counter counted 180° for a
+   full turn → turns are measured from the facing angle (shoulder order + nose).
+4. Stag leap clip 2: the gymnast runs in from outside the picture while the model tracks the bystander;
+   her leg points stay under 50% confidence during the jump → not judged (no false call either). The leap
+   detector now relearns the floor when the tracked person changes, but the confidence gate stays.
+   Recording advice added to `data/README.md`.
+
+**After:**
+
+| Video | App says | D | E |
+|---|---|---|---|
+| arabesque (2 holds, 2.7-3.0 s) | 2 × Arabesque balance, thigh 0-3° low, trunk 24-27° from vertical | 0.00 (trunk: large deviation) ⚠️ | −0.50 each |
+| stag_leap 1 | Stag leap, 166° | 0.20 | −0.30 |
+| stag_leap 2 | nothing (see 4) | – | – |
+| attitude_pivot 1 | Attitude pivot under 360° (277° seen, 298° with margin): shape taken late, thigh 70° | 0.00 | −0.30 |
+| attitude_pivot 2 | Attitude pivot 360° (348° seen, 370° with margin), "close to a full turn: check" | 0.30 | −0.30 (thigh 71°) |
+
+⚠️ The arabesque result depends on the open trunk decision (CLAUDE.md, `docs/rules.md`).

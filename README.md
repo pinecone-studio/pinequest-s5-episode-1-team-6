@@ -39,10 +39,10 @@ Open <http://localhost:3000>, then:
 2. Press **Turn on camera** and allow access (or **or use a video** for a recorded routine).
    On a phone or tablet, **Switch camera** uses the back camera to film someone else.
 3. Stand **sideways** to the camera, whole body and both feet in the picture.
-4. Press **Start** and hold each balance for at least 1 second. The box on the video shows the balance
+4. Press **Start** and hold each balance for at least 1 second (or do a stag leap or an attitude turn). The box on the video shows the balance
    it sees, four dots that fill up in one second, and "Looks good" or one tip ("Open the split more
    (−0.10)"). After each move a card shows what it cost.
-5. Press **Finish** to see the results: "You did 3 balances. Points lost: 0.40" with a reason and a
+5. Press **Finish** to see the results: "You did 3 moves. Points lost: 0.40" with a reason and a
    tip for every move. **Show rulebook details** adds the codes, measurements and rule quotes.
    In the **Judge** tab, enter Artistry and penalties, press Agree / Disagree on each call, and get
    the final score.
@@ -63,9 +63,12 @@ Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all
 | **Back split balance without help** | 2.1005 | 0.50 ⚠️ | Whole foot not above the head (bands, in degrees); held < 1 s −0.30; flat foot −0.10 |
 | **Back split balance, trunk forward** | 2.1104 | 0.40 ⚠️ | Split short of 180° and trunk above horizontal, each its own band; held < 1 s −0.30; flat foot −0.10 |
 | **Attitude balance** | 2.1202 | 0.20 ⚠️ | Thigh below horizontal and trunk not vertical, each its own band; held < 1 s −0.30; flat foot −0.10 |
+| **Arabesque balance** | 2.902 | 0.20 ⚠️ | Thigh below horizontal and trunk not vertical, each its own band; held < 1 s −0.30; flat foot −0.10 |
+| **Stag leap** | 1.2702 | 0.20 ⚠️ | Front thigh to back leg short of 180° (bands); front knee bend left to judges |
+| **Attitude pivot** | 3.1203 | 0.30 ⚠️ + 0.20 per extra 360° | Thigh below horizontal (bands); < 360° not valid; trunk and relevé left to judges |
 
-⚠️ = balance value read from the table by row order; a teammate must confirm it against the
-pictograms on CoP p. 88-89 (see `docs/rules.md`).
+⚠️ = value read from the table by row order; a teammate must confirm it against the pictograms
+(CoP p. 80 jumps, p. 88-89 balances, p. 100 rotations; see `docs/rules.md`).
 
 Scoring follows the Code: **Final = D + A + E − penalties**, highest 8 body difficulties count, a
 repeated difficulty counts once but its execution faults are still deducted.

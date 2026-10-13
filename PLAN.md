@@ -66,11 +66,14 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [x] Example poses and real-photo fixtures moved from `tests/` to `lib/library/examples/` (they also build the shipped library)
 
 ## Phase 5 - Three more elements (decided 2026-10-13)
-- [ ] Team records videos into `data/validation/videos/{arabesque,attitude_pivot,stag_leap,not_these}/`
-- [ ] Arabesque balance: detector + pose-library examples + tests
-- [ ] Stag leap: detector on top of the split-leap state machine + tests
-- [ ] Attitude pivot: attitude shape + turn counting + tests; check on real video first
-- [ ] Human check of CoP codes and D values for all three
+- [x] Team records videos into `data/validation/videos/{arabesque,attitude_pivot,stag_leap}/` (1 + 2 + 2 clips)
+- [x] Arabesque balance: detector + pose-library examples + tests
+- [x] Stag leap: detector on top of the split-leap state machine + tests
+- [x] Attitude pivot: attitude shape + turn measured from the facing angle + tests; checked on both videos
+- [x] `npm run replay` + "Export body points" in /tools/video-analyze; the team's clips are regression tests (`tests/videos.test.ts`)
+- [ ] Decide: arabesque/attitude trunk lean (literal "maximum vertical" makes the team's 24-27° lean a large deviation)
+- [ ] More videos: `not_these/` look-alikes, faults (small/medium/large), several people; a stag leap filmed from the start
+- [ ] Human check of CoP codes and D values for all three (p. 80, 89, 100)
 
 ## Later (not in the 2-week scope)
 - Side split balance; back split with help; pivots in the focus shapes

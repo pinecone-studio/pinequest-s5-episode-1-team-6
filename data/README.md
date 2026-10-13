@@ -78,3 +78,9 @@ data/validation/videos/
   if possible (dark leggings on a dark wall lower pose confidence).
 - Record clean ones **and** ones with small, medium and large faults, from several people.
 - Optional `labels.csv` per folder: `file,expected_shape,judge_deduction,notes`.
+- Start each clip **standing in the picture**, with **nobody else in view**: when the gymnast runs in
+  from outside, the pose model first follows the other person and needs ~0.5 s to trust her legs
+  (stag_leap clip 2, 2026-10-13: the leap was missed).
+- To keep a clip as a test: open it in <http://localhost:3000/tools/video-analyze>, press **Export body
+  points** (numbers only, no images), put the file in `tests/fixtures/videos/` and add a test to
+  `tests/videos.test.ts`. `npm run replay -- file.landmarks.json` prints what the app judges.
