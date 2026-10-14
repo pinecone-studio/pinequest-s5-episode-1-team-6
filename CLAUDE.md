@@ -125,7 +125,7 @@ Known limits (be honest in the UI and README):
    on `<html>` set before paint like the dark theme). No sport picker screen (user, 2026-10-14): nothing
    picked = rhythmic gymnastics. The dark mode switch is always in the header's top right corner, 58 × 32 px like the navbar buttons (user, 2026-10-14).
    Sign in / Sign out and Settings are small, quiet buttons in the top navbar (user, 2026-10-14), not main actions. On phones (user, 2026-10-14) they are icons only.
-   Layout (user, 2026-10-14): one navbar row under a 4 px gradient stripe, the Sports menu next to the name
+   Layout (user, 2026-10-14): one navbar row under a 4 px gradient stripe, the name on the left and the Sports menu on the right
    (no line about the page); the Practice / Judge switch (`components/ModeSwitch.tsx`, a sliding pill) sits on
    top of the right-hand cards, and on phones sticky above the camera; the footer is one slim line: name / short text /
    Saved videos. Transitions are 120-200 ms and off under "reduce motion". Each sport has its own theme in `app/globals.css`:
