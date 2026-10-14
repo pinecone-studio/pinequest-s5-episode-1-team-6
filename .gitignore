@@ -55,6 +55,8 @@ next-env.d.ts
 *.pth
 *.onnx
 *.pdf
+# Except the small reference clips the app shows (a balance done right; see lib/reference.ts)
+!/public/reference/*.mp4
 
 # wrangler (Cloudflare CLI) cache
 .wrangler

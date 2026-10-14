@@ -66,7 +66,8 @@ Open <http://localhost:3000>, then:
    Every move gets a **short video** (1 s before to 1 s after the move, with the skeleton and leg
    angles); a correct move is marked green. While a move that lost points is held, the body part is **red** with a
    tag ("Thigh 6° low −0.10"), a badge says "Points lost here", and a strip along the top shows
-   when it happens. **Download video** saves it.
+   when it happens. **Download video** saves it. In **Practice** (rhythmic gymnastics), a balance that lost
+   points also shows **How it should look**: a short clip of the same balance done right (`lib/reference.ts`).
    They are kept in this browser (IndexedDB, newest 10 routines; nothing is uploaded) and listed on
    **Saved videos** (`/saved`, also linked from Settings).
 6. **Settings** holds everything else: camera accuracy, judging all moves, Teach poses, saved videos,
