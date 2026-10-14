@@ -1,6 +1,8 @@
 // Draws the skeleton overlay on a canvas the same size as the video frame.
 
-import { LM, jointAngle, mid, minVisibility, splitAngle, type Landmarks, type Point } from './geometry';
+import {
+  LM, armElevation, armPoints, jointAngle, mid, minVisibility, splitAngle, type Landmarks, type Point,
+} from './geometry';
 import { deviationBand } from './rules';
 import type { Band } from './types';
 
@@ -86,17 +88,43 @@ export function legAngles(lm: Landmarks): LegAngle[] {
   return angles;
 }
 
+/** Angles to label on the video: legAngles (gymnastics) or cheerAngles. */
+export type AnglesFn = (lm: Landmarks) => LegAngle[];
+
+/**
+ * Cheer, for Practice: each arm's angle from straight down, at the shoulder. Every cheer motion puts
+ * the arms at a multiple of 45° (Low V 45°, T 90°, High V 135°, touchdown 180°), so the color says
+ * how far the arm is from the nearest one, with the same bands as the legs. Then each knee.
+ */
+export function cheerAngles(lm: Landmarks): LegAngle[] {
+  const angles: LegAngle[] = [];
+  for (const side of ['L', 'R'] as const) {
+    const arm = armPoints(lm, side);
+    if (minVisibility(lm, side === 'L' ? [LM.L_SHOULDER, LM.L_WRIST] : [LM.R_SHOULDER, LM.R_WRIST]) < MIN_VISIBILITY) continue;
+    const deg = Math.round(armElevation(arm));
+    const offTarget = Math.abs(deg - Math.round(deg / 45) * 45);
+    angles.push({ at: arm.shoulder, deg, color: deg < 25 ? '#ffffff' : BAND_COLORS[deviationBand(offTarget).band] });
+  }
+  // Knees, only when bent (a straight knee is the norm in cheer and would clutter the picture).
+  for (const [hip, knee, ankle] of [[LM.L_HIP, LM.L_KNEE, LM.L_ANKLE], [LM.R_HIP, LM.R_KNEE, LM.R_ANKLE]]) {
+    if (minVisibility(lm, [hip, knee, ankle]) < MIN_VISIBILITY) continue;
+    const deg = Math.round(jointAngle(lm[hip], lm[knee], lm[ankle]));
+    if (deg < 175) angles.push({ at: lm[knee], deg, color: BAND_COLORS[deviationBand(180 - deg).band] });
+  }
+  return angles;
+}
+
 /** How big the angle labels are: 1 = small, 1.5 = easy to read from a few metres away. */
 const LABEL_SIZE = 1.5;
 
-/** Draws the leg angles as labels next to the joints. Call after drawSkeleton. */
-export function drawLegAngles(ctx: CanvasRenderingContext2D, lm: Landmarks | null): void {
+/** Draws the angles (leg angles unless told otherwise) as labels next to the joints. Call after drawSkeleton. */
+export function drawLegAngles(ctx: CanvasRenderingContext2D, lm: Landmarks | null, angles: AnglesFn = legAngles): void {
   if (!lm) return;
   // LABEL_SIZE sets the whole label (text, box, gap); it grows with the video like the skeleton.
   const scale = (Math.max(ctx.canvas.width, ctx.canvas.height) / 640) * LABEL_SIZE;
   ctx.font = `700 ${Math.round(12 * scale)}px system-ui, sans-serif`;
   ctx.textBaseline = 'middle';
-  for (const { at, deg, color } of legAngles(lm)) {
+  for (const { at, deg, color } of angles(lm)) {
     const text = `${deg}°`;
     const w = ctx.measureText(text).width + 10 * scale;
     const h = 18 * scale;

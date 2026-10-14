@@ -2,7 +2,7 @@
 // so a move's video shows how it was judged. Browser only. The recording stays in memory until
 // the session cuts the moves out of it (clipCutter.ts); then it is dropped.
 
-import { drawLegAngles } from '../draw';
+import { drawLegAngles, type AnglesFn } from '../draw';
 import type { Landmarks } from '../geometry';
 import type { TimelinePoint } from './clipWindows';
 
@@ -80,21 +80,21 @@ export class RoutineRecorder {
   /**
    * Adds the current frame: the video, then the overlay canvas (skeleton) on top.
    * @param t session time of this frame (the clock the move times use)
-   * @param withAngles also draw the leg angles (when the overlay doesn't already have them)
+   * @param withAngles also draw these angles (when the overlay doesn't already have them), or null
    */
-  addFrame(t: number, video: HTMLVideoElement, overlay: HTMLCanvasElement | null, lm: Landmarks | null, withAngles: boolean): void {
+  addFrame(t: number, video: HTMLVideoElement, overlay: HTMLCanvasElement | null, lm: Landmarks | null, withAngles: AnglesFn | null): void {
     const { canvas, ctx } = this;
     if (!this.media || !canvas || !ctx) return;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     if (overlay) ctx.drawImage(overlay, 0, 0, canvas.width, canvas.height);
-    if (withAngles && lm) ctx.drawImage(this.anglesLayer(video, lm), 0, 0, canvas.width, canvas.height);
+    if (withAngles && lm) ctx.drawImage(this.anglesLayer(video, lm, withAngles), 0, 0, canvas.width, canvas.height);
     // A copy of the body seen, so the clip can mark the body part that lost points.
     const body = lm ? lm.map((p) => ({ x: p.x, y: p.y, visibility: p.visibility })) : null;
     this.timeline.push({ t, recMs: performance.now() - this.startedAt, lm: body });
   }
 
-  /** Leg angles drawn at full video size, so the labels look the same as on the page. */
-  private anglesLayer(video: HTMLVideoElement, lm: Landmarks): HTMLCanvasElement {
+  /** Angles drawn at full video size, so the labels look the same as on the page. */
+  private anglesLayer(video: HTMLVideoElement, lm: Landmarks, angles: AnglesFn): HTMLCanvasElement {
     this.angles ??= document.createElement('canvas');
     const layer = this.angles;
     if (layer.width !== video.videoWidth || layer.height !== video.videoHeight) {
@@ -103,7 +103,7 @@ export class RoutineRecorder {
     }
     const ctx = layer.getContext('2d')!;
     ctx.clearRect(0, 0, layer.width, layer.height);
-    drawLegAngles(ctx, lm);
+    drawLegAngles(ctx, lm, angles);
     return layer;
   }
 

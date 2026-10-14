@@ -4,28 +4,29 @@
 //   Record 3 s: a 3-2-1 countdown, then every camera frame for 3 seconds becomes an example
 //               (the recording itself runs in the session, frame by frame).
 //   Add photos: each photo becomes one example.
-// The examples go into the pose library (lib/ui/libraryStore.ts), which the app uses at once.
+// The examples go into the sport's pose library (the teach kit, lib/ui/teachKits.ts: gymnastics
+// balances or ballet poses), which the app uses at once.
 
 import { useState } from 'react';
 import type { JudgingSession } from '@/lib/session';
-import { balanceFrame, legsUsable } from '@/lib/elements/balanceFrame';
-import { poseSignature } from '@/lib/library/signature';
-import { POSES, POSE_NAMES, type PoseLabel } from '@/lib/library/recognizer';
-import { exportTaught, importTaught, libraryCounts, resetTaught, teach } from '@/lib/ui/libraryStore';
+import type { TeachKit } from '@/lib/ui/teachKits';
 import { landmarksFromImage } from '@/lib/tools/analyzeImage';
 import { downloadFile } from '@/lib/ui/download';
 import { ghostButton, input, secondaryButton, smallText } from './ui';
 
 interface TeachPanelProps {
+  kit: TeachKit;
   session: JudgingSession;
   recording: boolean;
   status: string;
 }
 
-export function TeachPanel({ session, recording, status }: TeachPanelProps) {
-  const [pose, setPose] = useState<PoseLabel>(POSES[0]);
+export function TeachPanel({ kit, session, recording, status }: TeachPanelProps) {
+  const { labels, names, store } = kit;
+  const [chosen, setPose] = useState<string>(labels[0]);
+  const pose = labels.includes(chosen) ? chosen : labels[0]; // the sport (and its labels) may have changed
   // Taught counts come from browser storage: Settings is only rendered in the browser, once opened.
-  const { default: base, taught } = libraryCounts();
+  const { default: base, taught } = store.libraryCounts();
 
   async function addPhotos(files: File[]) {
     const signatures: number[][] = [];
@@ -36,17 +37,17 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
       await img.decode();
       const lm = await landmarksFromImage(img);
       URL.revokeObjectURL(img.src);
-      const f = lm && legsUsable(lm).ok ? balanceFrame(lm) : null;
-      if (f) signatures.push(poseSignature(f));
+      const signature = lm ? kit.signatureOf(lm) : null;
+      if (signature) signatures.push(signature);
     }
-    if (signatures.length) teach(pose, signatures, 'taught-photo');
-    session.libraryChanged(`Added ${signatures.length} of ${files.length} photos as ${POSE_NAMES[pose]}`
-      + (signatures.length < files.length ? ' (the rest had no clearly visible gymnast).' : '.'));
+    if (signatures.length) store.teach(pose, signatures, 'taught-photo');
+    session.libraryChanged(`Added ${signatures.length} of ${files.length} photos as ${names[pose]}`
+      + (signatures.length < files.length ? ' (the rest had no clearly visible person).' : '.'));
   }
 
   async function importFile(file: File) {
     try {
-      const { added, skipped } = importTaught(await file.text());
+      const { added, skipped } = store.importTaught(await file.text());
       session.libraryChanged(`Imported ${added} examples.${skipped ? ` ${skipped} were already here and were skipped.` : ''}`);
     } catch (err) {
       session.setTeachStatus(`Could not import: ${err instanceof Error ? err.message : String(err)}`);
@@ -58,13 +59,10 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
     <details>
       <summary><b>Teach poses</b></summary>
       <div className="mt-2 grid gap-2">
-        <p className={smallText}>
-          Show the app correct examples so it recognizes your gymnasts better. Pick the pose, press
-          Record, and hold the correct pose sideways for 3 seconds.
-        </p>
+        <p className={smallText}>{kit.howTo}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <select className={`${input} w-auto flex-[1_1_180px]`} aria-label="Pose to teach" value={pose} onChange={(e) => setPose(e.target.value as PoseLabel)}>
-            {POSES.map((p) => <option key={p} value={p}>{POSE_NAMES[p]}</option>)}
+          <select className={`${input} w-auto flex-[1_1_180px]`} aria-label="Pose to teach" value={pose} onChange={(e) => setPose(e.target.value)}>
+            {labels.map((p) => <option key={p} value={p}>{names[p]}</option>)}
           </select>
           <button className={secondaryButton} disabled={recording} onClick={() => session.startTeachRecording(pose)}>Record 3 s</button>
           <label className={fileButton}>
@@ -83,9 +81,9 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
           </label>
         </div>
         <ul className="m-0 grid list-none gap-1 p-0 text-sm">
-          {POSES.map((p) => (
+          {labels.map((p) => (
             <li key={p} className="flex justify-between gap-2">
-              <span>{POSE_NAMES[p]}</span>
+              <span>{names[p]}</span>
               <b>{base[p] + taught[p]}</b>
               {taught[p] > 0 && <small className="text-accent">{taught[p]} taught</small>}
             </li>
@@ -93,7 +91,7 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
         </ul>
         <p className={smallText}>{status}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <button className={ghostButton} onClick={() => downloadFile('rhymnast-poses.json', exportTaught())}>Save taught poses</button>
+          <button className={ghostButton} onClick={() => downloadFile(kit.fileName, store.exportTaught())}>Save taught poses</button>
           <label className={`${ghostButton} cursor-pointer`}>
             Load taught poses
             <input
@@ -110,7 +108,7 @@ export function TeachPanel({ session, recording, status }: TeachPanelProps) {
           <button
             className={ghostButton}
             onClick={() => {
-              resetTaught();
+              store.resetTaught();
               session.libraryChanged('Removed all taught examples. The default library is still used.');
             }}
           >

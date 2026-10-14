@@ -11,6 +11,10 @@ import { AttitudePivotDetector } from '../elements/attitudePivot';
 import { balanceFrame } from '../elements/balanceFrame';
 import type { PoseLibrary } from '../library/recognizer';
 import type { ElementEvent } from '../types';
+import { BalletPoseDetector } from '../ballet/poses';
+import { PirouetteDetector } from '../ballet/pirouette';
+import { GrandJeteDetector } from '../ballet/jete';
+import type { BalletLabel } from '../ballet/library';
 
 /**
  * Body points of a recorded video: one entry per analysed frame.
@@ -57,6 +61,28 @@ export function replayLandmarks(recording: LandmarkRecording, library: PoseLibra
   balance.flush();
   events.sort((a, b) => a.tStart - b.tStart);
   return { events, frameLines };
+}
+
+/** Same for ballet: the pose, pirouette and grand jeté detectors, like the live app in ballet. */
+export function replayBalletLandmarks(recording: LandmarkRecording, library: PoseLibrary<BalletLabel> | null): ElementEvent[] {
+  const events: ElementEvent[] = [];
+  const onEvent = (e: ElementEvent) => events.push(e);
+  const smoother = new LandmarkSmoother();
+  const jete = new GrandJeteDetector(onEvent);
+  const pirouette = new PirouetteDetector(onEvent);
+  const poses = new BalletPoseDetector(onEvent);
+  poses.library = library;
+  for (const frame of recording.frames) {
+    let lm: Landmarks | null = null;
+    if (frame.lm) lm = smoother.smooth(frame.lm.map(([x, y, visibility]) => ({ x, y, visibility })), frame.t / 1000);
+    else smoother.reset();
+    jete.update({ t: frame.t, lm });
+    pirouette.update({ t: frame.t, lm });
+    poses.update({ t: frame.t, lm, airborne: jete.live.airborne, turning: pirouette.live.turning });
+  }
+  pirouette.flush();
+  poses.flush();
+  return events.sort((a, b) => a.tStart - b.tStart);
 }
 
 function frameLine(t: number, lm: Landmarks | null, airborne: boolean, state: string): string {

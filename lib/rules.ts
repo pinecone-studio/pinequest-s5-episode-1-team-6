@@ -54,6 +54,34 @@ export function judgedBand(measuredDeviationDeg: number, margin = MEASUREMENT_MA
   return { ...deviationBand(measuredDeviationDeg - margin), measuredDeg };
 }
 
+/**
+ * Bands for the team-made technique rubrics (cheerleading, ballet), which have no official
+ * per-degree table. Not from the Code of Points: ≤10° −0.10, 11-20° −0.20, more than 20° −0.30,
+ * after the same camera margin. A large deviation earns no difficulty.
+ */
+export const TECHNIQUE_BANDS: { band: Band; maxDeg: number; penalty: number; creditsDifficulty: boolean }[] = [
+  { band: 'none', maxDeg: 0, penalty: 0, creditsDifficulty: true },
+  { band: 'small', maxDeg: 10, penalty: 0.1, creditsDifficulty: true },
+  { band: 'medium', maxDeg: 20, penalty: 0.2, creditsDifficulty: true },
+  { band: 'large', maxDeg: Infinity, penalty: 0.3, creditsDifficulty: false },
+];
+
+export interface TechniqueBand {
+  band: Band;
+  maxDeg: number;
+  penalty: number;
+  creditsDifficulty: boolean;
+  deg: number; // deviation after the margin, rounded
+  measuredDeg: number; // raw deviation, rounded
+}
+
+/** Rubric band for a MEASURED deviation in degrees (the first 3° are not deducted). */
+export function techniqueBand(measuredDeviationDeg: number, margin = MEASUREMENT_MARGIN_DEG): TechniqueBand {
+  const measuredDeg = Math.max(0, Math.round(measuredDeviationDeg));
+  const deg = Math.max(0, Math.round(measuredDeviationDeg - margin));
+  return { ...TECHNIQUE_BANDS.find((b) => deg <= b.maxDeg)!, deg, measuredDeg };
+}
+
 /** Difficulty components, Difficulty #1.5 (p. 21): highest 8 DB counted. */
 export const MAX_DB_COUNTED = 8;
 
@@ -234,6 +262,7 @@ export function round2(value: number): number {
 export interface RuleText {
   page: number;
   text: string;
+  source?: string; // where the text comes from, when it is not the Code of Points (cheer rubric)
 }
 
 /**

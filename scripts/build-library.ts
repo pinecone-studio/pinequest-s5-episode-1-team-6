@@ -1,12 +1,19 @@
-// Regenerates lib/library/defaultLibrary.json (the pose examples shipped with the app).
-// Run after changing lib/library/signature.ts, lib/elements/balanceFrame.ts or lib/library/examples/poses.ts:
+// Regenerates the pose examples shipped with the app:
+//   lib/library/defaultLibrary.json   rhythmic gymnastics balances
+//   lib/ballet/defaultLibrary.json    ballet poses
+// Run after changing lib/library/signature.ts, lib/elements/balanceFrame.ts, lib/library/examples/poses.ts,
+// lib/ballet/frame.ts or lib/ballet/examples/poses.ts:
 //   npm run build-library
 // Pose signatures only (numbers): no images, no names.
 
 import { writeFileSync } from 'node:fs';
-import { buildDefaultLibrary } from './buildDefaultLibrary';
+import { buildBalletLibrary, buildDefaultLibrary } from './buildDefaultLibrary';
 
-const OUT = 'lib/library/defaultLibrary.json';
-const json = JSON.stringify(buildDefaultLibrary().toJSON());
-writeFileSync(OUT, `${json}\n`);
-console.log(`Wrote ${OUT} (${json.length + 1} bytes)`);
+for (const [out, library] of [
+  ['lib/library/defaultLibrary.json', buildDefaultLibrary()],
+  ['lib/ballet/defaultLibrary.json', buildBalletLibrary()],
+] as const) {
+  const json = JSON.stringify(library.toJSON());
+  writeFileSync(out, `${json}\n`);
+  console.log(`Wrote ${out} (${json.length + 1} bytes)`);
+}
