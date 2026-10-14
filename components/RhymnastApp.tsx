@@ -147,7 +147,7 @@ export function RhymnastApp() {
       {/* A slim line: name on the left, what the app is (and where the videos stay) in the middle, Saved videos on the right.
           Phones: stacked and centered. */}
       <footer className="flex items-center justify-between gap-x-6 gap-y-1 border-t border-line px-[clamp(16px,4vw,40px)] py-3 text-xs text-muted max-sm:flex-col max-sm:items-center max-sm:text-center print:hidden">
-        <span className="flex-none font-display text-[13px] leading-4 text-ink">Rhymnast</span>
+        <span className="flex-none font-brand text-[13px] leading-4 text-ink">Rhymnast</span>
         <p className="m-0 min-w-0 flex-1 leading-4">
           Helps judges and coaches, doesn&apos;t replace them. {text.footerRules} Your videos stay on this device, in this browser.
         </p>

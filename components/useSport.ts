@@ -24,8 +24,7 @@ const onServer = (): Sport => DEFAULT_SPORT;
 
 /**
  * Picks a sport: saves it in this browser and switches the colors and texts.
- * The new sport's page sweeps in from the right, where the Sports menu is, like a curtain (View
- * Transitions API). The dark mode switch grows a circle instead, so the two changes feel different.
+ * The new sport's page fades in over the old one (View Transitions API): calm, no movement.
  * Browsers without it, and people who turned on "reduce motion", get an instant change.
  */
 export function chooseSport(sport: Sport): void {
@@ -50,14 +49,10 @@ export function chooseSport(sport: Sport): void {
   });
   transition.ready
     .then(() => {
+      // Only the new page fades: the old one stays solid underneath, so nothing flashes in between.
       document.documentElement.animate(
-        { clipPath: ['inset(0 0 0 100%)', 'inset(0 0 0 0)'] },
-        { duration: 700, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', pseudoElement: '::view-transition-new(root)' },
-      );
-      // The old page darkens a little as it is covered.
-      document.documentElement.animate(
-        { filter: ['brightness(1)', 'brightness(0.8)'] },
-        { duration: 700, easing: 'ease-in', pseudoElement: '::view-transition-old(root)' },
+        { opacity: [0, 1] },
+        { duration: 400, easing: 'ease-out', pseudoElement: '::view-transition-new(root)' },
       );
     })
     .catch(() => { /* animation skipped: the sport has already changed */ });

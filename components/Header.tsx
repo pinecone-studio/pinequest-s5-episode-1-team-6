@@ -26,7 +26,7 @@ export function Header({ sport, judging, onSettings }: HeaderProps) {
         aria-label="Sport, account and settings"
         className="flex min-h-[72px] items-center justify-between gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-3 max-sm:min-h-16 max-sm:py-2 print:hidden"
       >
-        <h1 className="m-0 min-w-0 font-display text-[32px] leading-none text-accent max-sm:text-[26px]">
+        <h1 className="m-0 min-w-0 font-brand text-[32px] leading-none text-accent max-sm:text-[26px]">
           <span className="max-[379px]:hidden">Rhymnast</span>
           <span className="min-[380px]:hidden" aria-hidden="true">R</span>
           <span className="sr-only min-[380px]:hidden">Rhymnast</span>

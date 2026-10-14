@@ -85,6 +85,8 @@
 @theme inline {
   --font-sans: var(--font-figtree), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--sport-display), var(--font-figtree), system-ui, sans-serif;
+  /* The name "Rhymnast" (font-brand): the same font in every sport, so the logo doesn't jump when the sport changes. */
+  --font-brand: var(--font-playfair), Georgia, serif;
 }
 
 :root {
@@ -222,7 +224,7 @@ label:has(> input[type="file"]:focus-visible) {
 }
 
 /* Dark mode switch: the new theme grows as a circle from the switch (components/ThemeToggle.tsx).
-   Changing sport: the new sport sweeps in from the right (chooseSport in components/useSport.ts).
+   Changing sport: the new sport fades in (chooseSport in components/useSport.ts).
    Turn off the browser's default cross-fade so only those animations show. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
