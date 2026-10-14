@@ -465,6 +465,7 @@ export class JudgingSession {
     canvas.width = w;
     canvas.height = h;
     stage.style.aspectRatio = `${w} / ${h}`;
+    stage.style.setProperty('--video-ar', String(w / h)); // Stage.tsx keeps a portrait video within the screen height
   }
 
   // ---------- Main loop ----------

@@ -46,11 +46,14 @@ export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, l
     wasJudging.current = judging;
   }, [judging, exit]);
   // Only one position class: with both "relative" and "fixed", the CSS order decides and "fixed" can lose.
+  // The stage has the video's shape (session.ts sets --video-ar). Its height stays within the screen,
+  // minus room for the header and the main button (at least 320 px): a portrait video gets a narrower,
+  // centered stage instead of one taller than the screen. Landscape videos are limited by the width.
   const size = stretched
     ? 'fixed inset-0 z-50 h-dvh w-screen max-w-none rounded-none' // iPhone: cover the page
-    : `relative aspect-video max-w-full short:h-[calc(100dvh-16px)] short:w-full ${fullscreen ? 'rounded-none' : 'rounded-card'}`;
+    : `relative mx-auto aspect-video w-[min(100%,calc(max(320px,calc(100dvh_-_250px))*var(--video-ar,1.7778)))] max-w-full short:h-[calc(100dvh-16px)] short:w-full ${fullscreen ? 'rounded-none' : 'rounded-card'}`;
   return (
-    <div ref={stageRef} className={`overflow-hidden bg-stage ${size}`}>
+    <div ref={stageRef} className={`@container/stage overflow-hidden bg-stage ${size}`}>
       <video ref={videoRef} playsInline muted className="absolute inset-0 h-full w-full object-contain" />
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full object-contain" />
 
