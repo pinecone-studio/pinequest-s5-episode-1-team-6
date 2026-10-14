@@ -222,7 +222,8 @@ label:has(> input[type="file"]:focus-visible) {
 }
 
 /* Dark mode switch: the new theme grows as a circle from the switch (components/ThemeToggle.tsx).
-   Turn off the browser's default cross-fade so only the circle shows. */
+   Changing sport: the new sport sweeps in from the right (chooseSport in components/useSport.ts).
+   Turn off the browser's default cross-fade so only those animations show. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
