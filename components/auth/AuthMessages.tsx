@@ -5,13 +5,13 @@ import type { ReactNode } from 'react';
 import type { FirebasePublicKey } from '@/lib/firebase/config';
 import { smallText } from '../ui';
 
-/** App name, one line of intro, then the form. */
+/** One line of intro, then the form. The logo is in the top left corner (app/(auth)/layout.tsx). */
 export function AuthFrame({ intro, children }: { intro: string; children: ReactNode }) {
   return (
     <main className="mx-auto grid max-w-md gap-4 px-[clamp(16px,4vw,40px)] pt-16 pb-12">
       <div>
-        <h1 className="m-0 text-[26px] leading-tight font-bold text-accent">Rhymnast</h1>
-        <p className="mt-1 mb-0 text-[15px] text-muted">{intro}</p>
+        <h1 className="sr-only">Rhymnast</h1>
+        <p className="m-0 text-[15px] text-muted">{intro}</p>
       </div>
       {children}
     </main>

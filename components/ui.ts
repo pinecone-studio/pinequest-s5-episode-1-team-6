@@ -11,6 +11,8 @@ export const primaryButton = `${button} bg-accent text-on-fill`;
 export const secondaryButton = `${button} bg-accent-soft text-accent`;
 /** Outline only, for small actions (Close, Print, ...). */
 export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
+/** Add to a button that shows only its icon on phones (the text is then `max-sm:sr-only`). */
+export const iconOnPhone = 'max-sm:w-11 max-sm:px-0';
 /** Add to a button to make it the big one. */
 export const bigButton = 'min-h-14 px-8 text-[19px]';
 

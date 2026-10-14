@@ -24,15 +24,16 @@ function SkeletonPage({ label, children }: { label: string; children: ReactNode 
 export function JudgingPageSkeleton({ label = 'Checking your account…' }: { label?: string }) {
   return (
     <SkeletonPage label={label}>
-      <div className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5 border-b border-line ${gutter} py-[18px]`}>
-        <div className="grid gap-2">
-          <Bone className="h-8 w-40" />
-          <Bone className="h-4 w-72 max-w-[70vw]" />
+      <div className={`flex flex-wrap items-center justify-between gap-x-2 gap-y-3.5 sm:gap-x-6 md:flex-nowrap border-b border-line ${gutter} py-[18px]`}>
+        <div className="flex items-center gap-2.5 md:flex-1">
+          <Bone className="size-7 rounded-lg sm:size-10 sm:rounded-[10px]" />
+          <Bone className="h-6 w-24 sm:h-8 sm:w-32" />
         </div>
-        <Bone className="order-3 h-12 w-full rounded-full sm:order-none sm:w-56" />
-        <div className="flex gap-2.5">
-          <Bone className="h-11 w-24 rounded-full max-sm:hidden" />
-          <Bone className="h-11 w-24 rounded-full" />
+        <Bone className="order-3 h-12 w-full shrink-0 rounded-full md:order-none md:w-56" />
+        <div className="flex gap-1.5 sm:gap-2.5">
+          <Bone className="h-11 w-11 rounded-full sm:w-24" />
+          <Bone className="h-11 w-11 rounded-full sm:w-24" />
+          <Bone className="h-11 w-20 rounded-full" />
         </div>
       </div>
       <div className={`mx-auto grid max-w-[1400px] grid-cols-1 gap-6 ${gutter} pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]`}>
@@ -81,10 +82,7 @@ export function AuthFormSkeleton({ label = 'Checking your account…' }: { label
   return (
     <SkeletonPage label={label}>
       <div className={`mx-auto grid max-w-md gap-4 ${gutter} pt-16 pb-12`}>
-        <div className="grid gap-2">
-          <Bone className="h-8 w-36" />
-          <Bone className="h-4 w-64 max-w-full" />
-        </div>
+        <Bone className="h-4 w-64 max-w-full" />
         <div className="grid gap-3 rounded-card bg-card p-5">
           {[0, 1].map((i) => (
             <div key={i} className="grid gap-1.5">
