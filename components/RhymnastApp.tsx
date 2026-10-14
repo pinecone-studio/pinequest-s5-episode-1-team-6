@@ -55,10 +55,7 @@ export function RhymnastApp() {
 
   return (
     <>
-      {/* Утас (< 640px): зөвхөн logo + tab + цэс */}
       <MobileHeader tab={tab} onTab={setTab} onSettings={() => setSettingsOpen(true)} />
-
-      {/* Том дэлгэц (>= 640px): өмнөх хэвээр */}
       <div className="hidden items-start pl-4 sm:flex print:hidden">
         <Image src={logo} alt="Rhymnast" width={48} height={48} className="mt-6 -mr-6 shrink-0 rounded-xl" priority />
         <div className="min-w-0 flex-1">

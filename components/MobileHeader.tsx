@@ -77,8 +77,14 @@ export function MobileHeader({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // html дээрх 'dark' class өөр газраас (жишээ нь том дэлгэцийн Header) өөрчлөгдөхөд хамт шинэчлэгдэнэ
   useEffect(() => {
-    setDark(document.documentElement.classList.contains('dark'));
+    const root = document.documentElement;
+    const sync = () => setDark(root.classList.contains('dark'));
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
   }, []);
 
   // Цэсийн гадна дарвал эсвэл Escape дарвал хаагдана
@@ -106,7 +112,7 @@ export function MobileHeader({
   };
 
   return (
-    <header className="relative z-30 flex flex-wrap items-center gap-x-2 gap-y-5 border-b border-line px-[clamp(16px,4vw,40px)] pt-6 pb-3 sm:hidden print:hidden">
+    <header className="flex flex-wrap items-center gap-x-2 gap-y-5 border-b border-line px-[clamp(16px,4vw,40px)] pt-6 pb-3 sm:hidden print:hidden">
       {/* Зүүн: зөвхөн logo */}
       <Link href="/" aria-label="Rhymnast" className="shrink-0">
         <Image src={logo} alt="Rhymnast" width={40} height={40} className="size-10 rounded-xl" priority />
@@ -158,10 +164,10 @@ export function MobileHeader({
           <span
             aria-hidden="true"
             className={`absolute left-1 top-1 flex size-8 items-center justify-center rounded-full shadow-md transition-all duration-500 ease-out ${
-              dark ? 'translate-x-[28px] rotate-[360deg] bg-slate-100 text-indigo-900' : 'translate-x-0 rotate-0 bg-yellow-300 text-amber-600'
+              dark ? 'translate-x-[28px] bg-[#c9c7ff]' : 'translate-x-0 rotate-0 bg-yellow-300 text-amber-600'
             }`}
           >
-            {dark ? <MoonIcon /> : <SunIcon />}
+            {dark ? null : <SunIcon />}
           </span>
         </button>
 
@@ -182,7 +188,7 @@ export function MobileHeader({
             role="menu"
             className="absolute right-0 top-full z-40 mt-2 w-52 rounded-2xl border border-line bg-white p-1.5 shadow-xl dark:bg-slate-900"
           >
-            <Link href="/sign-in" role="menuitem" className={menuItem} onClick={() => setMenuOpen(false)}>
+            <Link href="/login" role="menuitem" className={menuItem} onClick={() => setMenuOpen(false)}>
               <UserIcon /> Sign in
             </Link>
             <button
