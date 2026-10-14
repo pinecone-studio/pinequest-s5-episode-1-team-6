@@ -120,7 +120,7 @@ Known limits (be honest in the UI and README):
    (`components/SportMenu.tsx`; `lib/sport.ts`, `components/useSport.ts`; saved in localStorage, `data-sport`
    on `<html>` set before paint like the dark theme). No sport picker screen (user, 2026-10-14): nothing
    picked = rhythmic gymnastics. The dark mode switch is always in the header's top right corner.
-   Sign in / Sign out and Settings are small, quiet buttons in the top navbar (user, 2026-10-14), not main actions. Each sport has its own theme in `app/globals.css`:
+   Sign in / Sign out and Settings are small, quiet buttons in the top navbar (user, 2026-10-14), not main actions. On phones (user, 2026-10-14) they are icons only, the dark mode switch is drawn smaller, the line about the page is hidden and the Sports menu (short name) sits next to the tabs. Each sport has its own theme in `app/globals.css`:
    gymnastics violet + ribbon pink, Playfair Display headings; cheer royal blue + gold varsity stripes,
    Bebas Neue headings. Cheer detectors in `lib/cheer/`: `motions.ts` (8 arm motions, front view, held
    ≥0.3 s) and `jumps.ts` (5 jumps, reusing the leap detector's airborne logic). Only one sport's

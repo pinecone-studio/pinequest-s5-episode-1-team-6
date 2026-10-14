@@ -26,6 +26,8 @@ interface HeaderProps {
  *   navbar: the name on the left; small Sign in / Sign out, Settings and the dark mode switch on the
  *           right (the switch in the top right corner). Quiet on purpose: not the page's main actions.
  *   below:  what the page is about, the Sports menu and the Practice / Judge tabs.
+ * On phones it fits in two short rows: icons instead of words in the navbar, a smaller dark mode
+ * switch, no line about the page, and the Sports menu and the tabs side by side.
  */
 export function Header({ sport, judging, tab, onTab, onSettings }: HeaderProps) {
   // Arrow keys move between the tabs (WAI-ARIA tabs pattern); only the selected tab is in the Tab order.
@@ -52,17 +54,20 @@ export function Header({ sport, judging, tab, onTab, onSettings }: HeaderProps) 
         </div>
         <div className="flex min-w-0 items-center gap-1">
           <AccountButton />
-          <button className={navButton} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
+          <button className={`${navButton} max-sm:px-2`} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
             <GearIcon />
             <span className="max-sm:hidden">Settings</span>
           </button>
-          <span className="ml-1.5">
-            <ThemeToggle />
+          {/* On phones the switch is drawn at 73% (its parts have fixed sizes, so it is scaled as a whole). */}
+          <span className="ml-1.5 max-sm:ml-0.5 max-sm:h-8 max-sm:w-[58px]">
+            <span className="block max-sm:origin-top-left max-sm:scale-[0.727]">
+              <ThemeToggle />
+            </span>
           </span>
         </div>
       </nav>
-      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line px-[clamp(16px,4vw,40px)] pt-3 pb-4 print:hidden">
-        <p className="m-0 min-w-0 flex-[1_1_320px] text-[15px] text-muted">{text.tagline}</p>
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-line px-[clamp(16px,4vw,40px)] pt-3 pb-4 max-sm:pt-2 max-sm:pb-3 print:hidden">
+        <p className="m-0 min-w-0 flex-[1_1_320px] text-[15px] text-muted max-sm:hidden">{text.tagline}</p>
         <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto">
           <SportMenu sport={sport} disabled={judging} />
           <div className="flex flex-1 rounded-full bg-card p-1 sm:flex-none" role="tablist" aria-label="View">
@@ -76,7 +81,7 @@ export function Header({ sport, judging, tab, onTab, onSettings }: HeaderProps) 
                 tabIndex={tab === t.id ? 0 : -1}
                 onClick={() => onTab(t.id)}
                 onKeyDown={onTabKey}
-                className={`inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-full px-[22px] text-base font-semibold sm:flex-none ${
+                className={`inline-flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-full px-[22px] text-base font-semibold max-sm:px-3 sm:flex-none ${
                   tab === t.id ? 'bg-tab text-ink shadow-[0_1px_4px_rgba(29,36,51,0.15)]' : 'bg-transparent text-muted'
                 }`}
               >
