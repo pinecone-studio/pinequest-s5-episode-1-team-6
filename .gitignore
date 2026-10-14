@@ -55,3 +55,6 @@ next-env.d.ts
 *.pth
 *.onnx
 *.pdf
+
+# wrangler (Cloudflare CLI) cache
+.wrangler

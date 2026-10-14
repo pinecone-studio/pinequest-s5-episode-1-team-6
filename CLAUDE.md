@@ -62,11 +62,14 @@ Known limits (be honest in the UI and README):
      Needs pre-extracted Video Swin-B features (mmaction2), offline only. No license.
    - CaFlow: no trained weights at all; you must train it yourself. No license.
 
-4. **Hosting: Vercel (Hobby plan), repo private.** GitHub Pages dropped when the repo went private.
-   Vercel builds the Next.js app with its defaults (no `vercel.json` needed). Deploys are manual
-   (user, 2026-10-13): `npm run deploy` (Vercel CLI). Auto-deploy needs a pinecone-studio org owner
-   (Vercel GitHub app or GitHub Actions), so it was dropped. Live: https://pinequest-s5-episode-1-team-6.vercel.app
-   Hobby is non-commercial: move to Vercel Pro once the startup uses it commercially.
+4. **Hosting: Cloudflare Pages, project `rhymnast` (user, 2026-10-14; replaces Vercel, whose project
+   belongs to a teammate's account).** The app has no server code, so `next.config.ts` sets `output: "export"`
+   and `npm run build` writes a plain static site to `out/` (the starter's `cacheComponents` /
+   `partialPrefetching` were removed: they need a server). Deploys are manual: `npm run deploy` builds on
+   your computer and uploads `out/` with the Cloudflare CLI (`wrangler`; log in once with
+   `npx wrangler@4.151.0 login`). Live: https://rhymnast.pages.dev. Cloudflare's free plan allows commercial use.
+   Do not add server features (route handlers, server actions, proxy, `next/image` optimization): export forbids them.
+   The old Vercel site (https://pinequest-s5-episode-1-team-6.vercel.app) is no longer updated.
 5. **No open-source license for now.** The team plans a startup; decide licensing later.
 6. **Pose recognition by example (user, 2026-10-08):** a pose library (nearest neighbours over a
    10-number pose signature, `lib/library/`) decides WHICH balance it is; rulebook geometry decides
@@ -92,10 +95,11 @@ Known limits (be honest in the UI and README):
    Sign-up asks for a name; "Forgot password?" sends Firebase's reset email; closing the Google window
    shows no error. The four public web settings (`NEXT_PUBLIC_FIREBASE_*`) are NOT committed (user, 2026-10-13;
    they were committed in `.env` before): `.env.example` lists the names, each computer copies it to
-   `.env` (or `.env.local`), and Vercel has them under Project → Settings → Environment Variables.
+   `.env` (or `.env.local`); `npm run deploy` builds them into the site from there.
    `.env*` is git-ignored except `.env.example`. Never commit server secrets
    (service account keys, `firebase-admin`). Email/Password, Google and Anonymous are on in the Firebase console;
-   Google on the live site also needs the Vercel domain under Authentication → Settings → Authorized domains.
+   Google on the live site also needs `rhymnast.pages.dev` under Authentication → Settings → Authorized domains
+   (the Firebase project `rhymnast-35f9e` belongs to a teammate, who adds it).
 10. **Move videos (user, 2026-10-13):** while judging, the routine is recorded (video + skeleton + leg
    angles, `lib/recording/routineRecorder.ts`). After Finish, every move is cut out (also correct ones, marked green; user 2026-10-13),
    1 s before to 1 s after the move (`clipCutter.ts`), with a photo from the middle of the hold as its

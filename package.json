@@ -10,7 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build-library": "vite-node scripts/build-library.ts",
-    "deploy": "npx --yes vercel@63.1.2 deploy --prod",
+    "deploy": "npm run build && npx --yes wrangler@4.151.0 pages deploy out --project-name rhymnast --branch main",
     "replay": "vite-node scripts/replay.ts"
   },
   "dependencies": {

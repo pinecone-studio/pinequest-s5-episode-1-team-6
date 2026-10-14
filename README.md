@@ -14,8 +14,9 @@ browser) finds her joints in every frame. **Rules from the FIG Code of Points** 
 
 ## Live demo
 
-**Live URL: https://pinequest-s5-episode-1-team-6.vercel.app** (from `main`). Deploys are manual:
-run `npm run deploy` (Vercel CLI; log in once with `npx vercel login`). GitHub Actions runs the type
+**Live URL: https://rhymnast.pages.dev** (Cloudflare Pages, from `main`). Deploys are manual:
+run `npm run deploy` (builds the static site into `out/` and uploads it; log in once with
+`npx wrangler@4.151.0 login`). GitHub Actions runs the type
 check, lint and tests. The first visit downloads the pose model (30 MB) and its runtime (9 MB) in
 the background while the page is open. Video stays on your device.
 
@@ -37,8 +38,8 @@ The first screen is **Sign in** at `/login` (Firebase Authentication: email and 
 **Continue with Google** and **Try without an account** (one click, for demos). A guest has no Sign out:
 the header shows **Sign in** instead. After signing in you go back to the page you opened.
 The camera stays off until you are signed in. The Firebase web settings are not committed: `.env.example`
-lists them, `.env` / `.env.local` hold them on your computer (git-ignored), and Vercel holds them under
-Project → Settings → Environment Variables (needed for `npm run deploy`).
+lists them, and `.env` / `.env.local` hold them on your computer (git-ignored). `npm run deploy` builds
+them into the site from there.
 
 Open <http://localhost:3000>, then:
 
@@ -70,7 +71,7 @@ Open <http://localhost:3000>, then:
    downloading the record, technical details and the developer tools.
 
 The camera only works on `localhost` or HTTPS (browser rule). To use it from another device, use the
-Vercel deploy (HTTPS). Every page is static: `npm run build` prerenders them all.
+live site (HTTPS). Every page is static: `npm run build` writes the whole site to `out/`.
 
 ## What it judges
 
