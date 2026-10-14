@@ -144,17 +144,15 @@ export function RhymnastApp() {
         <SettingsDrawer session={session} state={state} onExport={() => session.exportAudit(judgeForm)} onClose={closeSettings} />
       )}
 
-      {/* Name on the left, what the app is (and where the videos stay) in the middle, Saved videos on the right.
+      {/* A slim line: name on the left, what the app is (and where the videos stay) in the middle, Saved videos on the right.
           Phones: stacked and centered. */}
-      <footer className="flex items-start justify-between gap-x-8 gap-y-2 border-t border-line px-[clamp(16px,4vw,40px)] py-6 text-[13px] text-muted max-sm:flex-col max-sm:items-center max-sm:text-center print:hidden">
-        <span className="flex-none font-display text-[15px] leading-5 text-ink">Rhymnast</span>
-        <p className="m-0 min-w-0 flex-1 leading-5">
-          Helps judges and coaches, doesn&apos;t replace them. {text.footerRules}
-          <br />
-          Your videos stay on this device, in this browser.
+      <footer className="flex items-center justify-between gap-x-6 gap-y-1 border-t border-line px-[clamp(16px,4vw,40px)] py-3 text-xs text-muted max-sm:flex-col max-sm:items-center max-sm:text-center print:hidden">
+        <span className="flex-none font-display text-[13px] leading-4 text-ink">Rhymnast</span>
+        <p className="m-0 min-w-0 flex-1 leading-4">
+          Helps judges and coaches, doesn&apos;t replace them. {text.footerRules} Your videos stay on this device, in this browser.
         </p>
         <Link
-          className="flex-none rounded-full leading-5 font-semibold whitespace-nowrap text-accent no-underline transition-opacity duration-150 hover:opacity-80 motion-reduce:transition-none"
+          className="flex-none rounded-full leading-4 font-semibold whitespace-nowrap text-accent no-underline transition-opacity duration-150 hover:opacity-80 motion-reduce:transition-none"
           href="/saved"
         >
           Saved videos →

@@ -127,7 +127,7 @@ Known limits (be honest in the UI and README):
    Sign in / Sign out and Settings are small, quiet buttons in the top navbar (user, 2026-10-14), not main actions. On phones (user, 2026-10-14) they are icons only.
    Layout (user, 2026-10-14): one navbar row under a 4 px gradient stripe, the Sports menu next to the name
    (no line about the page); the Practice / Judge switch (`components/ModeSwitch.tsx`, a sliding pill) sits on
-   top of the right-hand cards, and on phones sticky above the camera; the footer is name / two short lines /
+   top of the right-hand cards, and on phones sticky above the camera; the footer is one slim line: name / short text /
    Saved videos. Transitions are 120-200 ms and off under "reduce motion". Each sport has its own theme in `app/globals.css`:
    gymnastics violet + ribbon pink, Playfair Display headings; cheer royal blue + gold (a smooth stripe like the others, user 2026-10-14),
    Bebas Neue headings. Cheer detectors in `lib/cheer/`: `motions.ts` (8 arm motions, front view, held
