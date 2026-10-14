@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness';
-import { describeMove, explainPenalty, liveMessage, modelDownloadText, plainHint } from '../lib/ui/plain';
+import { describeMove, explainPenalty, forVideo, liveMessage, modelDownloadText, plainHint } from '../lib/ui/plain';
 import { BalanceDetector } from '../lib/elements/balances';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
@@ -59,4 +59,10 @@ test('model loader shows the download in percent', () => {
   assertEqual(modelDownloadText(30_600_000, 30_664_242), '99%'); // 100% only when it is really done
   assertEqual(modelDownloadText(30_664_242, 30_664_242), 'Downloaded. Starting it up…');
   assertEqual(modelDownloadText(5_000_000, null), 'Downloading…');
+});
+
+test('a recorded video gets hints about the picture, not about stepping in front of the camera', () => {
+  assertEqual(forVideo('Step in front of the camera.'), 'Nobody in the picture.');
+  assertEqual(forVideo('Turn sideways to the camera.'), 'The body is not sideways to the camera.');
+  assertEqual(forVideo('Looks good ✓'), 'Looks good ✓'); // other texts stay
 });
