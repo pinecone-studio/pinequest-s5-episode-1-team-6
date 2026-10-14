@@ -195,6 +195,30 @@ const HINTS: Record<string, string> = {
   'Arms not visible: step back from the camera': 'Step back so both arms are in the picture, even straight up.',
 };
 
+// The same hints for a recorded video: nobody can step anywhere, so they say what the picture shows.
+const VIDEO_HINTS: Record<string, string> = {
+  'Step into the camera view': 'Nobody in the picture.',
+  'Whole body and both feet must be in view': 'The whole body and both feet need to be in the picture.',
+  'Turn side-on to the camera': 'The body is not sideways to the camera.',
+  'Turn side-on: a leg points at the camera': 'A leg points at the camera: film from the side.',
+  'Pose not recognized': 'The shape is not recognized.',
+  'Head not visible: move back from the camera': 'The head is not in the picture.',
+  'Raised leg not visible: try a plain background and contrasting clothes': 'The raised leg can\'t be seen clearly. A plain, light background helps.',
+  'Face the camera': 'The body is not facing the camera, so both arms can\'t be seen.',
+  'Face the camera for pliés': 'Pliés need a front view, to see both knees.',
+  'Arms not visible: step back from the camera': 'Both arms need to be in the picture.',
+};
+
+/**
+ * A live text for a recorded video instead of the camera: a hint that tells the person what to do
+ * ("Step in front of the camera.") becomes what the picture shows ("Nobody in the picture.").
+ * Other texts stay as they are.
+ */
+export function forVideo(text: string): string {
+  const key = Object.keys(HINTS).find((k) => HINTS[k] === text);
+  return (key && VIDEO_HINTS[key]) ?? text;
+}
+
 export function plainHint(hint: string | null | undefined): string | null | undefined {
   return hint == null ? hint : HINTS[hint] ?? hint;
 }

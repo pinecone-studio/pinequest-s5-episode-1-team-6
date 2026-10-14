@@ -6,6 +6,7 @@
 // The switch's look follows the class through Tailwind's dark: variant, so it is right on the first paint.
 // On click the new theme grows as a circle from the switch (View Transitions API); browsers without it,
 // and people who turned on "reduce motion", get an instant change.
+// Size: 58 × 32 px everywhere, the height of the navbar's buttons (it was 80 × 44 and looked too big).
 
 import { useSyncExternalStore, type MouseEvent } from 'react';
 import { THEME_KEY } from '@/lib/ui/theme';
@@ -64,22 +65,22 @@ export function ThemeToggle() {
       aria-label="Dark mode"
       title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       onClick={toggle}
-      className="relative h-11 w-20 flex-none cursor-pointer overflow-hidden rounded-full bg-sky-day transition-colors duration-500 motion-reduce:transition-none dark:bg-sky-night print:hidden"
+      className="relative h-8 w-[58px] flex-none cursor-pointer overflow-hidden rounded-full bg-sky-day transition-colors duration-500 motion-reduce:transition-none dark:bg-sky-night print:hidden"
     >
       {/* Day: two clouds. */}
-      <span aria-hidden="true" className={`absolute top-3 right-3 h-2 w-5 rounded-full bg-white dark:opacity-0 ${fade}`} />
-      <span aria-hidden="true" className={`absolute top-6 right-[22px] h-1.5 w-3.5 rounded-full bg-white dark:opacity-0 ${fade}`} />
+      <span aria-hidden="true" className={`absolute top-[9px] right-[9px] h-1.5 w-3.5 rounded-full bg-white dark:opacity-0 ${fade}`} />
+      <span aria-hidden="true" className={`absolute top-[17px] right-4 h-1 w-2.5 rounded-full bg-white dark:opacity-0 ${fade}`} />
       {/* Night: three stars. */}
-      <span aria-hidden="true" className={`absolute top-[11px] left-3.5 size-[3px] rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
-      <span aria-hidden="true" className={`absolute top-[27px] left-6 size-0.5 rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
-      <span aria-hidden="true" className={`absolute top-3.5 left-[30px] size-0.5 rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
-      {/* The sun slides right and becomes the moon (with two craters). */}
+      <span aria-hidden="true" className={`absolute top-2 left-2.5 size-0.5 rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
+      <span aria-hidden="true" className={`absolute top-5 left-[17px] size-0.5 rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
+      <span aria-hidden="true" className={`absolute top-2.5 left-[22px] size-px rounded-full bg-white opacity-0 dark:opacity-100 ${fade}`} />
+      {/* The sun slides right (26 px) and becomes the moon (with two craters). */}
       <span
         aria-hidden="true"
-        className="absolute top-[5px] left-[5px] size-[34px] rounded-full bg-sun shadow-[0_2px_6px_rgba(0,0,0,0.25)] transition-[translate,background-color] duration-[450ms] ease-[cubic-bezier(0.5,1.6,0.4,1)] motion-reduce:transition-none dark:translate-x-9 dark:bg-moon"
+        className="absolute top-1 left-1 size-6 rounded-full bg-sun shadow-[0_1px_4px_rgba(0,0,0,0.25)] transition-[translate,background-color] duration-[450ms] ease-[cubic-bezier(0.5,1.6,0.4,1)] motion-reduce:transition-none dark:translate-x-[26px] dark:bg-moon"
       >
-        <span className={`absolute top-2 left-2 size-[7px] rounded-full bg-crater opacity-0 dark:opacity-100 ${fade}`} />
-        <span className={`absolute top-5 left-5 size-[5px] rounded-full bg-crater opacity-0 dark:opacity-100 ${fade}`} />
+        <span className={`absolute top-1.5 left-1.5 size-[5px] rounded-full bg-crater opacity-0 dark:opacity-100 ${fade}`} />
+        <span className={`absolute top-3.5 left-3.5 size-1 rounded-full bg-crater opacity-0 dark:opacity-100 ${fade}`} />
       </span>
     </button>
   );

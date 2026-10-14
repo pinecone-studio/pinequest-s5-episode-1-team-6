@@ -1,8 +1,12 @@
 'use client';
 
-// The one main button (Turn on camera -> Start -> Finish -> Try again), "or use a video",
-// "Switch camera", "Start over" and the three steps below the video.
+// The one main button (Turn on camera -> Start -> Finish -> Try again), a second way in and the
+// three steps below the video.
+//   Camera (or nothing yet): "or use a video", "Switch camera", "Start over".
+//   A video:                 "or use the camera" and "Use another video" (once it is not being judged),
+//                            so there is a way back to the camera and on to the next clip.
 
+import type { ReactNode } from 'react';
 import type { SessionState } from '@/lib/session';
 import { bigButton, ghostButton, primaryButton } from './ui';
 
@@ -14,6 +18,7 @@ interface ControlsProps {
   onFile: (file: File) => void;
   onReset: () => void;
   onSwitchCamera: () => void;
+  onUseCamera: () => void;
 }
 
 /** Text of the one main button (also shown on the video in full screen). */
@@ -22,38 +27,63 @@ export function mainButtonLabel(state: SessionState): string {
   return busy ? 'Please wait…' : !source ? 'Turn on camera' : !modelReady ? 'Try loading again' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
 }
 
-export function Controls({ steps, state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
+export function Controls({ steps, state, movesCount, onMain, onFile, onReset, onSwitchCamera, onUseCamera }: ControlsProps) {
   const { source, judging, finished, busy, cameraCount } = state;
   const label = mainButtonLabel(state);
   const step = !source ? 1 : !judging && !finished ? 2 : 3;
+  const afterVideo = source === 'file' && !judging;
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <button className={`${primaryButton} ${bigButton} w-full sm:w-auto`} disabled={busy} onClick={onMain}>{label}</button>
-        <label className={`font-semibold text-accent underline underline-offset-[3px] ${busy ? 'cursor-default opacity-45' : 'cursor-pointer'}`}>
-          or use a video
-          <input
-            type="file"
-            accept="video/*"
-            className="sr-only"
-            disabled={busy}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) onFile(file);
-              e.target.value = '';
-            }}
-          />
-        </label>
+        {afterVideo ? (
+          <button type="button" className={`${link} ${busy ? 'cursor-default opacity-45' : 'cursor-pointer'}`} disabled={busy} onClick={onUseCamera}>
+            or use the camera
+          </button>
+        ) : (
+          <VideoPicker className={`${link} ${busy ? 'cursor-default opacity-45' : 'cursor-pointer'}`} disabled={busy} onFile={onFile}>
+            or use a video
+          </VideoPicker>
+        )}
         {source === 'camera' && cameraCount > 1 && !judging && (
           <button className={ghostButton} disabled={busy} onClick={onSwitchCamera}>Switch camera</button>
         )}
-        {source && movesCount > 0 && !judging && (
-          <button className={ghostButton} onClick={onReset}>Start over</button>
+        {afterVideo ? (
+          <VideoPicker className={`${ghostButton} ${busy ? 'opacity-45' : ''}`} disabled={busy} onFile={onFile}>
+            Use another video
+          </VideoPicker>
+        ) : (
+          source && movesCount > 0 && !judging && <button className={ghostButton} onClick={onReset}>Start over</button>
         )}
       </div>
       <Steps steps={steps} current={step} />
     </>
+  );
+}
+
+const link = 'border-0 bg-transparent p-0 text-base font-semibold text-accent underline underline-offset-[3px]';
+
+/**
+ * Opens the file picker for a video. A <label> around a visually hidden file input: the input gets
+ * the keyboard focus, and globals.css draws the focus ring on the label.
+ */
+function VideoPicker({ className, disabled, onFile, children }: { className: string; disabled: boolean; onFile: (file: File) => void; children: ReactNode }) {
+  return (
+    <label className={className}>
+      {children}
+      <input
+        type="file"
+        accept="video/*"
+        className="sr-only"
+        disabled={disabled}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onFile(file);
+          e.target.value = ''; // picking the same file again still loads it
+        }}
+      />
+    </label>
   );
 }
 

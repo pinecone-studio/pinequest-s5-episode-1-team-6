@@ -97,6 +97,7 @@ export function RhymnastApp() {
             onFile={(file) => void session.loadFile(file)}
             onReset={() => session.newRoutine()}
             onSwitchCamera={() => void session.switchCamera()}
+            onUseCamera={() => void session.useCamera()}
           />
         </section>
 
