@@ -23,7 +23,7 @@
    big buttons and plain words. A light theme (below) and a dark theme (.dark, further down).
    Each sport has its own look (data-sport on <html>, lib/sport.ts), further down:
      rhythmic gymnastics: violet with a pink ribbon, serif headings (also the default, before a sport is picked);
-     cheerleading: royal blue and gold varsity stripes, bold upper-case headings;
+     cheerleading: royal blue and gold, bold upper-case headings;
      ballet: berry rose and champagne on blush, classical italic serif headings.
    The traffic-light colors (good / warn / bad) stay the same in every sport: they mean the same thing.
    Use these as Tailwind classes: bg-card, text-muted, border-line, bg-accent, text-good, bg-bad-soft, ... */
@@ -65,12 +65,32 @@
       transform: translateY(10px);
     }
   }
+
+  /* The Sports menu opens: a quick fade and grow from its button. */
+  --animate-menu-in: menu-in 0.12s ease-out;
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+
+  /* The Practice or Judge card appears after a switch. */
+  --animate-panel-in: panel-in 0.15s ease-out;
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
 }
 
 /* The fonts are loaded in app/layout.tsx. font-display = the sport's heading font (below). */
 @theme inline {
   --font-sans: var(--font-figtree), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--sport-display), var(--font-figtree), system-ui, sans-serif;
+  /* The name "Rhymnast" (font-brand): the same font in every sport, so the logo doesn't jump when the sport changes. */
+  --font-brand: var(--font-playfair), Georgia, serif;
 }
 
 :root {
@@ -82,7 +102,7 @@
 /* Cheerleading, light. Rhythmic gymnastics is the default above. */
 [data-sport="cheer"] {
   --sport-display: var(--font-bebas);
-  --sport-stripe: repeating-linear-gradient(90deg, #1d4ed8 0 28px, #f5b301 28px 40px, #0b1736 40px 52px);
+  --sport-stripe: linear-gradient(90deg, #0b1736, #1d4ed8 50%, #f5b301);
   --color-bg: #ffffff;
   --color-card: #f2f5fc;
   --color-ink: #0b1736;
@@ -208,7 +228,8 @@ label:has(> input[type="file"]:focus-visible) {
 }
 
 /* Dark mode switch: the new theme grows as a circle from the switch (components/ThemeToggle.tsx).
-   Turn off the browser's default cross-fade so only the circle shows. */
+   Changing sport: the same circle, from the Sports button (components/revealFrom.ts).
+   Turn off the browser's default cross-fade so only those animations show. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

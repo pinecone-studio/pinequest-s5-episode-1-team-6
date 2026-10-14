@@ -10,7 +10,7 @@ import type { SportText } from '@/lib/sport';
 import type { MoveVideo } from '@/lib/session';
 import { describeMove } from '@/lib/ui/plain';
 import { describeMeasurements, formatTime } from '@/lib/ui/format';
-import type { Tab } from './Header';
+import type { Tab } from './ModeSwitch';
 import { MoveMedia, MoveMediaStatus } from './MoveMedia';
 import { chip, ghostButton, smallText, toneBorder } from './ui';
 

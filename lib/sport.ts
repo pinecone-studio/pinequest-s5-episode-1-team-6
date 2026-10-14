@@ -27,7 +27,6 @@ export interface SportText {
   name: string; // "Rhythmic gymnastics"
   short: string; // "Gymnastics"
   emoji: string;
-  tagline: string; // under the app name
   menuText: string; // under the sport's name in the Sports menu
   athlete: string; // "gymnast" / "athlete"
   artistry: string; // the judges' own score
@@ -47,7 +46,6 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     name: 'Rhythmic gymnastics',
     short: 'Gymnastics',
     emoji: '🎀',
-    tagline: 'See which points you lose in your balances, leaps and turns, and why.',
     menuText: 'Balances, leaps and turns',
     athlete: 'gymnast',
     artistry: 'Artistry',
@@ -65,7 +63,6 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     name: 'Cheerleading',
     short: 'Cheer',
     emoji: '📣',
-    tagline: 'See which points you lose in your jumps and motions, and why.',
     menuText: 'Jumps and arm motions',
     athlete: 'athlete',
     artistry: 'Showmanship',
@@ -83,7 +80,6 @@ export const SPORT_TEXT: Record<Sport, SportText> = {
     name: 'Ballet',
     short: 'Ballet',
     emoji: '🩰',
-    tagline: 'See which points you lose in your arabesques, extensions, pirouettes and jumps, and why.',
     menuText: 'Poses, pirouettes and grand jetés',
     athlete: 'dancer',
     artistry: 'Artistry',

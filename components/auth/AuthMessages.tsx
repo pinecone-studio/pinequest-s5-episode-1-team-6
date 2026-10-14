@@ -6,13 +6,13 @@ import Link from 'next/link';
 import type { FirebasePublicKey } from '@/lib/firebase/config';
 import { smallText } from '../ui';
 
-/** App name in the sport's heading font and one line of intro, then the form: one column in the middle of the screen. */
+/** App name in the brand font and one line of intro, then the form: one column in the middle of the screen. */
 export function AuthFrame({ intro, children }: { intro: string; children: ReactNode }) {
   return (
     <main className="mx-auto grid min-h-dvh max-w-md content-center gap-5 px-[clamp(16px,4vw,40px)] py-16">
       <div className="text-center">
-        <h1 className="m-0 font-display text-[40px] leading-none text-accent">Rhymnast</h1>
-        <p className="mt-2 mb-0 text-[15px] text-muted">{intro}</p>
+        <h1 className="m-0 font-brand text-[64px] leading-none text-accent max-sm:text-[52px]">Rhymnast</h1>
+        <p className="mt-3 mb-0 text-[15px] text-muted">{intro}</p>
       </div>
       {children}
     </main>

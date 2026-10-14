@@ -6,6 +6,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_SPORT, SPORT_KEY, isSport, type Sport } from '@/lib/sport';
+import { revealFrom } from './revealFrom';
 
 /** Tell React when data-sport on <html> changes (also when another component changes it). */
 function subscribe(onChange: () => void) {
@@ -22,12 +23,20 @@ function current(): Sport {
 /** The server doesn't know the browser's choice: the first render uses the default. */
 const onServer = (): Sport => DEFAULT_SPORT;
 
-/** Picks a sport: saves it in this browser and switches the colors and texts at once. */
-export function chooseSport(sport: Sport): void {
-  document.documentElement.dataset.sport = sport;
-  try {
-    localStorage.setItem(SPORT_KEY, sport);
-  } catch { /* storage blocked: the sport still changes, it just isn't remembered */ }
+/**
+ * Picks a sport: saves it in this browser and switches the colors and texts.
+ * The new sport grows as a circle from `from` (the Sports button), like the dark mode switch.
+ */
+export function chooseSport(sport: Sport, from: Element): void {
+  revealFrom(from, async () => {
+    document.documentElement.dataset.sport = sport;
+    try {
+      localStorage.setItem(SPORT_KEY, sport);
+    } catch { /* storage blocked: the sport still changes, it just isn't remembered */ }
+    // Let React draw the new sport's texts (it hears about data-sport a moment later) before the
+    // browser takes its picture of the new page.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 }
 
 export function useSport(): Sport {
