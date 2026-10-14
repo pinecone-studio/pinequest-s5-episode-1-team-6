@@ -107,7 +107,8 @@ export function drawMistakeMarks(
   marks: MistakeMarks,
   recMs: number,
 ): void {
-  const u = ctx.canvas.width / 640; // sizes grow with the video
+  // Sizes grow with the video's long side, like the skeleton (draw.ts): a portrait clip gets readable labels too.
+  const u = Math.max(ctx.canvas.width, ctx.canvas.height) / 640;
   const correct = marks.mistakes.length === 0;
   drawStrip(ctx, marks, recMs, u, correct ? GREEN : RED);
   if (!inMistake(marks, recMs)) return;

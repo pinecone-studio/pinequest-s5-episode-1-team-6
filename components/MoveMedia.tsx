@@ -25,10 +25,12 @@ export function MoveMedia({ files, name }: { files: MoveMediaFiles; name: string
         playsInline
         preload="metadata"
         aria-label={`Video of ${name}. Anything that lost points is marked in red.`}
-        className="w-full max-w-[520px] rounded-[10px] bg-stage print:hidden"
+        // Keeps the clip's shape within 520 px wide and 60% of the screen high (at most 520 px), so a
+        // portrait clip is narrower instead of taller than the screen.
+        className="block h-auto max-h-[min(60dvh,520px)] w-auto max-w-[min(100%,520px)] rounded-[10px] bg-stage print:hidden"
       />
       {/* eslint-disable-next-line @next/next/no-img-element -- a photo in this browser (blob URL): nothing for next/image to optimize */}
-      <img src={files.photoUrl} alt={`Photo of ${name}`} className="hidden w-[260px] rounded-[10px] print:block" />
+      <img src={files.photoUrl} alt={`Photo of ${name}`} className="hidden h-auto max-h-[320px] w-auto max-w-[260px] rounded-[10px] print:block" />
       <button
         type="button"
         className={`${ghostButton} min-h-9 w-fit px-3.5 text-sm print:hidden`}
