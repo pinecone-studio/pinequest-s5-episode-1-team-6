@@ -6,7 +6,7 @@
 // Menu button pattern (WAI-ARIA): Enter / Space / ↓ opens it on the picked sport, ↑ ↓ Home End move,
 // Enter picks, Escape or a click outside closes it and focus goes back to the button.
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { SPORTS, SPORT_TEXT, type Sport } from '@/lib/sport';
 import { SportIcon } from './SportIcon';
 import { chooseSport } from './useSport';
@@ -79,11 +79,11 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-accent-soft max-sm:h-7 max-sm:w-7">
           <SportIcon sport={sport} size={20} />
         </span>
-        <span className="max-sm:hidden">
-          <SameWidth names={SPORTS.map((s) => SPORT_TEXT[s].name)} shown={text.name} />
-        </span>
-        <span className="sm:hidden max-[519px]:hidden">
-          <SameWidth names={SPORTS.map((s) => SPORT_TEXT[s].short)} shown={text.short} />
+        <span className="max-[519px]:hidden">
+          <GlidingWidth>
+            <span className="max-sm:hidden">{text.name}</span>
+            <span className="sm:hidden">{text.short}</span>
+          </GlidingWidth>
         </span>
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`flex-none transition-transform duration-150 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,17 +125,31 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
 }
 
 /**
- * The sport's name, always as wide as the longest one: every name sits in the same grid cell and only
- * the picked one is visible, so the Sports button keeps its size when the sport changes.
+ * The sport's name in a box that glides to the new name's width when the sport changes (instead of
+ * jumping), so the Sports button grows or shrinks smoothly. The box measures its text (ResizeObserver,
+ * which also catches web fonts loading and phone / desktop names) and animates its width to match;
+ * the text is cut off at the edge while the box is still narrower.
  */
-function SameWidth({ names, shown }: { names: string[]; shown: string }) {
+function GlidingWidth({ children }: { children: ReactNode }) {
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [width, setWidth] = useState<number>();
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setWidth(el.offsetWidth));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <span className="grid text-left">
-      {names.map((name) => (
-        <span key={name} className={`[grid-area:1/1] ${name === shown ? '' : 'invisible'}`} aria-hidden={name !== shown}>
-          {name}
-        </span>
-      ))}
+    <span
+      className="inline-block overflow-hidden align-middle transition-[width] duration-300 ease-out motion-reduce:transition-none"
+      style={{ width }}
+    >
+      <span ref={textRef} className="inline-block whitespace-nowrap">
+        {children}
+      </span>
     </span>
   );
 }
