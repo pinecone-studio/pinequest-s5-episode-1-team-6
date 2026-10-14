@@ -411,7 +411,9 @@ export class JudgingSession {
       this.setMessage('Opening the video…');
       video.srcObject = null;
       video.src = URL.createObjectURL(file);
-      video.controls = true;
+      // No player buttons: jumping around in the clip while it is judged would break the judging.
+      // The stage's Full screen button is the only one; "Try again" plays it again from the start.
+      video.controls = false;
       this.fileName = file.name;
       this.set({ source: 'file' });
       await firstFrameReady(video);

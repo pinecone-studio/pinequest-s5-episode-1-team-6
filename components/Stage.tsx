@@ -76,8 +76,7 @@ export function Stage({ stageRef, videoRef, canvasRef, message, busy, judging, l
       {live && <LiveBox live={live} />}
 
       {source && (
-        // A video file shows the player's own buttons along the bottom: stay above them.
-        <div className={`absolute right-3 flex items-center gap-2 compact:right-2 ${source === 'file' ? 'bottom-14' : 'bottom-3 compact:bottom-2'}`}>
+        <div className="absolute right-3 bottom-3 flex items-center gap-2 compact:right-2 compact:bottom-2">
           {/* Shown in full screen and on short screens. The wrapper does the hiding: "hidden" next to the
               button's own "inline-flex" would depend on the CSS order. */}
           <span className={fullscreen ? 'contents' : 'hidden short:contents'}>
