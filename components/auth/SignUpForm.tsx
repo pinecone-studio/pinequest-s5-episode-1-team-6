@@ -4,13 +4,12 @@
 // <AuthScreen />'s job.
 
 import { useState, type FormEvent } from 'react';
-import Link from 'next/link';
 import { createAccount } from '@/lib/firebase/auth';
 import { LOGIN_PATH, withNext } from '@/lib/ui/loginRedirect';
 import { useAuth } from './AuthProvider';
 import { useAuthAction } from './useAuthAction';
 import { useNextPath } from './useNextPath';
-import { AuthFrame, ErrorText, formCard, linkButton } from './AuthMessages';
+import { AuthFrame, ErrorText, formCard, SwitchPage } from './AuthMessages';
 import { PasswordField, TextField } from './Fields';
 import { OtherSignInOptions } from './OtherSignInOptions';
 import { primaryButton } from '../ui';
@@ -35,17 +34,15 @@ export function SignUpForm() {
     <AuthFrame intro="Create an account to practice and judge.">
       <form className={formCard} onSubmit={onSubmit}>
         <TextField label="Your name" type="text" autoComplete="name" value={name} onChange={setName} />
-        <TextField label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
-        <PasswordField value={password} onChange={setPassword} autoComplete="new-password" />
+        <TextField label="Email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={setEmail} />
+        <PasswordField value={password} onChange={setPassword} autoComplete="new-password" hint="At least 6 characters." />
         <ErrorText error={error} />
         <button className={primaryButton} type="submit" disabled={busy}>
           {busy ? 'Please wait…' : 'Create account'}
         </button>
         <OtherSignInOptions busy={busy} run={run} />
+        <SwitchPage question="Already have an account?" action="Sign in" href={withNext(LOGIN_PATH, next)} />
       </form>
-      <Link className={linkButton} href={withNext(LOGIN_PATH, next)}>
-        Already have an account? Sign in
-      </Link>
     </AuthFrame>
   );
 }

@@ -80,10 +80,10 @@ export function ToolPageSkeleton({ label = 'Checking your account…' }: { label
 export function AuthFormSkeleton({ label = 'Checking your account…' }: { label?: string }) {
   return (
     <SkeletonPage label={label}>
-      <div className={`mx-auto grid max-w-md gap-4 ${gutter} pt-16 pb-12`}>
-        <div className="grid gap-2">
-          <Bone className="h-8 w-36" />
-          <Bone className="h-4 w-64 max-w-full" />
+      <div className={`mx-auto grid min-h-dvh max-w-md content-center gap-5 ${gutter} py-16`}>
+        <div className="grid justify-items-center gap-2.5">
+          <Bone className="h-10 w-44" />
+          <Bone className="h-4 w-56 max-w-full" />
         </div>
         <div className="grid gap-3 rounded-card bg-card p-5">
           {[0, 1].map((i) => (
@@ -95,6 +95,7 @@ export function AuthFormSkeleton({ label = 'Checking your account…' }: { label
           <Bone className="mt-1 h-11 w-full rounded-full" />
           <Bone className="h-11 w-full rounded-full" />
           <Bone className="h-11 w-full rounded-full" />
+          <Bone className="mx-auto mt-2 h-4 w-48" />
         </div>
       </div>
     </SkeletonPage>
