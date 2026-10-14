@@ -41,6 +41,7 @@ Known limits (be honest in the UI and README):
 - Keep this file and PLAN.md up to date as decisions change.
 - Prefer simple, readable code over clever code. The team is junior.
 - Never commit videos, model weights or datasets. Use .gitignore and a `data/README.md` explaining how to download them.
+  Only exception: the small reference clips in `public/reference/` (Decision 14).
 
 ## Decisions (made 2026-10-08)
 1. **Pose inference: in the browser** with MediaPipe Pose Landmarker (`@mediapipe/tasks-vision@0.10.14`,
@@ -164,6 +165,12 @@ Show warnings in the UI and skip low-visibility frames.
    rendered CoP table pages (p. 80, 88-89, 100); all `verified: true`.
 13. **Rotation margin (user, 2026-10-13):** an attitude-pivot turn within 15° of a full rotation counts
    (`ROTATION_MARGIN_DEG`, `lib/rules.ts`); the move says so. A team decision, like the 3° angle margin.
+14. **Reference videos (user, 2026-10-14):** in Practice (rhythmic gymnastics only), a balance that lost
+   points shows "How it should look" next to "Your move" in the results. Clips for front split with help
+   (2.303), back split body forward (2.1104) and attitude (2.1202), mapped in `lib/reference.ts`; each was
+   judged by the app as the same element with no points lost. Trimmed, cropped and shrunk (0.4-0.6 MB)
+   into `public/reference/`, the only videos in git (for the demo; the user cleared their use). The
+   originals are in `data/reference/` (not committed). No clip yet for back split foot-above-head (2.1005).
 
 ## Open decisions (ask the user before assuming)
 - None right now.

@@ -2,15 +2,19 @@
 //   Practice: "You did 3 moves. Points lost: 0.40" + each move with reason and tip.
 //   Judge:    the score (difficulty, execution, artistry, final) + each move.
 //   Every move gets a video (mistakes marked red, a correct move green) and a download (made after Finish).
+//   Practice, rhythmic gymnastics: a balance that lost points also shows a reference video of it done
+//   right, next to the gymnast's own (lib/reference.ts).
 //   "Show rulebook details" adds codes, measurements, the rule text and pages.
 
 import Link from 'next/link';
 import type { Report } from '@/lib/report';
+import { referenceVideoFor } from '@/lib/reference';
 import type { SportText } from '@/lib/sport';
 import type { MoveVideo } from '@/lib/session';
 import { describeMove } from '@/lib/ui/plain';
 import { describeMeasurements, formatTime } from '@/lib/ui/format';
 import type { Tab } from './ModeSwitch';
+import { ClipPlayer } from './ClipPlayer';
 import { MoveMedia, MoveMediaStatus } from './MoveMedia';
 import { chip, ghostButton, smallText, toneBorder } from './ui';
 
@@ -122,6 +126,8 @@ function ReportBody({ text, report, videos, mode, details }: ReportBodyProps) {
       <ol className="m-0 grid list-none gap-3 p-0">
         {report.moves.map((m) => {
           const d = describeMove(m, m.status);
+          // Practice only, and only for a move that lost points: how it should look, next to the gymnast's own.
+          const reference = mode === 'practice' && !m.clean && !m.rejected ? referenceVideoFor(report.sport, m.code) : null;
           return (
             <li key={m.number} className={`grid gap-1.5 rounded-xl border-l-[6px] bg-bg px-4 py-3.5 ${m.rejected ? 'border-l-warn opacity-50' : toneBorder[d.tone]}`}>
               <div className="flex items-baseline justify-between gap-2.5">
@@ -138,7 +144,22 @@ function ReportBody({ text, report, videos, mode, details }: ReportBodyProps) {
               ))}
               {d.reasons.length === 0 && !m.rejected && <p className="m-0 text-[15px]">{text.correctMove}</p>}
               {d.notes.map((n) => <p key={n} className="m-0 text-sm text-warn">{n}</p>)}
-              <MoveVideoPart video={videos[m.id]} name={d.name} />
+              {reference ? (
+                <div className="flex flex-wrap items-start gap-4">
+                  <figure className="m-0 grid gap-1">
+                    <figcaption className="text-sm font-semibold text-muted">Your move</figcaption>
+                    <MoveVideoPart video={videos[m.id]} name={d.name} small />
+                  </figure>
+                  <figure className="m-0 grid gap-1 print:hidden">
+                    <figcaption className="text-sm font-semibold text-good">How it should look</figcaption>
+                    <div className="mt-1">
+                      <ClipPlayer src={reference} label={`${d.name} done right, with no points lost`} name={`${d.name}, done right`} small />
+                    </div>
+                  </figure>
+                </div>
+              ) : (
+                <MoveVideoPart video={videos[m.id]} name={d.name} />
+              )}
 
               {details && (
                 <>
@@ -170,8 +191,8 @@ function ReportBody({ text, report, videos, mode, details }: ReportBodyProps) {
   );
 }
 
-function MoveVideoPart({ video, name }: { video: MoveVideo | undefined; name: string }) {
+function MoveVideoPart({ video, name, small = false }: { video: MoveVideo | undefined; name: string; small?: boolean }) {
   if (!video) return null;
-  if (video.status === 'ready') return <MoveMedia files={video} name={name} />;
+  if (video.status === 'ready') return <MoveMedia files={video} name={name} small={small} />;
   return <MoveMediaStatus status={video.status} />;
 }

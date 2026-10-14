@@ -60,6 +60,14 @@ Run them through <http://localhost:3000/tools/validate> (nothing is uploaded). I
 body-point numbers (no images) as `lib/library/examples/real-balances.json`, which turns every photo into
 a permanent unit test.
 
+## Reference videos (2026-10-14)
+The originals of the "How it should look" clips go in `data/reference/` (not committed): front split with
+help, back split (body forward), attitude. The app uses trimmed, cropped and shrunk copies (0.4-0.6 MB
+each) in `public/reference/`, the only videos in git; they were made in the browser (MediaRecorder), and
+`lib/reference.ts` maps each element code to its clip. To replace one, judge the new clip in the app
+first (same element, no points lost), then make a small MP4 (about 720 px on the long side) with the
+same file name.
+
 ## Validation videos (new elements, 2026-10-13)
 Same rules as the photos: real people, never commit, share through the team's private drive.
 
