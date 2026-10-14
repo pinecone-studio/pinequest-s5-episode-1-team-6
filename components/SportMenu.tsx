@@ -33,7 +33,8 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
     buttonRef.current?.focus();
   };
   const pick = (next: Sport) => {
-    chooseSport(next);
+    // The new sport grows as a circle from the Sports button.
+    if (next !== sport && buttonRef.current) chooseSport(next, buttonRef.current);
     close();
   };
 
