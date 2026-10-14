@@ -68,20 +68,19 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         aria-expanded={open}
         aria-controls="sports-menu"
         disabled={disabled}
-        title={disabled ? 'Finish judging to change sport' : undefined}
+        title={disabled ? 'Finish the routine to change sport' : undefined}
         onClick={() => setOpen(!open)}
         onKeyDown={onButtonKey}
         aria-label={`Sports: ${text.name}`}
-        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-line bg-transparent pr-3.5 pl-2.5 text-base font-semibold text-ink not-disabled:hover:border-accent disabled:cursor-default disabled:opacity-45 max-sm:pl-3.5"
+        className="inline-flex min-h-9 min-w-0 cursor-pointer items-center gap-1.5 rounded-full border-[1.5px] border-line bg-transparent pr-3 pl-1.5 text-[15px] font-semibold whitespace-nowrap text-ink transition-colors duration-150 not-disabled:hover:border-accent not-disabled:hover:bg-card disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
       >
-        {/* Phones: just the short name ("Gymnastics"); the navbar already shows the sport's icon. */}
-        <span className="contents max-sm:hidden">
-          <SportIcon sport={sport} size={22} />
-          <span className="text-muted">Sports:</span>
-          {text.name}
+        {/* The sport's icon stands for the app's logo too. Phones: the short name ("Gymnastics"). */}
+        <span className="grid h-7 w-7 flex-none place-items-center rounded-full bg-accent-soft">
+          <SportIcon sport={sport} size={18} />
         </span>
+        <span className="max-sm:hidden">{text.name}</span>
         <span className="sm:hidden">{text.short}</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`flex-none transition-transform duration-150 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
@@ -92,7 +91,7 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
           role="menu"
           aria-label="Sports"
           onKeyDown={onMenuKey}
-          className="absolute top-[calc(100%+6px)] left-0 z-20 grid w-[min(300px,calc(100vw-32px))] gap-1 rounded-card border border-line bg-bg p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+          className="absolute top-[calc(100%+6px)] left-0 z-20 grid origin-top-left animate-menu-in motion-reduce:animate-none w-[min(300px,calc(100vw-32px))] gap-1 rounded-card border border-line bg-bg p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
         >
           {SPORTS.map((s, i) => (
             <button

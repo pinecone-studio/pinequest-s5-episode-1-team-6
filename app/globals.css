@@ -61,6 +61,24 @@
       transform: translateY(10px);
     }
   }
+
+  /* The Sports menu opens: a quick fade and grow from its button. */
+  --animate-menu-in: menu-in 0.12s ease-out;
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: scale(0.98);
+    }
+  }
+
+  /* The Practice or Judge card appears after a switch. */
+  --animate-panel-in: panel-in 0.15s ease-out;
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
 }
 
 /* The fonts are loaded in app/layout.tsx. font-display = the sport's heading font (below). */

@@ -14,7 +14,8 @@ export interface JudgeForm {
   penalties: string;
 }
 
-const card = 'grid gap-3.5 rounded-card bg-card p-5';
+// Fades in each time its tab is picked (the animation restarts when `hidden` goes off).
+const card = 'grid gap-3.5 rounded-card bg-card p-5 animate-panel-in motion-reduce:animate-none';
 const emptyLine = 'text-[15px] text-muted';
 
 interface PracticePanelProps {
