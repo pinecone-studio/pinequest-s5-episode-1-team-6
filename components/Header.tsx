@@ -26,8 +26,8 @@ interface HeaderProps {
  *   navbar: the name on the left; small Sign in / Sign out, Settings and the dark mode switch on the
  *           right (the switch in the top right corner). Quiet on purpose: not the page's main actions.
  *   below:  what the page is about, the Sports menu and the Practice / Judge tabs.
- * On phones it fits in two short rows: icons instead of words in the navbar, a smaller dark mode
- * switch, no line about the page, and the Sports menu and the tabs side by side.
+ * On phones it fits in two short rows: icons instead of words in the navbar, no line about the page,
+ * and the Sports menu and the tabs side by side.
  */
 export function Header({ sport, judging, tab, onTab, onSettings }: HeaderProps) {
   // Arrow keys move between the tabs (WAI-ARIA tabs pattern); only the selected tab is in the Tab order.
@@ -58,11 +58,8 @@ export function Header({ sport, judging, tab, onTab, onSettings }: HeaderProps) 
             <GearIcon />
             <span className="max-sm:hidden">Settings</span>
           </button>
-          {/* On phones the switch is drawn at 73% (its parts have fixed sizes, so it is scaled as a whole). */}
-          <span className="ml-1.5 max-sm:ml-0.5 max-sm:h-8 max-sm:w-[58px]">
-            <span className="block max-sm:origin-top-left max-sm:scale-[0.727]">
-              <ThemeToggle />
-            </span>
+          <span className="ml-1.5 flex max-sm:ml-0.5">
+            <ThemeToggle />
           </span>
         </div>
       </nav>
