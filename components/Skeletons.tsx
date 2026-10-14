@@ -24,19 +24,17 @@ function SkeletonPage({ label, children }: { label: string; children: ReactNode 
 export function JudgingPageSkeleton({ label = 'Checking your account…' }: { label?: string }) {
   return (
     <SkeletonPage label={label}>
-      <div className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5 border-b border-line ${gutter} py-[18px]`}>
-        <div className="grid gap-2">
-          <Bone className="h-8 w-40" />
-          <Bone className="h-4 w-72 max-w-[70vw]" />
-        </div>
-        <Bone className="order-3 h-12 w-full rounded-full sm:order-none sm:w-56" />
-        <div className="flex gap-2.5">
-          <Bone className="h-11 w-24 rounded-full max-sm:hidden" />
-          <Bone className="h-11 w-24 rounded-full" />
+      <div className={`flex min-h-[72px] items-center justify-between gap-3 border-b border-line ${gutter} py-3 max-sm:min-h-16`}>
+        <Bone className="h-8 w-40 max-sm:w-28" />
+        <div className="flex items-center gap-1.5">
+          <Bone className="h-11 w-48 rounded-full max-sm:h-10 max-sm:w-28" />
+          <Bone className="h-10 w-24 rounded-full max-sm:hidden" />
+          <Bone className="h-8 w-[58px] rounded-full" />
         </div>
       </div>
-      <div className={`mx-auto grid max-w-[1400px] grid-cols-1 gap-6 ${gutter} pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)]`}>
-        <div className="grid min-w-0 content-start gap-4">
+      <div className={`mx-auto grid max-w-[1400px] grid-cols-1 gap-x-6 gap-y-4 ${gutter} pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] min-[960px]:grid-rows-[auto_1fr]`}>
+        <Bone className="h-12 w-full rounded-full min-[960px]:col-start-2 min-[960px]:row-start-1" />
+        <div className="grid min-w-0 content-start gap-4 min-[960px]:col-start-1 min-[960px]:row-span-2 min-[960px]:row-start-1">
           <Bone className="aspect-video w-full rounded-card" />
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <Bone className="h-14 w-full rounded-full sm:w-52" />
@@ -46,7 +44,7 @@ export function JudgingPageSkeleton({ label = 'Checking your account…' }: { la
             {[0, 1, 2].map((i) => <Bone key={i} className="h-[52px] rounded-xl" />)}
           </div>
         </div>
-        <div className="grid content-start gap-3.5 rounded-card bg-card p-5">
+        <div className="grid content-start gap-3.5 rounded-card bg-card p-5 min-[960px]:col-start-2 min-[960px]:row-start-2">
           <Bone className="h-6 w-32" />
           <Bone className="h-5 w-48" />
           <Bone className="h-4 w-full" />

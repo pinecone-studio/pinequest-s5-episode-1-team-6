@@ -14,7 +14,7 @@ export const ghostButton = `${button} border-[1.5px] border-line bg-transparent 
 /** "Continue with Google": the page color with the app's outline (like the other buttons), plus Google's G. */
 export const googleButton = `${button} border-[1.5px] border-line bg-bg text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
 /** Small and quiet, for the navbar (Sign in, Settings): text only until hovered. */
-export const navButton = 'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3 text-sm font-semibold whitespace-nowrap text-muted hover:bg-card hover:text-ink';
+export const navButton = 'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3.5 text-[15px] font-semibold whitespace-nowrap text-muted transition-colors duration-150 hover:bg-card hover:text-ink motion-reduce:transition-none';
 
 /** Add to a button to make it the big one. */
 export const bigButton = 'min-h-14 px-8 text-[19px]';

@@ -73,13 +73,14 @@ export function RhymnastApp() {
     : null;
   const text = SPORT_TEXT[state.sport];
 
+  // A full-height column, so the footer stays at the bottom of the screen when the page is short.
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <Header sport={sport} judging={state.judging} onSettings={() => setSettingsOpen(true)} />
 
       {/* Wide screens: camera on the left (both rows), the switch above the cards on the right.
           Narrow screens: the switch first, sticky at the top, so it stays in reach above the camera. */}
-      <main className="mx-auto grid max-w-[1400px] grid-cols-1 gap-x-6 gap-y-4 px-[clamp(16px,4vw,40px)] pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] min-[960px]:grid-rows-[auto_1fr] print:hidden">
+      <main className="mx-auto grid w-full max-w-[1400px] flex-1 grid-cols-1 content-start gap-x-6 gap-y-4 px-[clamp(16px,4vw,40px)] pt-6 pb-8 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(300px,400px)] min-[960px]:grid-rows-[auto_1fr] print:hidden">
         <div className="sticky top-0 z-10 -my-2 bg-bg py-2 short:static min-[960px]:static min-[960px]:col-start-2 min-[960px]:row-start-1 min-[960px]:my-0 min-[960px]:py-0">
           <ModeSwitch tab={tab} onTab={setTab} />
         </div>
@@ -159,6 +160,6 @@ export function RhymnastApp() {
           Saved videos →
         </Link>
       </footer>
-    </>
+    </div>
   );
 }

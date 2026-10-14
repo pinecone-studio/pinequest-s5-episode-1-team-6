@@ -12,9 +12,9 @@ interface HeaderProps {
 
 /**
  * One row under the sport's thin stripe:
- *   left:  the name and the Sports menu (it changes the whole theme, so it sits with the name);
- *   right: small Sign in / Sign out, Settings and the dark mode switch (the switch in the top right corner).
- *          Quiet on purpose: not the page's main actions.
+ *   left:  the name;
+ *   right: the Sports menu, then small Sign in / Sign out, Settings and the dark mode switch (the switch
+ *          in the top right corner). The last three are quiet on purpose: not the page's main actions.
  * The Practice / Judge switch is not here: it sits on top of the cards it changes (ModeSwitch.tsx).
  * On phones the navbar buttons are icons only and, on the smallest screens, the name is just "R".
  */
@@ -24,17 +24,17 @@ export function Header({ sport, judging, onSettings }: HeaderProps) {
       <div className="sport-stripe h-1 print:hidden" />
       <nav
         aria-label="Sport, account and settings"
-        className="flex min-h-14 items-center justify-between gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-2 max-sm:min-h-13 print:hidden"
+        className="flex min-h-[72px] items-center justify-between gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-3 max-sm:min-h-16 max-sm:py-2 print:hidden"
       >
-        <div className="flex min-w-0 items-center gap-3 max-sm:gap-2">
-          <h1 className="m-0 font-display text-[24px] leading-none text-accent">
-            <span className="max-[379px]:hidden">Rhymnast</span>
-            <span className="min-[380px]:hidden" aria-hidden="true">R</span>
-            <span className="sr-only min-[380px]:hidden">Rhymnast</span>
-          </h1>
-          <SportMenu sport={sport} disabled={judging} />
-        </div>
-        <div className="flex flex-none items-center gap-1">
+        <h1 className="m-0 min-w-0 font-display text-[32px] leading-none text-accent max-sm:text-[26px]">
+          <span className="max-[379px]:hidden">Rhymnast</span>
+          <span className="min-[380px]:hidden" aria-hidden="true">R</span>
+          <span className="sr-only min-[380px]:hidden">Rhymnast</span>
+        </h1>
+        <div className="flex flex-none items-center gap-1.5 max-sm:gap-1">
+          <span className="mr-1.5 flex max-sm:mr-0.5">
+            <SportMenu sport={sport} disabled={judging} />
+          </span>
           <AccountButton />
           <button className={`${navButton} max-sm:px-2`} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
             <GearIcon />
