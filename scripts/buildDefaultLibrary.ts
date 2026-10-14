@@ -57,8 +57,8 @@ export function buildDefaultLibrary({ includePhotos = true, perPose = 160, perNe
   add('frontSplit', () => frontSplitBalance({ ...common(), help: false, splitDeg: between(155, 188), trunkTilt: between(-40, 10) }), perPose);
   add('backSplitFootAboveHead', () => backSplitBalance({ ...common(), legDeg: between(130, 178), trunkTilt: between(12, 50) }), perPose);
   add('backSplitTrunkForward', () => backSplitBalance({ ...common(), legDeg: between(150, 186), trunkTilt: between(70, 125) }), perPose);
-  add('arabesque', () => arabesqueBalance({ ...common(), legDeg: between(65, 118), trunkTilt: between(0, 40) }), perPose);
-  add('attitude', () => attitudeBalance({ ...common(), thighDeg: between(65, 115), kneeDeg: between(70, 125), trunkTilt: between(0, 30) }), perPose);
+  add('arabesque', () => arabesqueBalance({ ...common(), legDeg: between(65, 118), trunkTilt: between(0, 55) }), perPose);
+  add('attitude', () => attitudeBalance({ ...common(), thighDeg: between(65, 115), kneeDeg: between(70, 125), trunkTilt: between(0, 55) }), perPose);
 
   // ---------- Not one of these ----------
   add('none', () => standing({ width: between(0.1, 0.7) }), perNegative);

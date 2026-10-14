@@ -155,13 +155,13 @@ test('attitude, thigh 15° below horizontal: medium deviation, E -0.30', () => {
 });
 
 test('attitude with small thigh and medium trunk deviation: 0.10 + 0.30 (CoP p. 83 example)', () => {
-  const e = only(run(hold(40, () => attitudeBalance({ thighDeg: 84, trunkTilt: 15 }))));
+  const e = only(run(hold(40, () => attitudeBalance({ thighDeg: 84, trunkTilt: 35 }))));
   assert(e.dbValid);
   assertEqual(JSON.stringify(penaltyValues(e)), JSON.stringify([0.1, 0.3]));
 });
 
-test('attitude with trunk leaning 30°: large trunk deviation, DB NOT valid', () => {
-  const e = only(run(hold(40, () => attitudeBalance({ trunkTilt: 30 }))));
+test('attitude with trunk leaning 45° (25° past the natural 20°): large trunk deviation, DB NOT valid', () => {
+  const e = only(run(hold(40, () => attitudeBalance({ trunkTilt: 45 }))));
   assert(!e.dbValid);
 });
 
@@ -184,10 +184,16 @@ test('arabesque, leg 16° below horizontal: medium thigh deviation (13° after t
   assertEqual(JSON.stringify(penaltyValues(e)), JSON.stringify([0.3]));
 });
 
-test('arabesque with the trunk leaning 15°: medium trunk deviation, valid', () => {
-  const e = only(run(hold(40, () => arabesqueBalance({ trunkTilt: 15, facing: -1 }))));
+test('arabesque with the trunk leaning 35° (15° past the natural 20°): medium trunk deviation, valid', () => {
+  const e = only(run(hold(40, () => arabesqueBalance({ trunkTilt: 35, facing: -1 }))));
   assert(e.dbValid);
   assertEqual(JSON.stringify(penaltyValues(e)), JSON.stringify([0.3]));
+});
+
+test('arabesque with a natural 18° lean: no trunk deduction (team decision, rules.ts)', () => {
+  const e = only(run(hold(40, () => arabesqueBalance({ legDeg: 92, trunkTilt: 18 }))));
+  assert(e.dbValid);
+  assertEqual(e.penalties.length, 0);
 });
 
 test('arabesque with the trunk forward at the horizontal (2.903) is not scored', () => {
@@ -263,7 +269,7 @@ test('standing, passé and split leap frames give no balance events', () => {
 test('measureBalance names the live shape for the readout', () => {
   assertEqual(measureBalance(frontSplitBalance({ help: true })).shape, 'frontSplitHelp');
   assertEqual(measureBalance(backSplitBalance()).shape, 'backSplitFootAboveHead');
-  assertEqual(measureBalance(attitudeBalance({ trunkTilt: 50 })).shape, null);
+  assertEqual(measureBalance(attitudeBalance({ trunkTilt: 70 })).shape, null);
   assertEqual(measureBalance(attitudeBalance()).shape, 'attitude');
   assertEqual(measureBalance(standing()).shape, null);
 });

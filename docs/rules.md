@@ -5,6 +5,12 @@ Source: FIG **Rhythmic Gymnastics Code of Points 2025-2028**, mark-up version va
 
 Status: ✅ = checked against the CoP text · ⚠️ = needs a human to verify.
 
+**Values checked on the pictograms (2026-10-13):** the table pages (p. 80, 88-89, 100) were rendered
+and every code used by the app sits in the column of its value, with the matching pictogram: 2.303 holds
+the leg (0.30), 2.305 no hands (0.50), 2.902 arabesque (0.20), 2.1003 / 2.1005 (0.30 / 0.50), 2.1104
+(0.40), 2.1202 (0.20), 1.2702 plain stag (0.20; 1.2704 = ring/back bend, 0.40), 3.1203 attitude pivot
+(0.30). The "We assume" notes below were confirmed.
+
 **How D values were read:** in the difficulty tables the value columns are 0.10 … 0.70, and each
 element code ends in its column number (e.g. `1.101` sits in the 0.10 column, `1.303` in 0.30).
 So the value = last two digits × 0.10. Cross-checked against the worked examples in the text.
@@ -42,13 +48,13 @@ large deductions." So the app shows **measured angle + suggested band**; a judge
 over-splits read above 180°. Best value among frames near the top of the flight (hips ≥ 70% of max
 rise). Deviation = 180 − angle → band above. Warns when a leg is foreshortened (camera not side-on).
 
-## Stag leap: code 1.2702, value 0.20 ⚠️ value
+## Stag leap: code 1.2702, value 0.20 ✅
 - Technique: "Stag leap (take-off from 1 or 2 feet): The front leg must be maximally bent, foot close to
   the thigh. The legs must be 180° apart, the stag position may be horizontal and will also be accepted
   when the 180° position is maintained with 1 of the legs above and the other below a horizontal
   position." (#8.13, p. 75) ✅
 - Table #9 item 27 "Stag leap, take-off from 1 or 2 feet, also with ring/back bend of the trunk" lists
-  1.2702 (0.20) and 1.2704 (0.40) (p. 80). ⚠️ We assume the plain stag leap = 0.20 (ring/back bend adds).
+  1.2702 (0.20) and 1.2704 (0.40) (p. 80). ✅ Confirmed on the pictogram: the plain stag leap = 0.20 (ring/back bend adds).
 - **Measured as:** the leap detector (same take-off/landing as the split leap) looks at the frames near
   the top of the flight. A frame is stag-shaped when one knee is bent ≤ 120° and the other ≥ 140°, and
   split-shaped when both knees are ≥ 140°; the majority decides. Deviation = 180° − angle between the
@@ -78,9 +84,9 @@ Shapes held under 0.3 s are treated as passing movements, not balance attempts.
 **Measured as:** rotations counted from the body's apparent width (wide when facing toward/away
 from the camera, narrow when side-on; each change ≈ 90°). Accuracy about ±45°.
 
-## Attitude pivot: code 3.1203, value 0.30 ⚠️ value
+## Attitude pivot: code 3.1203, value 0.30 ✅
 - Table #13 row 12 "Attitude, also ring without help/attitude with back bend" lists 3.1203 (0.30) and
-  3.1205 (0.50) (p. 100). ⚠️ We assume the plain attitude pivot = 0.30.
+  3.1205 (0.50) (p. 100). ✅ Confirmed on the pictogram: the plain attitude pivot = 0.30.
 - Shape: no separate rotation text; the balance technique applies: "Horizontal position of the free leg
   (thigh) and the maximum vertical position of the body" (p. 87) ✅
 - Minimum basic rotation 360° (#12.1.2, p. 91) ✅. "+0.20 p. for each additional rotation above the base
@@ -100,21 +106,28 @@ from the camera, narrow when side-on; each change ≈ 90°). Accuracy about ±45
   camera margin for angles. Within 45° of a full turn the app says "close to a full turn: check".
 - **Deduction:** thigh below horizontal only (median over the turn, #2.5 bands). Trunk lean can't be
   seen when she faces the camera: judges check it.
-- 180-359° in the shape = "Attitude pivot (under 360°)", not valid. Less than 180° = an attitude
+- **Rotation margin (team decision, user 2026-10-13, not a Code value):** a turn within 15° of a full
+  rotation counts as that rotation (`ROTATION_MARGIN_DEG`, `lib/rules.ts`), and the move says "counted
+  with the 15° rotation margin". Reason: ±45° accuracy, and the team's two full turns measured ~351° in
+  the browser (Python replay: 298° and 370°: the two runtimes sample the video slightly differently).
+- 180-344° in the shape = "Attitude pivot (under 360°)", not valid. Less than 180° = an attitude
   balance (balance detector). A hold that turns into a pivot is not judged as a balance as well.
 
-## Arabesque balance: row 9, code 2.902, value 0.20 ⚠️ value
+## Arabesque balance: row 9, code 2.902, value 0.20 ✅
 - Technique: "Free leg horizontal forward (straight or bent), side, or backward (Arabesque): Horizontal
   position of the free leg (thigh) and the maximum vertical position of the body" (#10.11, p. 86) ✅
 - Table #11 row 9 "Arabesque: Free leg horizontal backward, also with trunk forward at the horizontal,
-  also with back bend of the trunk" lists 2.902, 2.903, 2.904 (p. 89). ⚠️ We assume the plain
+  also with back bend of the trunk" lists 2.902, 2.903, 2.904 (p. 89). ✅ Confirmed on the pictogram: the plain
   arabesque = 0.20 (first in the row title); trunk forward (0.30) and back bend (0.40) are not scored.
 - **Measured as:** free leg backward, knee ≥ 150°, leg below back-split height (< 120° around the hip),
   thigh ≥ 55°, trunk lean < 50° (more = arabesque with trunk forward, another element). Two segments,
-  like the attitude: **thigh** deviation = 90° − thigh elevation; **trunk** deviation = lean from vertical.
-- ⚠️ **Open decision:** read literally, "maximum vertical position of the body" makes any lean a
-  deviation. The team's arabesque leans 24-27° → large deviation, DB not valid. Real arabesques lean a
-  little to lift the leg; a judge may see this differently.
+  like the attitude: **thigh** deviation = 90° − thigh elevation; **trunk** deviation = lean from vertical
+  beyond the natural 20°.
+- **Natural trunk lean (team decision, user 2026-10-13, not a Code value):** "maximum vertical position
+  of the body" gives no angle, and a gymnast leans forward a little to lift the leg behind. The first
+  20° of lean are free (`NATURAL_TRUNK_LEAN_DEG` in `lib/rules.ts`); only the lean beyond that goes into
+  the bands, after the 3° camera margin. Same for the attitude. The team's arabesque (24-27°) is valid
+  with at most −0.10. Read literally (no allowance) it would have been a large deviation, not valid.
 - A shape held under 1 s that flows straight into another balance (the leg passing arabesque height on
   its way up to a back split) is not judged on its own.
 
@@ -158,19 +171,19 @@ and large deductions" (p. 26). The app follows the bands, but does not punish ca
 - Holding the support leg with the hand: not valid (#10.5) ⚠️ not automated. Apparatus technical element
   required (#10.8) ⚠️ not automated (judges check).
 
-## Front split balance with help: row 3, code 2.303, value 0.30 ⚠️ value
+## Front split balance with help: row 3, code 2.303, value 0.30 ✅
 - Technique: "Front split with or without help · Split is required" (#10.11, p. 86) ✅
 - Table #11 row 3 "Front split with or without help" lists 2.303 (0.30) and 2.305 (0.50) (p. 88).
-  ⚠️ We assume **with help = 0.30, without help = 0.50** (order of the row title). Check the pictograms.
+  ✅ Confirmed on the pictogram: **with help = 0.30, without help = 0.50** (order of the row title).
 - **Measured as:** free leg forward of the head, straight; split = angle between the legs at the hips;
   deviation = 180° − split. "Help" = a wrist or finger within 0.3 torso lengths of the free shin/foot.
   Without help it's scored as 2.305; both are the same box, so only one counts.
 
-## Back split balance without help (foot above head): row 10, code 2.1005, value 0.50 ⚠️ value
+## Back split balance without help (foot above head): row 10, code 2.1005, value 0.50 ✅
 - Technique: "Free leg high up backward, without help · Split is NOT required; whole foot above the
   head is required · Touching is NOT required" (#10.11, p. 87) ✅
 - Table #11 row 10 "Back split with help, also foot above head without help" lists 2.1003 (0.30) and
-  2.1005 (0.50) (p. 89). ⚠️ We assume **foot above head without help = 0.50**. Check the pictograms.
+  2.1005 (0.50) (p. 89). ✅ Confirmed on the pictogram: **foot above head without help = 0.50**.
 - **Measured as:** free leg backward (foot behind the head), knee straight, leg at least 30° above
   horizontal, trunk lean < 60°. Deviation = degrees the leg must still rise at the hip until the lowest
   point of the foot (heel or toes) is above the top of the head. MediaPipe has no head-top point: we use
@@ -178,9 +191,9 @@ and large deductions" (p. 26). The app follows the bands, but does not punish ca
 - Back split **with** help and trunk-forward back splits (row 11) are not scored: in 2D they look like a
   front split with the trunk bent back (seen on a competition photo).
 
-## Back split balance, trunk forward: row 11, code 2.1104, value 0.40 ⚠️ value
+## Back split balance, trunk forward: row 11, code 2.1104, value 0.40 ✅
 - Table #11 row 11 "Back split with or without help, trunk forward at the horizontal or below, or with
-  ring without help" lists 2.1104 (0.40) and 2.1106 (0.60, ring) (p. 89). ⚠️ We assume the plain back
+  ring without help" lists 2.1104 (0.40) and 2.1106 (0.60, ring) (p. 89). ✅ Confirmed on the pictogram: the plain back
   split with the trunk forward = 0.40.
 - The balance pages give no separate technique text for this row; the matching rotation (p. 97)
   defines the shape: "Split position required. The trunk should remain at the horizontal or below."
@@ -189,15 +202,15 @@ and large deductions" (p. 26). The app follows the bands, but does not punish ca
 - **Measured as:** free leg backward and straight, leg up, trunk lean ≥ 65° forward. Two segments:
   **split** deviation = 180° − split; **trunk** deviation = degrees the trunk is above horizontal.
 
-## Attitude balance: row 12, code 2.1202, value 0.20 ⚠️ value
+## Attitude balance: row 12, code 2.1202, value 0.20 ✅
 - Technique: "Attitude · Horizontal position of the free leg (thigh) and the maximum vertical position
   of the body" (#10.11, p. 87) ✅
 - Table #11 row 12 "Attitude, also ring with help/with the leg on the shoulder, also ring without
-  help/attitude with back bend of the trunk" lists 2.1202, 2.1203, 2.1204 (p. 89). ⚠️ We assume the plain
+  help/attitude with back bend of the trunk" lists 2.1202, 2.1203, 2.1204 (p. 89). ✅ Confirmed on the pictogram: the plain
   attitude = 0.20 (first in the row title).
 - **Measured as:** free leg backward, knee bent 60-140°, no hand on the leg, foot not at the head (that's
   a ring). Two segments: **thigh** deviation = 90° − thigh elevation; **trunk** deviation = lean from
-  vertical. Each gets its own band and penalty (p. 83 examples).
+  vertical beyond the natural 20° (see the arabesque section). Each gets its own band and penalty (p. 83 examples).
 
 ## Not automated yet (judges enter by hand)
 - Heavy landing; visibly arched back on landing; swing technique ("kip") (Execution table, p. 121) ⚠️

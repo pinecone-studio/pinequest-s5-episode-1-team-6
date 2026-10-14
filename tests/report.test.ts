@@ -14,7 +14,7 @@ function routine() {
     ...repeat(15, () => standing()),
     ...repeat(40, () => frontSplitBalance({ help: true })),
     ...repeat(15, () => standing()),
-    ...repeat(40, () => attitudeBalance({ thighDeg: 84, trunkTilt: 15 })),
+    ...repeat(40, () => attitudeBalance({ thighDeg: 84, trunkTilt: 35 })),
     ...repeat(15, () => standing()),
     ...repeat(19, () => frontSplitBalance({ help: true })),
     ...repeat(15, () => standing()),

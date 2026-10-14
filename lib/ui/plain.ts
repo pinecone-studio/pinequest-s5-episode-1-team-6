@@ -1,7 +1,7 @@
 // Plain-language text for people who don't know the Code of Points: what went wrong, what it
 // cost, and one tip. The precise rule wording stays in the report's "rulebook details".
 
-import { round2 } from '../rules';
+import { NATURAL_TRUNK_LEAN_DEG, round2 } from '../rules';
 import type { BalanceLive } from '../elements/balances';
 import type { MotionLive } from '../cheer/motions';
 import type { BalletPoseLive } from '../ballet/poses';
@@ -54,7 +54,7 @@ const SEGMENTS: Record<string, { problem: (deg: number | undefined) => string; t
   foot: { problem: (d) => `The foot was ${d}° short of being fully above the head.`, tip: 'Lift the leg higher, past the top of the head.' },
   thigh: { problem: (d) => `The raised thigh was ${d}° below hip height.`, tip: 'Lift the knee up to hip height.' },
   passeThigh: { problem: (d) => `The raised thigh was ${d}° below hip height.`, tip: 'Lift the knee up to hip height.' },
-  trunk: { problem: (d) => `The upper body leaned ${d}° away from upright.`, tip: 'Stand taller and keep the chest up.' },
+  trunk: { problem: (d) => `The upper body leaned ${d}° more than the ${NATURAL_TRUNK_LEAN_DEG}° that is allowed.`, tip: 'Stand taller and keep the chest up.' },
   trunkAbove: { problem: (d) => `The upper body was ${d}° above horizontal.`, tip: 'Bring the chest down to horizontal.' },
   // Cheer
   leftArmLow: armSegment('left', true),
@@ -86,7 +86,7 @@ const SHORT: Record<string, (deg: number | undefined) => string> = {
   foot: (d) => `Foot ${d}° below head`,
   thigh: (d) => `Thigh ${d}° low`,
   passeThigh: (d) => `Thigh ${d}° low`,
-  trunk: (d) => `Leaning ${d}°`,
+  trunk: (d) => `Leaning ${d}° too far`,
   trunkAbove: (d) => `Chest ${d}° too high`,
   leftArmLow: (d) => `Left arm ${d}° low`,
   leftArmHigh: (d) => `Left arm ${d}° high`,

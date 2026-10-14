@@ -1,5 +1,5 @@
 import { test, assert, assertEqual, assertClose } from './harness';
-import { AttitudePivotDetector } from '../lib/elements/attitudePivot';
+import { AttitudePivotDetector, judgeAttitudePivot } from '../lib/elements/attitudePivot';
 import { BalanceDetector } from '../lib/elements/balances';
 import { facingAngle } from '../lib/geometry';
 import type { ElementEvent } from '../lib/types';
@@ -73,4 +73,16 @@ test('attitude held without turning is a balance, not a pivot', () => {
 test('turning on both feet (no raised leg) is not a pivot', () => {
   const seq = repeat(30, (i) => attitudeTurnPose(12 * i, { thighDeg: 0, kneeDeg: 180 }));
   assertEqual(run(seq).filter((e) => e.code === '3.1203').length, 0);
+});
+
+test('rotation margin: 350° counts as one full turn, and says so (team decision, rules.ts)', () => {
+  const e = judgeAttitudePivot({ tStart: 0, tEnd: 1000, thighDeg: 90, rotationDeg: 350, releveShare: 1, visibility: 1 })!;
+  assertEqual(e.measurements.rotations, 1);
+  assertEqual(e.dbValue, 0.3);
+  assert(e.warnings.some((w) => w.includes('rotation margin')));
+});
+
+test('rotation margin: 340° is still under 360°, not valid', () => {
+  const e = judgeAttitudePivot({ tStart: 0, tEnd: 1000, thighDeg: 90, rotationDeg: 340, releveShare: 1, visibility: 1 })!;
+  assert(!e.dbValid && e.dbValue === 0);
 });
