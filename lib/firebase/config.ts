@@ -1,5 +1,5 @@
 // Public Firebase web settings. These are safe to ship in the browser (Firebase's own rules).
-// Values live in .env or .env.local (not committed; copy .env.example) and in Vercel's environment variables.
+// Values live in .env or .env.local (not committed; copy .env.example) and are built into the site by `npm run build`.
 
 export interface FirebaseWebConfig {
   apiKey: string;

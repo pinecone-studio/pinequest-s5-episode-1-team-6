@@ -43,6 +43,9 @@
 - [ ] Shoot and label attitude + back split photos (`data/README.md`), run /tools/validate, send results.
       **Owner: team**; tune rules from mismatches. **Owner: Claude**
 - [x] Deploy to Vercel: https://pinequest-s5-episode-1-team-6.vercel.app (live site checked 2026-10-13)
+- [x] Move hosting to Cloudflare Pages: https://rhymnast.pages.dev (2026-10-14)
+- [ ] Add `rhymnast.pages.dev` to Firebase → Authentication → Settings → Authorized domains (for Google sign-in).
+      **Owner: Firebase project owner**
 - [ ] Decide on a 2-3° measurement tolerance before the first −0.10 band. **Owner: user**
 - [ ] Check detectors on 5-10 labeled side-on video clips per element; record agreement in
       `docs/validation.md`. **Owner: team + Claude**
@@ -52,12 +55,12 @@
 - [ ] Demo script, pitch. **Owner: team**
 
 ## Hosting
-- Vercel (Hobby). Deploys are manual: `npm run deploy` from an up-to-date `main` (needs `npx vercel login`
-  once). Tests: `npm test`.
+- Cloudflare Pages, project `rhymnast` (static export in `out/`). Deploys are manual: `npm run deploy` from an
+  up-to-date `main` (needs `npx wrangler@4.151.0 login` once). Tests: `npm test`.
 - Sign-in: Firebase Authentication (email and password, Google, or guest for demos) in the browser. Google on the
-  live site needs the Vercel domain in Firebase → Authentication → Settings → Authorized domains. The public
-  `NEXT_PUBLIC_FIREBASE_*` values are not committed (2026-10-13): copy `.env.example` to `.env`, and set the
-  same four in Vercel → Project → Settings → Environment Variables.
+  live site needs `rhymnast.pages.dev` in Firebase → Authentication → Settings → Authorized domains. The public
+  `NEXT_PUBLIC_FIREBASE_*` values are not committed (2026-10-13): copy `.env.example` to `.env`; the deploy
+  builds them into the site from there.
 
 ## Migration to Next.js (2026-10-12)
 Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScript repo, in steps:
