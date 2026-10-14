@@ -45,6 +45,8 @@ Open <http://localhost:3000>, then:
 
 1. Pick a tab at the top: **Practice** (gymnast / coach) or **Judge**.
 2. Press **Turn on camera** and allow access (or **or use a video** for a recorded routine).
+   After a video has been judged, **or use the camera** goes back to the camera and **Use another
+   video** judges the next clip.
    The camera starts at once; if the pose model is still downloading, the video shows how far it is
    ("40%") and judging can start when it is done.
    On a phone or tablet, **Switch camera** uses the back camera to film someone else.

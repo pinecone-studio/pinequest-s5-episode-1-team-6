@@ -391,6 +391,13 @@ export class JudgingSession {
     await this.startCamera();
   }
 
+  /** "or use the camera" after a video: drop the video and its results, then turn the camera on. */
+  async useCamera(): Promise<void> {
+    if (this.state.source !== 'file' || this.state.judging || this.state.busy) return;
+    this.newRoutine();
+    await this.startCamera();
+  }
+
   async loadFile(file: File): Promise<void> {
     const video = this.video!;
     this.set({ busy: true }); // the model can take a while to load the first time
