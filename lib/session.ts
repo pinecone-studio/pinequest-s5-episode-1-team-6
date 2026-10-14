@@ -30,7 +30,7 @@ import { BALLET_RULE_SOURCE } from './ballet/rules';
 import { SPORT_TEXT, type Sport } from './sport';
 import { gymnasticsLibrary } from './ui/libraryStore';
 import { teachKitFor, type TeachKit } from './ui/teachKits';
-import { balletLiveMessage, cheerLiveMessage, describeMove, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
+import { balletLiveMessage, cheerLiveMessage, describeMove, forVideo, liveMessage, mistakeLabel, modelDownloadText, pivotMessage, type Tone } from './ui/plain';
 import { RoutineRecorder } from './recording/routineRecorder';
 import { cutClip } from './recording/clipCutter';
 import { clipFileName, clipWindow, videoExtension } from './recording/clipWindows';
@@ -229,9 +229,13 @@ export class JudgingSession {
     // Download the model now, while the person reads the page, so "Turn on camera" is quick.
     preloadPoseModel(this.state.model);
 
-    // Jumping in a clip breaks motion tracking; the end of a clip finishes the routine.
+    // Jumping in a clip breaks motion tracking; the end of a clip finishes the routine, and the live box
+    // goes (nothing is live once the clip has stopped).
     const onSeeked = () => this.resetTracking();
-    const onEnded = () => this.setJudging(false);
+    const onEnded = () => {
+      this.setJudging(false);
+      this.clearLive();
+    };
     video.addEventListener('seeked', onSeeked);
     video.addEventListener('ended', onEnded);
 
@@ -553,10 +557,17 @@ export class JudgingSession {
       const m = liveMessage(this.balance.live);
       live = { pose: m.pose ?? 'Watching', showDots: Boolean(m.pose), dots: m.dots, tone: m.tone, text: m.text };
     }
+    if (this.state.source === 'file') live = { ...live, text: forVideo(live.text) };
     const key = JSON.stringify(live);
     if (key === this.lastLiveKey) return;
     this.lastLiveKey = key;
     this.set({ live });
+  }
+
+  /** Hides the live box (a stopped clip); the next frame that is judged shows it again. */
+  private clearLive(): void {
+    this.lastLiveKey = '';
+    this.set({ live: null });
   }
 
   private countFps(): void {
@@ -664,7 +675,10 @@ export class JudgingSession {
       this.pirouette.flush();
       this.balletPoses.flush();
       this.stoppedAt = this.currentTimeMs();
-      if (this.state.source === 'file') this.video?.pause(); // Finish stops the clip too
+      if (this.state.source === 'file') {
+        this.video?.pause(); // Finish stops the clip too
+        this.clearLive();
+      }
     }
     const patch: Partial<SessionState> = { judging: on };
     if (on) {
