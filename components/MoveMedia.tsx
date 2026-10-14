@@ -38,9 +38,12 @@ export function MoveMedia({ files, name }: { files: MoveMediaFiles; name: string
     : `relative w-fit max-w-full ${fullscreen ? '' : 'rounded-[10px]'}`;
   // Keeps the clip's shape within 520 px wide and 60% of the screen high (at most 520 px), so a portrait
   // clip is narrower instead of taller than the screen. In full screen it fills the screen, letterboxed.
+  // No % in the width limit: the box around is as wide as the video (w-fit), and a % limit would be
+  // ignored when that width is worked out (the box came out wider than the video, with a dark gap).
+  // On a phone, 112 px is the room the page, the card and the list take beside the video.
   const size = fullscreen
     ? 'absolute inset-0 h-full w-full object-contain'
-    : 'block h-auto max-h-[min(60dvh,520px)] w-auto max-w-[min(100%,520px)]';
+    : 'block h-auto max-h-[min(60dvh,520px)] w-auto max-w-[min(520px,calc(100vw-112px))]';
 
   return (
     <div className="mt-1 grid gap-2.5">
