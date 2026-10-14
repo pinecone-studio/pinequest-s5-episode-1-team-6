@@ -25,7 +25,10 @@ export function JudgingPageSkeleton({ label = 'Checking your account…' }: { la
   return (
     <SkeletonPage label={label}>
       <div className={`flex min-h-[72px] items-center justify-between gap-3 border-b border-line ${gutter} py-3 max-sm:min-h-16`}>
-        <Bone className="h-8 w-40 max-sm:w-28" />
+        <div className="flex items-center gap-2.5">
+          <Bone className="h-11 w-11 rounded-full max-sm:h-9 max-sm:w-9" />
+          <Bone className="h-8 w-40 max-sm:w-28" />
+        </div>
         <div className="flex items-center gap-1.5">
           <Bone className="h-11 w-48 rounded-full max-sm:h-10 max-sm:w-28" />
           <Bone className="h-10 w-24 rounded-full max-sm:hidden" />
