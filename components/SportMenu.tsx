@@ -71,11 +71,16 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         title={disabled ? 'Finish judging to change sport' : undefined}
         onClick={() => setOpen(!open)}
         onKeyDown={onButtonKey}
-        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-line bg-transparent pr-3.5 pl-2.5 text-base font-semibold text-ink not-disabled:hover:border-accent disabled:cursor-default disabled:opacity-45"
+        aria-label={`Sports: ${text.name}`}
+        className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-line bg-transparent pr-3.5 pl-2.5 text-base font-semibold text-ink not-disabled:hover:border-accent disabled:cursor-default disabled:opacity-45 max-sm:pl-3.5"
       >
-        <SportIcon sport={sport} size={22} />
-        <span className="text-muted">Sports:</span>
-        {text.name}
+        {/* Phones: just the short name ("Gymnastics"); the navbar already shows the sport's icon. */}
+        <span className="contents max-sm:hidden">
+          <SportIcon sport={sport} size={22} />
+          <span className="text-muted">Sports:</span>
+          {text.name}
+        </span>
+        <span className="sm:hidden">{text.short}</span>
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`transition-transform motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
