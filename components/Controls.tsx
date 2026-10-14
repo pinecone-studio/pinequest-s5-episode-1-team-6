@@ -7,6 +7,7 @@ import type { SessionState } from '@/lib/session';
 import { bigButton, ghostButton, primaryButton } from './ui';
 
 interface ControlsProps {
+  steps: readonly [string, string, string]; // the three steps below the video (they depend on the sport)
   state: SessionState;
   movesCount: number;
   onMain: () => void;
@@ -21,7 +22,7 @@ export function mainButtonLabel(state: SessionState): string {
   return busy ? 'Please wait…' : !source ? 'Turn on camera' : !modelReady ? 'Try loading again' : judging ? 'Finish' : finished ? 'Try again' : 'Start';
 }
 
-export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
+export function Controls({ steps, state, movesCount, onMain, onFile, onReset, onSwitchCamera }: ControlsProps) {
   const { source, judging, finished, busy, cameraCount } = state;
   const label = mainButtonLabel(state);
   const step = !source ? 1 : !judging && !finished ? 2 : 3;
@@ -51,21 +52,15 @@ export function Controls({ state, movesCount, onMain, onFile, onReset, onSwitchC
           <button className={ghostButton} onClick={onReset}>Start over</button>
         )}
       </div>
-      <Steps current={step} />
+      <Steps steps={steps} current={step} />
     </>
   );
 }
 
-const STEPS = [
-  'Turn on the camera',
-  'Stand sideways, whole body in view',
-  'Press Start and hold each balance for 1 second',
-];
-
-function Steps({ current }: { current: number }) {
+function Steps({ steps, current }: { steps: readonly string[]; current: number }) {
   return (
     <ol className="m-0 grid list-none grid-cols-1 gap-2.5 p-0 sm:grid-cols-3">
-      {STEPS.map((text, i) => {
+      {steps.map((text, i) => {
         const n = i + 1;
         const done = n < current;
         const isCurrent = n === current;

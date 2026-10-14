@@ -80,6 +80,25 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [ ] More videos: `not_these/` look-alikes, faults (small/medium/large), several people; a stag leap filmed from the start
 - [x] CoP codes and D values checked on the pictograms (p. 80, 88-89, 100), also the earlier balances
 
+## Phase 6 - Cheerleading (user, 2026-10-14)
+- [x] Sport switch in the header; separate gymnastics and cheer themes (light and dark)
+- [x] Cheer motions: High V, Low V, T, touchdown, diagonal, L motion, punch, broken T (`lib/cheer/motions.ts`)
+- [x] Cheer jumps: toe touch, pike, herkie, tuck, spread eagle (`lib/cheer/jumps.ts`)
+- [x] Team-made rubric with references (#C1-#C6), report and move videos for cheer, synthetic-pose tests
+- [ ] Film cheer motions and jumps (front and side) into `data/validation/videos/cheer/`; replay tests. **Owner: team**
+- [ ] A cheer judge or coach checks the rubric values and jump D values. **Owner: team**
+- [ ] Stretch: flyer body positions on the ground (liberty, heel stretch, scorpion) via the balance detector
+- [x] Sport picker screen removed; **Sports** menu in the header; dark mode switch always top right (user, 2026-10-14)
+
+## Phase 7 - Ballet (user, 2026-10-14)
+- [x] Pose library per sport (`LibrarySpec`); ballet signature, default library, Teach poses for ballet
+- [x] Poses: arabesque, attitude, développé devant, à la seconde, retiré, plié (`lib/ballet/poses.ts`)
+- [x] Pirouette (turns counted) and grand jeté; team-made rubric #B1-#B8; theme; 30 tests
+- [x] Replayed the team's real clips as ballet: arabesque right, four false calls fixed with stated rules
+- [ ] Film ballet clips (side and front, faults too) into `data/validation/videos/ballet/`; replay tests. **Owner: team**
+- [ ] A ballet teacher checks the rubric and difficulty values. **Owner: team**
+- [ ] Check the pirouette turn counter on real retiré turns. **Owner: team + Claude**
+
 ## Later (not in the 2-week scope)
 - Side split balance; back split with help; pivots in the focus shapes
 - Landing faults (heavy landing, arched back)

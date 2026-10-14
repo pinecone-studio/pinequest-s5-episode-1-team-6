@@ -29,6 +29,12 @@ export interface Measurements {
   thighDevDeg?: number;
   trunkDevDeg?: number;
   trunkAboveDevDeg?: number;
+  // Cheer (lib/cheer/): arms from straight down (0) to straight up (180), legs from down (0) to level (90).
+  leftArmDeg?: number;
+  rightArmDeg?: number;
+  legHeightDeg?: number; // the lower leg (or thigh, in a tuck) at the top of a jump
+  kneeDeg?: number; // the more bent knee (top of a jump, deepest plié)
+  extensionDeg?: number; // ballet: working leg (thigh in attitude) from straight down, 90 = level
 }
 
 /** A judged move, as a detector reports it. */

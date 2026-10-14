@@ -9,7 +9,7 @@
 import { LM, mid, type Landmark, type Landmarks } from '../geometry';
 
 export interface Mistake {
-  segment: string; // Penalty.segment: 'thigh', 'trunk', 'split', 'foot', 'hold', ...
+  segment: string; // Penalty.segment: 'thigh', 'trunk', 'split', 'foot', 'hold', 'leftArmLow', 'jumpLegs', ...
   label: string; // "Thigh 6° low −0.10"
 }
 
@@ -40,6 +40,10 @@ export function bonesFor(segment: string, lm: Landmarks): Bone[] {
     [lm[LM[`${s}_HIP`]], lm[LM[`${s}_KNEE`]]],
     [lm[LM[`${s}_KNEE`]], lm[LM[`${s}_ANKLE`]]],
   ];
+  const arm = (s: 'L' | 'R'): Bone[] => [
+    [lm[LM[`${s}_SHOULDER`]], lm[LM[`${s}_ELBOW`]]],
+    [lm[LM[`${s}_ELBOW`]], lm[LM[`${s}_WRIST`]]],
+  ];
   switch (segment) {
     case 'split':
     case 'leapSplit':
@@ -53,6 +57,34 @@ export function bonesFor(segment: string, lm: Landmarks): Bone[] {
       return [[mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]), mid(lm[LM.L_HIP], lm[LM.R_HIP])]];
     case 'foot':
       return [[raised.knee, raised.ankle], [raised.ankle, raised.foot]];
+    // Cheer (lib/cheer/)
+    case 'leftArmLow':
+    case 'leftArmHigh':
+    case 'leftElbow':
+      return arm('L');
+    case 'rightArmLow':
+    case 'rightArmHigh':
+    case 'rightElbow':
+      return arm('R');
+    case 'jumpArms':
+      return [...arm('L'), ...arm('R')];
+    case 'jumpLegs':
+    case 'jumpKnees':
+      return [...leg('L'), ...leg('R')];
+    case 'tuckKnees':
+      return [[lm[LM.L_HIP], lm[LM.L_KNEE]], [lm[LM.R_HIP], lm[LM.R_KNEE]]];
+    // Ballet (lib/ballet/)
+    case 'legHeight':
+    case 'workingKnee':
+      return [[raised.hip, raised.knee], [raised.knee, raised.ankle]];
+    case 'supportKnee':
+      return leftUp ? leg('R') : leg('L');
+    case 'balletTrunk':
+      return [[mid(lm[LM.L_SHOULDER], lm[LM.R_SHOULDER]), mid(lm[LM.L_HIP], lm[LM.R_HIP])]];
+    case 'retireFoot':
+      return [[raised.knee, raised.ankle], [raised.ankle, raised.foot]];
+    case 'kneesUneven':
+      return [...leg('L'), ...leg('R')];
     default:
       return [];
   }

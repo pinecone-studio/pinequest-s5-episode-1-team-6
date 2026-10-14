@@ -6,6 +6,7 @@
 
 import Link from 'next/link';
 import type { Report } from '@/lib/report';
+import type { SportText } from '@/lib/sport';
 import type { MoveVideo } from '@/lib/session';
 import { describeMove } from '@/lib/ui/plain';
 import { describeMeasurements, formatTime } from '@/lib/ui/format';
@@ -14,6 +15,7 @@ import { MoveMedia, MoveMediaStatus } from './MoveMedia';
 import { chip, ghostButton, smallText, toneBorder } from './ui';
 
 interface ResultsProps {
+  text: SportText;
   report: Report;
   videos: Record<number, MoveVideo>; // by move id
   videosSaved: boolean | null;
@@ -27,11 +29,11 @@ const headline = 'm-0 rounded-card bg-accent-soft px-[22px] py-5 text-xl font-se
 const headlineSmall = 'mt-1 block text-[15px] font-normal text-muted';
 const detailsLine = 'm-0 text-[13px] text-muted';
 
-export function ResultsView({ report, videos, videosSaved, mode, details, onDetails, onClose }: ResultsProps) {
+export function ResultsView({ text, report, videos, videosSaved, mode, details, onDetails, onClose }: ResultsProps) {
   return (
     <section className="mx-auto mb-10 grid max-w-[1000px] gap-[18px] px-[clamp(16px,4vw,40px)] py-6 print:p-0" aria-labelledby="report-title">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="report-title" className="m-0 text-[26px] leading-tight font-bold">{mode === 'judge' ? 'Score report' : 'Your results'}</h2>
+        <h2 id="report-title" className="m-0 font-display text-[28px] leading-tight">{mode === 'judge' ? 'Score report' : 'Your results'}</h2>
         <div className="flex flex-wrap gap-2 print:hidden">
           <button className={ghostButton} aria-pressed={details} onClick={onDetails}>
             {details ? 'Hide rulebook details' : 'Show rulebook details'}
@@ -40,7 +42,7 @@ export function ResultsView({ report, videos, videosSaved, mode, details, onDeta
           <button className={ghostButton} onClick={onClose}>Close</button>
         </div>
       </div>
-      <ReportBody report={report} videos={videos} mode={mode} details={details} />
+      <ReportBody text={text} report={report} videos={videos} mode={mode} details={details} />
       <SavedNote saved={videosSaved} />
     </section>
   );
@@ -63,7 +65,15 @@ function SavedNote({ saved }: { saved: boolean | null }) {
   );
 }
 
-function ReportBody({ report, videos, mode, details }: { report: Report; videos: Record<number, MoveVideo>; mode: Tab; details: boolean }) {
+interface ReportBodyProps {
+  text: SportText;
+  report: Report;
+  videos: Record<number, MoveVideo>;
+  mode: Tab;
+  details: boolean;
+}
+
+function ReportBody({ text, report, videos, mode, details }: ReportBodyProps) {
   const s = report.summary;
   const judged = report.moves.filter((m) => !m.rejected);
 
@@ -71,9 +81,7 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
     return (
       <p className={headline}>
         No move was recognized.
-        <small className={headlineSmall}>
-          Stand sideways to the camera with your whole body and both feet in the picture, and hold each balance for at least 1 second.
-        </small>
+        <small className={headlineSmall}>{text.noMoves}</small>
       </p>
     );
   }
@@ -91,7 +99,7 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
       {mode === 'judge' && (
         <>
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            {([['Difficulty', s.D], ['Execution', s.E], ['Artistry', s.A], ['Final score', s.final]] as const).map(([label, value], i) => (
+            {([['Difficulty', s.D], ['Execution', s.E], [text.artistry, s.A], ['Final score', s.final]] as const).map(([label, value], i) => (
               <div key={label} className="grid gap-0.5 rounded-xl bg-card p-3.5">
                 <span className="text-sm text-muted">{label}</span>
                 <b className={`text-[26px] tabular-nums ${i === 3 ? 'text-accent' : ''}`}>{value.toFixed(2)}</b>
@@ -128,7 +136,7 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
                   {r.tip && <span className="block text-sm text-muted">{r.tip}</span>}
                 </p>
               ))}
-              {d.reasons.length === 0 && !m.rejected && <p className="m-0 text-[15px]">Correct shape, held for 1 second.</p>}
+              {d.reasons.length === 0 && !m.rejected && <p className="m-0 text-[15px]">{text.correctMove}</p>}
               {d.notes.map((n) => <p key={n} className="m-0 text-sm text-warn">{n}</p>)}
               <MoveVideoPart video={videos[m.id]} name={d.name} />
 
@@ -139,7 +147,9 @@ function ReportBody({ report, videos, mode, details }: { report: Report; videos:
                   {m.requirement && <p className={detailsLine}>{`Rulebook requirement: ${m.requirement}`}</p>}
                   {m.deductions.map((ded, i) => ded.rule && (
                     <blockquote key={i} className="mt-1 mb-0 border-l-[3px] border-line px-3 py-2 text-sm text-muted italic">
-                      {`“${ded.rule.text}” Code of Points ${ded.ref.split(' ')[0]}, p. ${ded.rule.page}.`}
+                      {ded.rule.source
+                        ? `“${ded.rule.text}” ${ded.rule.source} ${ded.ref.split(' ')[0]}.`
+                        : `“${ded.rule.text}” Code of Points ${ded.ref.split(' ')[0]}, p. ${ded.rule.page}.`}
                     </blockquote>
                   ))}
                 </>

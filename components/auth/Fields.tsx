@@ -11,12 +11,14 @@ export function TextField({
   autoComplete,
   value,
   onChange,
+  placeholder,
 }: {
   label: string;
   type: 'text' | 'email';
   autoComplete: HTMLInputAutoCompleteAttribute;
   value: string;
   onChange: (value: string) => void;
+  placeholder?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm font-semibold">
@@ -25,6 +27,7 @@ export function TextField({
         className={input}
         type={type}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         value={value}
         required
         onChange={(event) => onChange(event.target.value)}
@@ -33,18 +36,21 @@ export function TextField({
   );
 }
 
-/** Password with a Show / Hide button, so you can check what you typed on a phone. */
+/** Password with a Show / Hide button, so you can check what you typed on a phone. `hint` shows under it. */
 export function PasswordField({
   value,
   onChange,
   autoComplete,
+  hint,
 }: {
   value: string;
   onChange: (value: string) => void;
   autoComplete: 'current-password' | 'new-password';
+  hint?: string;
 }) {
   const [shown, setShown] = useState(false);
   const id = useId();
+  const hintId = `${id}-hint`;
   return (
     <div className="grid gap-1">
       <label className="text-sm font-semibold" htmlFor={id}>
@@ -59,6 +65,7 @@ export function PasswordField({
           value={value}
           required
           minLength={6}
+          aria-describedby={hint ? hintId : undefined}
           onChange={(event) => onChange(event.target.value)}
         />
         <button
@@ -71,6 +78,11 @@ export function PasswordField({
           {shown ? 'Hide' : 'Show'}
         </button>
       </div>
+      {hint && (
+        <p id={hintId} className="m-0 text-[13px] text-muted">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }

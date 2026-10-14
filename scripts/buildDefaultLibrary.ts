@@ -18,6 +18,12 @@ import {
   standing, passePose, frontSplitBalance, backSplitBalance, arabesqueBalance, attitudeBalance,
 } from '../lib/library/examples/poses';
 import realPhotos from '../lib/library/examples/real-balances.json';
+import { BALLET_SPEC, type BalletLabel } from '../lib/ballet/library';
+import { balletFrame, balletSignature } from '../lib/ballet/frame';
+import {
+  balletArabesque, balletAttitude, balletDevant, balletPlie, balletRetireFront, balletRetireSide, balletSeconde,
+  balletStandingFront, balletTenduSeconde,
+} from '../lib/ballet/examples/poses';
 
 /** Small seeded random generator, so the library is the same every time it's built. */
 function makeRandom(seed: number) {
@@ -72,5 +78,56 @@ export function buildDefaultLibrary({ includePhotos = true, perPose = 160, perNe
       if (f) library.add(shapeFromKey(photo.expected), poseSignature(f), `photo:${photo.id}`);
     }
   }
+  return library;
+}
+
+/**
+ * The ballet pose library (lib/ballet/defaultLibrary.json): synthetic examples of each held pose over
+ * the range a teacher sees (clean and with faults, so a faulty attempt is still recognized and then
+ * judged), both facing directions, side-on and facing-the-camera views, relevé and flat, plus noise;
+ * and "not these" poses to reject: standing, tendus (toe on the floor), coupé (foot low on the shin),
+ * penché (trunk down, leg very high).
+ */
+export function buildBalletLibrary({ perPose = 160, perNegative = 40 } = {}) {
+  const rand = makeRandom(20261014);
+  const between = (lo: number, hi: number) => lo + (hi - lo) * rand();
+  const pick = <T>(...options: T[]): T => options[Math.floor(rand() * options.length)];
+  // Standing knee: mostly pulled up, sometimes a little soft (a fault the rubric deducts).
+  const sideways = () => ({
+    facing: pick(1, -1), releve: rand() < 0.6, width: between(0.08, 0.4),
+    supportKneeDeg: rand() < 0.75 ? 180 : between(148, 178),
+  });
+  const front = () => ({ width: between(0.55, 0.85), trunkTilt: between(-8, 8) });
+  const noisy = (lm: Landmarks) => lm.map((p) => ({ x: p.x + (rand() - 0.5) * 5, y: p.y + (rand() - 0.5) * 5, visibility: p.visibility }));
+
+  const library = new PoseLibrary<BalletLabel>([], BALLET_SPEC);
+  const add = (label: BalletLabel, make: () => Landmarks, n: number) => {
+    for (let i = 0; i < n; i++) {
+      const f = balletFrame(noisy(make()));
+      if (f) library.add(label, balletSignature(f), 'synthetic');
+    }
+  };
+
+  // ---------- The poses (clean and with faults) ----------
+  add('arabesque', () => balletArabesque({ ...sideways(), legDeg: between(55, 125), trunkTilt: between(0, 40) }), perPose);
+  add('attitude', () => balletAttitude({ ...sideways(), thighDeg: between(60, 120), kneeDeg: between(75, 130), trunkTilt: between(0, 30) }), perPose);
+  add('devant', () => balletDevant({ ...sideways(), legDeg: between(55, 125), trunkTilt: between(-5, 15) }), perPose);
+  add('seconde', () => balletSeconde({ ...front(), legDeg: between(55, 120), kneeDeg: rand() < 0.8 ? 180 : between(150, 178), releve: rand() < 0.5 }), perPose);
+  add('retire', () => balletRetireSide({ thighDeg: between(45, 95), footDrop: between(-0.1, 0.45), releve: rand() < 0.7, width: between(0.08, 0.4) }), perPose / 2);
+  add('retire', () => balletRetireFront({ ...front(), footDrop: between(-0.1, 0.45), releve: rand() < 0.7 }), perPose / 2);
+  add('plie', () => {
+    const deep = between(60, 150);
+    const other = Math.min(160, deep + (rand() < 0.7 ? between(0, 6) : between(6, 25)));
+    return rand() < 0.5 ? balletPlie({ ...front(), leftKneeDeg: deep, rightKneeDeg: other }) : balletPlie({ ...front(), leftKneeDeg: other, rightKneeDeg: deep });
+  }, perPose);
+
+  // ---------- Not one of these ----------
+  add('none', () => standing({ width: between(0.1, 0.4) }), perNegative);
+  add('none', () => balletStandingFront({ ...front(), releve: rand() < 0.5 }), perNegative);
+  add('none', () => balletTenduSeconde(front()), perNegative);
+  add('none', () => balletDevant({ ...sideways(), supportKneeDeg: 180, legDeg: between(22, 34) }), perNegative); // tendu devant
+  add('none', () => balletArabesque({ ...sideways(), supportKneeDeg: 180, legDeg: between(22, 34) }), perNegative); // tendu derrière
+  add('none', () => balletRetireSide({ thighDeg: between(20, 40), footDrop: between(0.7, 1.0), width: between(0.08, 0.4) }), perNegative); // coupé
+  add('none', () => balletArabesque({ ...sideways(), legDeg: between(150, 180), trunkTilt: between(65, 100) }), perNegative); // penché
   return library;
 }
