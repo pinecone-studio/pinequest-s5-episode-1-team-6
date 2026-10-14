@@ -79,8 +79,12 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-accent-soft max-sm:h-7 max-sm:w-7">
           <SportIcon sport={sport} size={20} />
         </span>
-        <span className="max-sm:hidden">{text.name}</span>
-        <span className="sm:hidden max-[519px]:hidden">{text.short}</span>
+        <span className="max-sm:hidden">
+          <SameWidth names={SPORTS.map((s) => SPORT_TEXT[s].name)} shown={text.name} />
+        </span>
+        <span className="sm:hidden max-[519px]:hidden">
+          <SameWidth names={SPORTS.map((s) => SPORT_TEXT[s].short)} shown={text.short} />
+        </span>
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`flex-none transition-transform duration-150 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>
           <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -117,5 +121,21 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * The sport's name, always as wide as the longest one: every name sits in the same grid cell and only
+ * the picked one is visible, so the Sports button keeps its size when the sport changes.
+ */
+function SameWidth({ names, shown }: { names: string[]; shown: string }) {
+  return (
+    <span className="grid text-left">
+      {names.map((name) => (
+        <span key={name} className={`[grid-area:1/1] ${name === shown ? '' : 'invisible'}`} aria-hidden={name !== shown}>
+          {name}
+        </span>
+      ))}
+    </span>
   );
 }
