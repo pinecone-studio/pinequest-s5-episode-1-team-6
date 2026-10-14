@@ -3,12 +3,16 @@
 /* dark:... classes apply when <html> has the "dark" class (components/ThemeToggle.tsx). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* compact:... = small boxes on the video: narrow screens and phones turned sideways (short screens). */
+/* compact:... = small boxes on the video: narrow screens, phones turned sideways (short screens), and
+   a narrow video area (a portrait video on a computer): the stage is a size container named "stage". */
 @custom-variant compact {
   @media (max-width: 639px) {
     @slot;
   }
   @media (max-height: 500px) {
+    @slot;
+  }
+  @container stage (max-width: 480px) {
     @slot;
   }
 }
