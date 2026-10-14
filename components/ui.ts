@@ -11,8 +11,8 @@ export const primaryButton = `${button} bg-accent text-on-fill`;
 export const secondaryButton = `${button} bg-accent-soft text-accent`;
 /** Outline only, for small actions (Close, Print, ...). */
 export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
-/** "Continue with Google": white (dark: near black) with a grey outline, as Google's sign-in rules ask. */
-export const googleButton = `${button} border border-[#747775] bg-white text-[#1f1f1f] dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3]`;
+/** "Continue with Google": the page color with the app's outline (like the other buttons), plus Google's G. */
+export const googleButton = `${button} border-[1.5px] border-line bg-bg text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
 /** Small and quiet, for the navbar (Sign in, Settings): text only until hovered. */
 export const navButton = 'inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3 text-sm font-semibold whitespace-nowrap text-muted hover:bg-card hover:text-ink';
 
