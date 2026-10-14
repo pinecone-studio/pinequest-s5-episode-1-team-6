@@ -6,27 +6,42 @@
 // Menu button pattern (WAI-ARIA): Enter / Space / ↓ opens it on the picked sport, ↑ ↓ Home End move,
 // Enter picks, Escape or a click outside closes it and focus goes back to the button.
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { SPORTS, SPORT_TEXT, type Sport } from '@/lib/sport';
 import { SportIcon } from './SportIcon';
 import { chooseSport } from './useSport';
 
 export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean }) {
   const [open, setOpen] = useState(false);
+  // Phones: the menu is centered on the screen just under the button (it is too wide to hang off it).
+  const [menuTop, setMenuTop] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Focus the picked sport when the menu opens; close on a click outside.
+  // Focus the picked sport when the menu opens; close on a click outside, or when the page scrolls or
+  // resizes (on phones the menu is pinned to the screen and would drift away from the button).
   useEffect(() => {
     if (!open) return;
     itemRefs.current[SPORTS.indexOf(sport)]?.focus();
     const onDown = (e: PointerEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     };
+    const onMove = () => setOpen(false);
     document.addEventListener('pointerdown', onDown);
-    return () => document.removeEventListener('pointerdown', onDown);
+    window.addEventListener('scroll', onMove, { passive: true });
+    window.addEventListener('resize', onMove);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('scroll', onMove);
+      window.removeEventListener('resize', onMove);
+    };
   }, [open, sport]);
+
+  const openMenu = () => {
+    setMenuTop((buttonRef.current?.getBoundingClientRect().bottom ?? 0) + 6);
+    setOpen(true);
+  };
 
   const close = () => {
     setOpen(false);
@@ -41,7 +56,7 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
   const onButtonKey = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
-      setOpen(true);
+      openMenu();
     }
   };
   const onMenuKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -70,7 +85,7 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         aria-controls="sports-menu"
         disabled={disabled}
         title={disabled ? 'Finish the routine to change sport' : undefined}
-        onClick={() => setOpen(!open)}
+        onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={onButtonKey}
         aria-label={`Sports: ${text.name}`}
         className="inline-flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-line bg-transparent pr-3.5 pl-1.5 text-base max-sm:min-h-10 max-sm:gap-1.5 max-sm:pr-3 max-sm:text-[15px] font-semibold whitespace-nowrap text-ink transition-colors duration-150 not-disabled:hover:border-accent not-disabled:hover:bg-card disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
@@ -96,7 +111,8 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
           role="menu"
           aria-label="Sports"
           onKeyDown={onMenuKey}
-          className="absolute top-[calc(100%+6px)] right-0 z-20 grid origin-top-right animate-menu-in motion-reduce:animate-none w-[min(300px,calc(100vw-32px))] gap-1 rounded-card border border-line bg-bg p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
+          style={{ '--menu-top': `${menuTop}px` } as CSSProperties}
+          className="absolute top-[calc(100%+6px)] right-0 z-20 grid origin-top-right animate-menu-in motion-reduce:animate-none w-[300px] max-sm:fixed max-sm:inset-x-4 max-sm:top-(--menu-top) max-sm:right-4 max-sm:w-auto max-sm:origin-top gap-1 rounded-card border border-line bg-bg p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
         >
           {SPORTS.map((s, i) => (
             <button
