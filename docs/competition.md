@@ -10,7 +10,7 @@ judges' scores, not the AI's, make the result.
 |---|---|---|
 | Organizer | `/compete` (laptop with the camera) | Creates the competition, shows the QR code, gives each judge a role, adds the participants, starts each participant, ends the performance, enters penalties, saves each result, finishes the competition. Sees every judge's score and sheet. |
 | Judge | `/judge?c=…&k=…` (phone, tablet or computer; from the QR code) | Signs in (or **Try without an account**), types their name, waits for their turn, then scores on a sheet made for their role. The AI's suggestions arrive live; one tap adds one. No video. |
-| Spectators | `/compete/board?c=…` (second screen or projector, opened by the organizer) | Places, names and total scores, live. Nothing about who gave what or where points were lost. |
+| Spectators | `/compete/board?c=…` (second screen or projector, opened by the organizer) | Places, names and total scores, live (gold, silver and bronze badges for the first three; who is on the floor; who is still to perform). Nothing about who gave what or where points were lost. |
 
 ## The flow
 
