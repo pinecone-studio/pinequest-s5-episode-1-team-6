@@ -90,14 +90,15 @@ export function SportMenu({ sport, disabled }: { sport: Sport; disabled: boolean
         aria-label={`Sports: ${text.name}`}
         className="inline-flex min-h-11 min-w-0 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-line bg-transparent pr-3.5 pl-1.5 text-base max-sm:min-h-10 max-sm:gap-1.5 max-sm:pr-3 max-sm:text-[15px] font-semibold whitespace-nowrap text-ink transition-colors duration-150 not-disabled:hover:border-accent not-disabled:hover:bg-card disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
       >
-        {/* Phones: the short name ("Gymnastics"); narrow phones: the icon only (the label says the name). */}
+        {/* Under 768 px the short name ("Gymnastics"); under 580 px the icon only (the label says the name).
+            The widths fit the navbar's other buttons, see Header.tsx. */}
         <span className="grid h-8 w-8 flex-none place-items-center rounded-full bg-accent-soft max-sm:h-7 max-sm:w-7">
           <SportIcon sport={sport} size={20} />
         </span>
-        <span className="max-[519px]:hidden">
+        <span className="max-[579px]:hidden">
           <GlidingWidth>
-            <span className="max-sm:hidden">{text.name}</span>
-            <span className="sm:hidden">{text.short}</span>
+            <span className="max-md:hidden">{text.name}</span>
+            <span className="md:hidden">{text.short}</span>
           </GlidingWidth>
         </span>
         <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" className={`flex-none transition-transform duration-150 motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}>

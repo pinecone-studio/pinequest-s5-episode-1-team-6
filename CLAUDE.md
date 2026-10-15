@@ -126,6 +126,11 @@ Known limits (be honest in the UI and README):
    on `<html>` set before paint like the dark theme). No sport picker screen (user, 2026-10-14): nothing
    picked = rhythmic gymnastics. The dark mode switch is always in the header's top right corner, 58 × 32 px like the navbar buttons (user, 2026-10-14).
    Sign in / Sign out and Settings are small, quiet buttons in the top navbar (user, 2026-10-14), not main actions. On phones (user, 2026-10-14) they are icons only.
+   Phone pass (user, 2026-10-15): the judging page's navbar never overlaps from 320 px up; what shows at each
+   width (icon only, "Rhymnast" from 480 px, words on the buttons from 1024 px, ...) is measured and listed in
+   `components/Header.tsx`. Breakpoint `xs` (360 px) is in `app/globals.css`: use `max-xs:`, not `max-[359px]:`
+   (Tailwind sorts arbitrary px breakpoints before `sm`, so they lose). Touch screens: buttons don't double-tap
+   zoom, form fields are at least 16 px (smaller makes iPhones zoom in), tap targets at least 40 px.
    Layout (user, 2026-10-14): one navbar row under a 4 px gradient stripe, the sport icon and name on the left, the Sports menu on the right
    (no line about the page); the Practice / Judge switch (`components/ModeSwitch.tsx`, a sliding pill) sits on
    top of the right-hand cards, and on phones sticky above the camera; the footer is one slim line: name / short text /

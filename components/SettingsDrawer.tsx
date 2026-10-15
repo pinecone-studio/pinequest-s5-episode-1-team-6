@@ -4,7 +4,8 @@
 // technical details and links to the developer tools. "Only judge our moves" is for rhythmic gymnastics;
 // Teach poses for the sports that recognize poses by example (gymnastics, ballet), not cheerleading.
 // A modal dialog: focus moves in when it opens, Tab stays inside, Escape closes it and focus goes
-// back to the Settings button.
+// back to the Settings button. The page behind it doesn't scroll while it is open (on a phone the
+// drawer covers the whole screen, and a swipe at its end would otherwise scroll the page under it).
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -35,8 +36,11 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
       if (e.key === 'Tab' && panelRef.current) keepFocusInside(panelRef.current, e);
     };
     document.addEventListener('keydown', onKey);
+    const pageOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = pageOverflow;
       session.setTechVisible(false);
       opener?.focus();
     };
@@ -66,7 +70,7 @@ export function SettingsDrawer({ session, state, onExport, onClose }: SettingsPr
         role="dialog"
         aria-modal="true"
         aria-labelledby="settings-title"
-        className="fixed top-0 right-0 bottom-0 z-11 grid w-[min(420px,100%)] content-start gap-3.5 overflow-y-auto bg-bg px-[22px] pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] shadow-[-8px_0_30px_rgba(0,0,0,0.15)] print:hidden"
+        className="fixed top-0 right-0 bottom-0 z-11 grid w-[min(420px,100%)] content-start gap-3.5 overflow-y-auto overscroll-contain bg-bg px-[22px] pt-5 pb-[calc(24px+env(safe-area-inset-bottom,0px))] shadow-[-8px_0_30px_rgba(0,0,0,0.15)] print:hidden"
       >
         <div className="flex items-center justify-between">
           <h2 id="settings-title" className="m-0 text-xl leading-tight font-bold">Settings</h2>

@@ -29,7 +29,9 @@ interface ResultsProps {
   onClose: () => void;
 }
 
-const headline = 'm-0 rounded-card bg-accent-soft px-[22px] py-5 text-xl font-semibold';
+const headline = 'm-0 rounded-card bg-accent-soft px-[22px] py-5 text-xl font-semibold max-sm:px-4 max-sm:py-4 max-sm:text-lg';
+// The buttons next to the title: a little smaller on phones, so the three fit on one row.
+const topButton = `${ghostButton} max-sm:min-h-10 max-sm:px-3 max-sm:text-sm`;
 const headlineSmall = 'mt-1 block text-[15px] font-normal text-muted';
 const detailsLine = 'm-0 text-[13px] text-muted';
 
@@ -39,11 +41,11 @@ export function ResultsView({ text, report, videos, videosSaved, mode, details, 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="report-title" className="m-0 font-display text-[28px] leading-tight">{mode === 'judge' ? 'Score report' : 'Your results'}</h2>
         <div className="flex flex-wrap gap-2 print:hidden">
-          <button className={ghostButton} aria-pressed={details} onClick={onDetails}>
+          <button className={topButton} aria-pressed={details} onClick={onDetails}>
             {details ? 'Hide rulebook details' : 'Show rulebook details'}
           </button>
-          <button className={ghostButton} onClick={() => window.print()}>Print</button>
-          <button className={ghostButton} onClick={onClose}>Close</button>
+          <button className={topButton} onClick={() => window.print()}>Print</button>
+          <button className={topButton} onClick={onClose}>Close</button>
         </div>
       </div>
       <ReportBody text={text} report={report} videos={videos} mode={mode} details={details} />

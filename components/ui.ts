@@ -13,8 +13,18 @@ export const secondaryButton = `${button} bg-accent-soft text-accent`;
 export const ghostButton = `${button} border-[1.5px] border-line bg-transparent text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
 /** "Continue with Google": the page color with the app's outline (like the other buttons), plus Google's G. */
 export const googleButton = `${button} border-[1.5px] border-line bg-bg text-ink not-disabled:hover:border-accent not-disabled:hover:text-accent`;
-/** Small and quiet, for the navbar (Sign in, Settings): text only until hovered. */
-export const navButton = 'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-3.5 text-[15px] font-semibold whitespace-nowrap text-muted transition-colors duration-150 hover:bg-card hover:text-ink motion-reduce:transition-none';
+/** Small and quiet, for the navbar (Sign in, Settings): text only until hovered. At least 40 × 40 px, to tap. */
+export const navButton = 'inline-flex min-h-10 min-w-10 cursor-pointer items-center justify-center gap-1.5 rounded-full border-0 bg-transparent px-3.5 text-[15px] font-semibold whitespace-nowrap text-muted transition-colors duration-150 hover:bg-card hover:text-ink motion-reduce:transition-none';
+
+/**
+ * A navbar button with only its icon on narrow screens (the word stays its aria-label): add `button` to
+ * the button and `label` to the word. "sm": under 640 px (pages with a short navbar); "lg": under
+ * 1024 px (the judging page's navbar, which has more in it: see Header.tsx).
+ */
+export const navIconOnly = {
+  sm: { button: 'max-sm:px-0', label: 'max-sm:hidden' },
+  lg: { button: 'max-lg:px-0 max-xs:min-w-9', label: 'max-lg:hidden' },
+} as const;
 
 /** Add to a button to make it the big one. */
 export const bigButton = 'min-h-14 px-8 text-[19px]';
@@ -22,6 +32,9 @@ export const bigButton = 'min-h-14 px-8 text-[19px]';
 export const input = 'min-h-11 w-full rounded-[10px] border-[1.5px] border-line bg-bg px-3 text-[17px] font-medium text-ink focus:border-accent focus:outline-none';
 
 export const smallText = 'm-0 text-sm text-muted';
+
+/** "Rhymnast" in a page's small breadcrumb (back to the judging page): small text, but 40 px tall to tap. */
+export const crumbLink = 'inline-flex min-h-10 items-center text-accent';
 
 /** Colored left edge of a move card or row: green / orange / red. */
 export const toneBorder: Record<Tone | 'idle', string> = {

@@ -30,9 +30,10 @@ export function JudgesList({ cid, judges, locked = false }: JudgesListProps) {
             {j.name.trim().charAt(0).toUpperCase() || '?'}
           </span>
           <b className="min-w-0 flex-1 truncate">{j.name}</b>
+          {/* 16 px text in the select: a smaller font makes iPhones zoom in when it is tapped. */}
           <span className="w-[180px] flex-none max-[420px]:order-last max-[420px]:w-full">
             <select
-              className={`${input} min-h-9 py-0 text-[15px]`}
+              className={`${input} min-h-10 py-0 text-base`}
               aria-label={`Role of ${j.name}`}
               value={j.role ?? ''}
               disabled={locked || j.role === null}

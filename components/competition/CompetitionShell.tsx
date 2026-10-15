@@ -7,7 +7,7 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { AccountButton } from '../auth/AccountButton';
 import { ThemeToggle } from '../ThemeToggle';
-import { smallText } from '../ui';
+import { crumbLink, smallText } from '../ui';
 
 interface ShellProps {
   /** Small text after "Rhymnast ·" in the breadcrumb. */
@@ -29,7 +29,7 @@ export function CompetitionShell({ crumb, title, intro, actions, wide = false, c
         <div className="grid gap-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="m-0 text-[13px] font-semibold text-muted">
-              <Link className="text-accent" href="/">Rhymnast</Link> · {crumb}
+              <Link className={crumbLink} href="/">Rhymnast</Link> · {crumb}
             </p>
             <div className="flex items-center gap-1.5">
               <AccountButton />
