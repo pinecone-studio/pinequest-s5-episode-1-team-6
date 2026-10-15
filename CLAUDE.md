@@ -171,6 +171,17 @@ Show warnings in the UI and skip low-visibility frames.
    judged by the app as the same element with no points lost. Trimmed, cropped and shrunk (0.4-0.6 MB)
    into `public/reference/`, the only videos in git (for the demo; the user cleared their use). The
    originals are in `data/reference/` (not committed). No clip yet for back split foot-above-head (2.1005).
+15. **Competition mode (user, 2026-10-15):** an organizer (`/compete`) runs a rhythmic gymnastics
+   competition; at least 3 judges join by scanning **one QR code per competition** (a one-time code per
+   judge is planned) and score on their phones (`/judge?c=…&k=…`, no video); spectators get a live
+   leaderboard with totals only (`/compete/board?c=…`); the organizer sees every judge's score and sheet.
+   Each judge has **one role: D, A or E** (FIG-style panels). **The AI only suggests** (live, one tap adds a
+   suggestion to the judge's sheet); the result is the judges' scores: Final = D + A + E − penalties,
+   several judges per role averaged, with 4+ the highest and lowest left out (a team rule; no CoP text
+   on panel sizes in the repo). Realtime data: **Firestore** in the same Firebase project, client SDK
+   only (no server); `firestore.rules` is pasted into the console by hand after every change (creating
+   the database needed the project Owner). Code: `lib/competition/`, `lib/firebase/competition.ts`,
+   `components/competition/`. See `docs/competition.md`.
 
 ## Open decisions (ask the user before assuming)
 - None right now.

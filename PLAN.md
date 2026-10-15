@@ -102,6 +102,19 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [ ] A ballet teacher checks the rubric and difficulty values. **Owner: team**
 - [ ] Check the pirouette turn counter on real retiré turns. **Owner: team + Claude**
 
+## Phase 8 - Competition mode (user, 2026-10-15)
+- [x] Firestore in the Firebase project (created by the Owner) + `firestore.rules`, checked live (42 checks)
+- [x] Panel scoring: one role per judge (D / A / E), averages, 4+ judges drop highest and lowest (tests)
+- [x] Organizer: competitions list, lobby with the QR code, roles, participants (count + names)
+- [x] Judges: join from the QR code (sign in or guest), wait, score sheet with quick buttons and live AI
+      suggestions (one tap), send once
+- [x] Running: one participant at a time with the AI camera (or a video), confirm before starting,
+      scoring progress, penalties, save result
+- [x] Spectators' leaderboard (totals only, full screen) and the organizer's breakdown per participant
+- [ ] Try a full competition with 3 real phones on the live site (`npm run deploy` first). **Owner: team**
+- [ ] One-time QR code per judge. **Owner: Claude, when asked**
+- [ ] A real RG judge checks the score sheets and the panel rule. **Owner: team**
+
 ## Later (not in the 2-week scope)
 - Side split balance; back split with help; pivots in the focus shapes
 - Landing faults (heavy landing, arched back)

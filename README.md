@@ -76,6 +76,26 @@ Open <http://localhost:3000>, then:
 The camera only works on `localhost` or HTTPS (browser rule). To use it from another device, use the
 live site (HTTPS). Every page is static: `npm run build` writes the whole site to `out/`.
 
+## Competition mode
+
+**Competition** in the navbar runs a rhythmic gymnastics competition with at least 3 human judges on
+their phones (details: [docs/competition.md](docs/competition.md)):
+
+1. The organizer creates a competition and shows the **QR code**. Each judge scans it with the phone
+   camera, signs in (or **Try without an account**) and joins; each gets one role: **Difficulty (D)**,
+   **Artistry (A)** or **Execution (E)**. Participants are "Participant 1, 2, …" until renamed.
+2. **Start competition**, then **Start** each participant (the app asks first). The AI camera judges
+   the routine; the judges' phones show the participant and the AI's suggestions live (one tap adds one
+   to their sheet), next to big quick buttons. No video on the phones.
+3. **Finish performance**: the judges send their scores. The organizer sees who has sent, enters
+   penalties and saves the result: Final = D + A + E − penalties (with several judges per role, the
+   average; with 4 or more, highest and lowest left out).
+4. **Leaderboard ↗** opens the spectators' screen (totals only, live, full screen). The organizer's
+   list opens each result's breakdown: every judge's score and sheet.
+
+The data goes through **Firestore** in the same Firebase project; who may read or write what is in
+[`firestore.rules`](firestore.rules) (paste it in Firebase console → Firestore → Rules after a change).
+
 ## What it judges
 
 | Element | Code | D value | Automated E deductions |
@@ -149,6 +169,9 @@ app/
   (app)/layout.tsx           pages that need sign-in (the "(app)" folder is not part of the URL)
   (app)/page.tsx             the judging page (renders components/RhymnastApp.tsx)
   (app)/tools/*/page.tsx     developer tools: image-check, validate, video-analyze
+  (app)/compete/page.tsx     competition mode, organizer: /compete (list) and /compete?c=<id>
+  (app)/compete/board/       the spectators' leaderboard: /compete/board?c=<id>
+  (app)/judge/page.tsx       competition mode, judge (from the QR code): /judge?c=<id>&k=<key>
   globals.css                Tailwind theme: colors, font, card animation
 components/
   RhymnastApp.tsx            page layout: header, video, controls, side panels, results, settings
@@ -164,8 +187,14 @@ components/
                              SignUpForm, ResetPasswordForm, OtherSignInOptions (Google, guest),
                              Fields, AccountButton
   tools/                     the three developer tools
+  competition/               competition mode: Lobby (QR, judges, participants), Running (camera,
+                             one participant at a time, scoring), ScoreSheet (judge's phone),
+                             Leaderboard, ParticipantDetail (breakdown), JudgePage
 lib/
-  firebase/                  Firebase web config check, browser Auth client, sign-in actions (auth.ts)
+  firebase/                  Firebase web config check, browser Auth + Firestore client, sign-in actions
+                             (auth.ts), competition data (competition.ts)
+  competition/               competition mode logic: panel scoring, judge sheet, AI live suggestions,
+                             join link + QR, leaderboard order
   session.ts                 wiring: video -> pose -> smoothing -> detectors -> scoreboard (browser)
   pose.ts                    MediaPipe Pose Landmarker (pretrained, pinned version)
   geometry.ts                angles on landmarks (split, thigh elevation, leg foreshortening)
@@ -186,6 +215,8 @@ lib/
 tests/                       unit tests (vitest)
 scripts/build-library.ts     regenerates lib/library/defaultLibrary.json
 docs/rules.md                rules we automate, quoted from the Code with page numbers
+docs/competition.md          competition mode: flow, roles, how the result is made, Firestore setup
+firestore.rules              who may read and write what in competition mode (paste into Firebase)
 data/README.md               where to get clips and datasets (nothing in data/ is committed)
 ```
 
