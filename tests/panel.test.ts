@@ -1,6 +1,6 @@
 import { test, assert, assertEqual } from './harness';
 import {
-  canStart, combineScores, defaultParticipantName, panelScore, roleForNewJudge, round3,
+  canStart, combineScores, defaultParticipantName, panelScore, roleForNewJudge, rolesWithoutJudge, round3,
 } from '../lib/competition/panel';
 
 test('one judge in a role: their score is the panel score', () => {
@@ -46,8 +46,29 @@ test('final = D + A + E - penalties', () => {
   assertEqual(r.final, 21.3);
 });
 
-test('no result while a role has not sent a score', () => {
+test('no result while a role with a judge has not sent a score', () => {
   assertEqual(combineScores({ D: [5], A: [], E: [8] }), null);
+  assertEqual(combineScores({ D: [5], A: [], E: [] }, 0, ['D', 'E']), null);
+});
+
+test('one judge: the roles without a judge are left out of the final', () => {
+  const r = combineScores({ D: [5.4], A: [], E: [] }, 0.3, ['D']);
+  assert(r !== null);
+  assertEqual(r.D, 5.4);
+  assertEqual(r.A, null);
+  assertEqual(r.E, null);
+  assertEqual(r.final, 5.1);
+  const e = combineScores({ D: [], A: [], E: [8.2] }, 0, ['E']);
+  assertEqual(e?.final, 8.2);
+});
+
+test('two roles judged: final = their sum - penalties', () => {
+  const r = combineScores({ D: [5], A: [], E: [8] }, 0.5, ['D', 'E']);
+  assertEqual(r?.final, 12.5);
+});
+
+test('no scores at all: no result', () => {
+  assertEqual(combineScores({ D: [], A: [], E: [] }, 0, []), null);
 });
 
 test('A and E stay within 0-10 and the final is never negative', () => {
@@ -66,13 +87,18 @@ test('new judges get the role with the fewest judges: D, A, E, then D again', ()
   assertEqual(roleForNewJudge(['D', 'D', 'E']), 'A');
 });
 
-test('the competition needs 3 judges, every role and a participant before it starts', () => {
-  assertEqual(canStart(['D', 'A'], 5).reason, 'Waiting for 1 more judge.');
-  assertEqual(canStart([], 5).reason, 'Waiting for 3 more judges.');
-  assertEqual(canStart(['D', 'D', 'A'], 5).reason, 'Give someone the Execution role.');
-  assertEqual(canStart(['D', 'A', 'E'], 0).reason, 'Add at least one participant.');
-  assert(canStart(['D', 'A', 'E'], 1).ok);
+test('the competition starts with one judge in any role and a participant', () => {
+  assertEqual(canStart([], 5).reason, 'Waiting for a judge to join.');
+  assertEqual(canStart(['D'], 0).reason, 'Add at least one participant.');
+  assert(canStart(['D'], 1).ok);
+  assert(canStart(['E'], 1).ok);
+  assert(canStart(['D', 'D'], 3).ok);
   assert(canStart(['D', 'A', 'E', 'E'], 8).ok);
+});
+
+test('roles without a judge are named for the organizer', () => {
+  assertEqual(rolesWithoutJudge(['D']).join(), 'A,E');
+  assertEqual(rolesWithoutJudge(['D', 'A', 'E']).length, 0);
 });
 
 test('participants are numbered until the organizer names them', () => {

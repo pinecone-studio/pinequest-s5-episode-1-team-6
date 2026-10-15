@@ -3,12 +3,12 @@
 // The organizer's competition before it starts:
 //   left:  the QR code judges scan, and the judges who joined (live), each with a role;
 //   right: the participants (how many, names);
-//   top:   Start competition, once there are 3 judges, every role and a participant.
+//   top:   Start competition, once there is a judge (any role) and a participant.
 
 import { useCallback, useEffect, useState } from 'react';
 import { getJoinKey, startCompetition, watchJudges, watchParticipants } from '@/lib/firebase/competition';
 import { competitionErrorText } from '@/lib/firebase/errors';
-import { canStart, MIN_JUDGES, type Role } from '@/lib/competition/panel';
+import { canStart, MIN_JUDGES, ROLE_NAMES, rolesWithoutJudge, type Role } from '@/lib/competition/panel';
 import { judgeLink } from '@/lib/competition/links';
 import type { Competition, Judge, Participant } from '@/lib/competition/types';
 import { bigButton, primaryButton, smallText } from '../ui';
@@ -35,6 +35,7 @@ export function Lobby({ competition }: { competition: Competition }) {
 
   const roles = (judges.value ?? []).map((j) => j.role).filter((r): r is Role => r !== null);
   const check = canStart(roles, participants.value?.length ?? 0);
+  const leftOut = roles.length ? rolesWithoutJudge(roles) : [];
   const error = judges.error ?? participants.error;
 
   async function start() {
@@ -57,7 +58,7 @@ export function Lobby({ competition }: { competition: Competition }) {
           <button className={`${primaryButton} ${bigButton}`} disabled={!check.ok || starting} onClick={() => void start()}>
             Start competition
           </button>
-          <p className={`${smallText} text-right max-sm:text-left`} aria-live="polite">{check.reason ?? 'Everyone is ready.'}</p>
+          <p className={`${smallText} text-right max-sm:text-left`} aria-live="polite">{check.reason ?? (leftOut.length ? `Ready. No ${leftOut.map((r) => ROLE_NAMES[r]).join(' or ')} judge: left out of the total.` : 'Everyone is ready.')}</p>
         </div>
       }
     >
@@ -71,7 +72,8 @@ export function Lobby({ competition }: { competition: Competition }) {
           {judges.value && <JudgesList cid={cid} judges={judges.value} />}
           <p className={smallText}>
             Each judge has one role, like at an FIG competition: Difficulty (D), Artistry (A) or Execution (E).
-            With several judges in a role, their scores are averaged.
+            With several judges in a role, their scores are averaged. One judge is enough to start; a role
+            without a judge is left out of the total.
           </p>
         </section>
         <section className={card} aria-labelledby="participants-title">
@@ -87,7 +89,7 @@ function JudgeCount({ count }: { count: number }) {
   const enough = count >= MIN_JUDGES;
   return (
     <span className={`text-sm font-semibold tabular-nums ${enough ? 'text-good' : 'text-muted'}`}>
-      {enough ? `${count} joined ✓` : `${count} of ${MIN_JUDGES} needed`}
+      {enough ? `${count} joined ✓` : 'None yet'}
     </span>
   );
 }
