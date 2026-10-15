@@ -2,7 +2,9 @@
 
 // A judge's score sheet on their phone while a participant performs and right after. No video.
 //   top:     who, the timer, and the judge's score in big numbers ("Execution 9.40")
-//   buttons: big quick buttons (-0.10 / -0.30 / -0.50 for E; +0.10 … +0.50 for D)
+//   buttons: one row of big buttons: the AI's suggestion first (D +0.50, E −0.40: one tap puts all of them on
+//            the sheet, another tap takes them off), then the quick buttons (-0.10 / -0.30 / -0.50 for E;
+//            +0.10 … +0.50 for D)
 //   AI:      the AI's suggestions arrive live; one tap adds one to the sheet, another tap takes it off
 //   sheet:   every line, with ✕ and Undo
 //   send:    once the performance is over ("Send score 9.40", asked once more: it can't be changed)
@@ -12,8 +14,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { submitScore, watchLive, watchMyScore } from '@/lib/firebase/competition';
 import { competitionErrorText } from '@/lib/firebase/errors';
 import {
-  addQuick, ADDS, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleSuggestion, undo,
-  type SheetItem,
+  addQuick, ADDS, aiScore, aiTotal, allSuggestionsAdded, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor,
+  toggleAllSuggestions, toggleSuggestion, undo, type SheetItem, type Suggestion,
 } from '@/lib/competition/judgeSheet';
 import { ROLE_NAMES, type Role } from '@/lib/competition/panel';
 import type { Competition, JudgeScore, LiveState } from '@/lib/competition/types';
@@ -93,12 +95,16 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
       </section>
 
       <section aria-label={ADDS[role] ? 'Add a difficulty' : 'Add a deduction'} className="grid gap-2">
-        <div className={`grid gap-2 ${QUICK_VALUES[role].length > 3 ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-3'}`}>
+        {/* E (AI + 3) and A (4): one row of 4. D (AI + 5): 3 × 2 on a phone, one row of 6 from 640 px. */}
+        <div className={`grid gap-2 ${QUICK_VALUES[role].length + (role === 'A' ? 0 : 1) === 4 ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-6'}`}>
+          {role !== 'A' && (
+            <AiScoreButton role={role} suggestions={suggestions} items={items} onTap={() => setItems(toggleAllSuggestions(items, suggestions))} />
+          )}
           {QUICK_VALUES[role].map((v) => (
             <button
               key={v}
               type="button"
-              className="min-h-16 cursor-pointer rounded-card border-[1.5px] border-line bg-card text-[22px] font-bold text-ink tabular-nums transition-transform duration-100 active:scale-95 not-disabled:hover:border-accent motion-reduce:transition-none"
+              className={`${quickButton} border-[1.5px] border-line bg-card not-disabled:hover:border-accent`}
               onClick={() => add(v)}
             >
               {signed(role, v)}
@@ -147,14 +153,62 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
   );
 }
 
+interface AiScoreProps {
+  role: Role;
+  suggestions: Suggestion[];
+  items: SheetItem[];
+  onTap: () => void;
+}
+
+/** A big button in the row under the score: the AI's score and the quick buttons share its size. */
+const quickButton =
+  'min-h-16 cursor-pointer rounded-card text-[22px] font-bold text-ink tabular-nums transition-transform duration-100 not-disabled:active:scale-95 max-xs:text-lg motion-reduce:transition-none';
+
+/**
+ * The AI's suggestion, first in the row of quick buttons, the same size and shown the same way: what
+ * its suggestions add up to (D: +0.50, E: −0.40; the score they make is in the label). One tap puts them all on the sheet (the judge's own lines stay), another
+ * takes them off. Gradient border (.ai-border in globals.css): this one is the AI's, the others the judge's.
+ */
+function AiScoreButton({ role, suggestions, items, onTap }: AiScoreProps) {
+  const total = aiTotal(suggestions);
+  const score = aiScore(role, suggestions);
+  const toAdd = suggestions.filter((s) => s.addable).length;
+  const added = allSuggestionsAdded(items, suggestions);
+  // Like the quick buttons: +0.50 / −0.40; nothing to add is 0.00 (not −0.00).
+  const shown = total === null ? '–' : total === 0 ? '0.00' : signed(role, total);
+  const what = total === null || score === null
+    ? 'AI suggestion: shows after the first move'
+    : toAdd === 0
+      ? `AI suggests ${shown}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`
+      : added
+        ? `AI suggests ${shown} (score ${score.toFixed(2)}): all on your sheet. Tap to take them off`
+        : `AI suggests ${shown} (score ${score.toFixed(2)}): tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
+  return (
+    <button
+      type="button"
+      aria-pressed={added}
+      aria-label={what}
+      title={what}
+      disabled={toAdd === 0}
+      onClick={onTap}
+      className={`${quickButton} ai-border grid content-center justify-items-center gap-0.5 border-2 px-1 disabled:cursor-default`}
+    >
+      <span className="text-xs leading-none font-bold" aria-hidden="true">
+        <span className="ai-text">✦</span> AI{added ? ' ✓' : ''}
+      </span>
+      <span className={`leading-none ${total === null ? 'text-muted' : ''}`} aria-hidden="true">{shown}</span>
+    </button>
+  );
+}
+
 interface AiProps {
   role: Role;
   live: LiveState | null;
   /** The AI's suggestions could not be loaded (e.g. no access). */
   error: Error | null;
-  suggestions: ReturnType<typeof suggestionsFor>;
+  suggestions: Suggestion[];
   items: SheetItem[];
-  onToggle: (s: ReturnType<typeof suggestionsFor>[number]) => void;
+  onToggle: (s: Suggestion) => void;
 }
 
 /** The AI assistant: what it sees now, and its suggestions (one tap = on your sheet). */

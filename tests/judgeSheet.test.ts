@@ -1,6 +1,7 @@
 import { test, assert, assertEqual } from './harness';
 import {
-  addQuick, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleSuggestion, undo, type SheetItem,
+  addQuick, aiScore, aiTotal, allSuggestionsAdded, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleAllSuggestions,
+  toggleSuggestion, undo, type SheetItem,
 } from '../lib/competition/judgeSheet';
 import type { LiveState } from '../lib/competition/types';
 
@@ -70,6 +71,41 @@ test('tapping a suggestion adds it; tapping again takes it off', () => {
   assert(items[0].fromAi);
   items = toggleSuggestion(items, s);
   assertEqual(items.length, 0);
+});
+
+test("the AI's score: D the difficulties it counted, E 10 minus its deductions; none before the first move", () => {
+  assertEqual(aiScore('D', suggestionsFor('D', live)), 0.5);
+  assertEqual(aiScore('E', suggestionsFor('E', live)), 9.4);
+  assertEqual(aiScore('E', suggestionsFor('E', null)), null);
+  const clean: LiveState = { ...live, moves: [live.moves[1]] }; // judged, nothing lost
+  assertEqual(aiScore('E', suggestionsFor('E', clean)), 10);
+});
+
+test("the AI's button shows what its suggestions add up to, like the quick buttons", () => {
+  assertEqual(aiTotal(suggestionsFor('D', live)), 0.5); // +0.50
+  assertEqual(aiTotal(suggestionsFor('E', live)), 0.6); // −0.60
+  assertEqual(aiTotal(suggestionsFor('E', null)), null);
+  assertEqual(aiTotal(suggestionsFor('E', { ...live, moves: [live.moves[1]] })), 0);
+});
+
+test("tapping the AI's score adds every suggestion once, keeps the judge's lines; again takes them off", () => {
+  const suggestions = suggestionsFor('E', live);
+  const mine = addQuick([], 'E', 0.1);
+  const one = toggleSuggestion(mine, suggestions.filter((x) => x.addable)[0]); // one already on the sheet
+  let items = toggleAllSuggestions(one, suggestions);
+  assertEqual(items.length, 3);
+  assert(allSuggestionsAdded(items, suggestions), 'all on the sheet');
+  assertEqual(sheetScore('E', items), 9.3);
+  items = toggleAllSuggestions(items, suggestions);
+  assertEqual(items.map((i) => i.id).join(), 'q1');
+  assert(!allSuggestionsAdded(items, suggestions), 'taken off');
+});
+
+test("the AI's score adds nothing when there is nothing to add", () => {
+  const clean: LiveState = { ...live, moves: [live.moves[1]] };
+  const suggestions = suggestionsFor('E', clean);
+  assertEqual(toggleAllSuggestions([], suggestions).length, 0);
+  assert(!allSuggestionsAdded([], suggestions), 'nothing to add is not "all added"');
 });
 
 test('quick buttons, remove and undo', () => {

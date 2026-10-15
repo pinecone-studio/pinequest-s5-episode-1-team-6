@@ -10,13 +10,13 @@ judges' scores, not the AI's, make the result.
 |---|---|---|
 | Organizer | `/compete` (laptop with the camera) | Creates the competition, shows the QR code, gives each judge a role, adds the participants, starts each participant, ends the performance, enters penalties, saves each result, finishes the competition. Sees every judge's score and sheet. |
 | Judge | `/judge?c=…&k=…` (phone, tablet or computer; from the QR code) | Signs in (or **Try without an account**), types their name, waits for their turn, then scores on a sheet made for their role. The AI's suggestions arrive live; one tap adds one. No video. |
-| Spectators | `/compete/board?c=…` (second screen or projector, opened by the organizer) | Places, names and total scores, live. Nothing about who gave what or where points were lost. |
+| Spectators | `/compete/board?c=…` (second screen or projector, opened by the organizer) | Places, names and total scores, live (gold, silver and bronze badges for the first three; who is on the floor; who is still to perform). Nothing about who gave what or where points were lost. |
 
 ## The flow
 
 1. **Lobby.** The organizer creates a competition and shows the QR code (one per competition, see
    [Decisions](#decisions)). Each judge scans it with the phone camera, signs in and joins. The organizer's page gives every new judge a role at once (D, A, E, D, …: the role with the fewest judges) and the organizer can change it. The number of participants can be set before or after the judges join; they are "Participant 1, 2, …" until renamed. **Start competition** works once there is at least one judge (any role) and a participant. A role nobody judges is left out of the total (see [How the result is made](#how-the-result-is-made)); the lobby names it.
-2. **Running.** The organizer turns the camera on (or picks a video for a demo) and presses **Start** for the next participant (or any participant on the list). The app asks first: "Start judging 2. Anu?". Then the AI judges the routine and the judges' phones show the participant, a timer and the AI's suggestions.
+2. **Running.** The organizer turns the camera on (camera only: no video file, user 2026-10-16) and presses **Start** for the next participant (or any participant on the list). The app asks first: "Start judging 2. Anu?". Then the AI judges the routine and the judges' phones show the participant, a timer and the AI's suggestions.
 3. **Finish performance.** The judges can now send their scores (once; it can't be changed after).
    The organizer sees who has sent ("2 of 3 sent"), the result so far, and enters penalties.
    **Save result** stores it and the leaderboard updates. If a judge drops out, **Save result now**
@@ -37,7 +37,12 @@ Every move the AI judged shows up once it is over, so the judge sees that the AI
 changes nothing for this role (D: a repeat, too far from the shape, not in the top 8; E: no points lost)
 is a grey line that can't be added ("No points lost."). If the AI's suggestions can't be sent or loaded,
 the organizer's page and the judge's sheet say so.
-A suggestion counts only when the judge taps it (tap again to take it off). The sheet shows every
+A suggestion counts only when the judge taps it (tap again to take it off).
+**The AI's suggestion** (D and E, 2026-10-16) is the first of the quick buttons, the same size and shown
+the same way: what its suggestions add up to (D: the difficulties it counted, "+0.50"; E: the deductions
+it measured, "−0.40"; the score they make, e.g. 9.60, is in its label), "–" until the first move. One tap puts every suggestion on the sheet, a second tap takes them all off;
+the judge's own lines stay (then it turns green with "AI ✓"). Its gradient border (`.ai-border` in `app/globals.css`, the sport's accent to
+its second color) marks it as the AI's; the plain buttons are the judge's. The sheet shows every
 line with ✕ and Undo, stays in the tab if the page reloads, and keeps the phone's screen on.
 Code: `lib/competition/judgeSheet.ts`, `components/competition/ScoreSheet.tsx`.
 
@@ -92,10 +97,10 @@ Done for `rhymnast-35f9e` on 2026-10-15. For another project:
    Do this again whenever `firestore.rules` changes.
 3. Authentication must allow **Anonymous** (for "Try without an account") as for the rest of the app.
 
-## Demo without a gymnast
+## Demo
 
-Pick **or use a video** on the organizer's page (e.g. `public/reference/attitude.mp4`); each participant
-plays it from the start. Judges can join from other browser windows (guest) or phones on the live site.
+The organizer's page takes the camera only (the video file button was removed, user 2026-10-16): a
+teammate performs in front of it. Judges can join from other browser windows (guest) or phones on the live site.
 
 ## Known limits
 
