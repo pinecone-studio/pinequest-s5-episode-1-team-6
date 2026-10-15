@@ -45,12 +45,17 @@ export interface Suggestion {
   /** Extra plain sentence, e.g. what was wrong. */
   detail: string | null;
   value: number;
+  /**
+   * false: the AI judged the move, but it changes nothing on this sheet (not a difficulty that
+   * counts, or no points lost). Shown so the judge sees the AI judged it; it can't be added.
+   */
+  addable: boolean;
 }
 
 /**
- * The AI's suggestions for this role, newest first.
- *   D: every move that counts as a difficulty, with its value.
- *   E: every deduction the AI measured.
+ * The AI's suggestions for this role, newest first. Every move the AI judged shows up once it is over.
+ *   D: every move that counts as a difficulty, with its value; any other move as information.
+ *   E: every deduction the AI measured; a move without one as information ("No points lost.").
  *   A: none (the AI does not judge artistry).
  */
 export function suggestionsFor(role: Role, live: LiveState | null): Suggestion[] {
@@ -58,9 +63,12 @@ export function suggestionsFor(role: Role, live: LiveState | null): Suggestion[]
   const out: Suggestion[] = [];
   for (const m of live.moves) {
     if (role === 'D') {
-      if (m.counts && m.dbValue > 0) out.push({ key: `ai-d-${m.id}`, label: m.name, detail: m.note, value: m.dbValue });
+      if (m.counts && m.dbValue > 0) out.push({ key: `ai-d-${m.id}`, label: m.name, detail: m.note, value: m.dbValue, addable: true });
+      else out.push({ key: `ai-d-${m.id}-info`, label: m.name, detail: m.note ?? 'Not counted as a difficulty.', value: 0, addable: false });
+    } else if (m.deductions.length === 0) {
+      out.push({ key: `ai-e-${m.id}-ok`, label: m.name, detail: 'No points lost.', value: 0, addable: false });
     } else {
-      m.deductions.forEach((d, i) => out.push({ key: `ai-e-${m.id}-${i}`, label: m.name, detail: d.text, value: d.value }));
+      m.deductions.forEach((d, i) => out.push({ key: `ai-e-${m.id}-${i}`, label: m.name, detail: d.text, value: d.value, addable: true }));
     }
   }
   return out.reverse();
@@ -68,6 +76,7 @@ export function suggestionsFor(role: Role, live: LiveState | null): Suggestion[]
 
 /** Tap on a suggestion: add it, or take it back off if it is already on the sheet. */
 export function toggleSuggestion(items: SheetItem[], s: Suggestion): SheetItem[] {
+  if (!s.addable) return items;
   return items.some((i) => i.id === s.key)
     ? items.filter((i) => i.id !== s.key)
     : [...items, { id: s.key, label: s.label, value: s.value, fromAi: true }];

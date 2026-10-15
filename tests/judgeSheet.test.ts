@@ -17,15 +17,27 @@ const live: LiveState = {
 };
 
 test('D judge: the AI suggests every difficulty that counts, newest first', () => {
-  const s = suggestionsFor('D', live);
+  const s = suggestionsFor('D', live).filter((x) => x.addable);
   assertEqual(s.map((x) => `${x.label} ${x.value}`).join(' | '), 'Front split, holding the leg 0.3 | Attitude 0.2');
 });
 
+test('D judge: a move that does not count still shows up, as information with the reason', () => {
+  const [info] = suggestionsFor('D', live);
+  assert(!info.addable, 'cannot be added');
+  assertEqual(info.detail, 'Not counted again: this move was already done earlier.');
+});
+
 test('E judge: the AI suggests every deduction it measured, also on a repeated move', () => {
-  const s = suggestionsFor('E', live);
+  const s = suggestionsFor('E', live).filter((x) => x.addable);
   assertEqual(s.length, 2);
   assertEqual(s[0].detail, 'Held for 0.8 seconds.');
   assertEqual(s[1].value, 0.3);
+});
+
+test('E judge: a move without a deduction shows up as "No points lost." and cannot be added', () => {
+  const ok = suggestionsFor('E', live).filter((x) => !x.addable);
+  assertEqual(ok.map((x) => `${x.label}: ${x.detail}`).join(), 'Front split, holding the leg: No points lost.');
+  assertEqual(toggleSuggestion([], ok[0]).length, 0);
 });
 
 test('A judge: no AI suggestions (the AI does not judge artistry)', () => {
@@ -52,7 +64,7 @@ test('a score never goes below 0', () => {
 });
 
 test('tapping a suggestion adds it; tapping again takes it off', () => {
-  const s = suggestionsFor('E', live)[1];
+  const s = suggestionsFor('E', live).filter((x) => x.addable)[1];
   let items = toggleSuggestion([], s);
   assertEqual(items.length, 1);
   assert(items[0].fromAi);
