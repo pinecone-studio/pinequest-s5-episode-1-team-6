@@ -2,6 +2,7 @@
 
 // The Saved videos page: videos of every judged move (mistakes marked), saved in this browser
 // after each routine (lib/recording/clipStore.ts). Newest routine first; delete one or all.
+// The account and the dark mode switch sit in the top right corner, like on the other pages.
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -17,7 +18,8 @@ import {
 import { clipFileName, videoExtension } from '@/lib/recording/clipWindows';
 import { AccountButton } from './auth/AccountButton';
 import { MoveMedia, type MoveMediaFiles } from './MoveMedia';
-import { chip, ghostButton, smallText } from './ui';
+import { ThemeToggle } from './ThemeToggle';
+import { chip, crumbLink, ghostButton, smallText } from './ui';
 
 export function SavedVideos() {
   const [routines, setRoutines] = useState<SavedRoutine[] | null>(null);
@@ -37,9 +39,12 @@ export function SavedVideos() {
       <div className="grid gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="m-0 text-[13px] font-semibold text-muted">
-            <Link className="text-accent" href="/">Rhymnast</Link> · Saved videos
+            <Link className={crumbLink} href="/">Rhymnast</Link> · Saved videos
           </p>
-          <AccountButton />
+          <div className="flex items-center gap-1.5">
+            <AccountButton />
+            <ThemeToggle />
+          </div>
         </div>
         <h1 className="m-0 text-4xl leading-tight font-bold">Saved videos</h1>
         <p className={smallText}>
@@ -84,7 +89,7 @@ function RoutineCard({ routine, onDeleted }: { routine: SavedRoutine; onDeleted:
   }
 
   return (
-    <li className="grid gap-3.5 rounded-card bg-card p-5">
+    <li className="grid gap-3.5 rounded-card bg-card p-5 max-sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <b className="text-lg">{when}</b>

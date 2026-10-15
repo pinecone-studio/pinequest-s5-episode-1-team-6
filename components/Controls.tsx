@@ -62,7 +62,8 @@ export function Controls({ steps, state, movesCount, onMain, onFile, onReset, on
   );
 }
 
-const link = 'border-0 bg-transparent p-0 text-base font-semibold text-accent underline underline-offset-[3px]';
+// A text link, but as tall as a button (44 px) so it is easy to tap on a phone.
+const link = 'inline-flex min-h-11 items-center border-0 bg-transparent p-0 text-base font-semibold text-accent underline underline-offset-[3px]';
 
 /**
  * Opens the file picker for a video. A <label> around a visually hidden file input: the input gets
@@ -89,7 +90,8 @@ function VideoPicker({ className, disabled, onFile, children }: { className: str
 
 function Steps({ steps, current }: { steps: readonly string[]; current: number }) {
   return (
-    <ol className="m-0 grid list-none grid-cols-1 gap-2.5 p-0 sm:grid-cols-3">
+    // Phones: stacked and a little tighter, so the moves list below is not pushed too far down.
+    <ol className="m-0 grid list-none grid-cols-1 gap-2.5 p-0 max-sm:gap-2 sm:grid-cols-3">
       {steps.map((text, i) => {
         const n = i + 1;
         const done = n < current;
@@ -97,7 +99,7 @@ function Steps({ steps, current }: { steps: readonly string[]; current: number }
         return (
           <li
             key={n}
-            className={`flex items-start gap-2.5 rounded-xl px-3.5 py-3 text-[15px] ${isCurrent ? 'bg-accent-soft text-ink' : 'bg-card text-muted'}`}
+            className={`flex items-start gap-2.5 rounded-xl px-3.5 py-3 text-[15px] max-sm:items-center max-sm:py-2 ${isCurrent ? 'bg-accent-soft text-ink' : 'bg-card text-muted'}`}
           >
             <span
               className={`grid h-[26px] w-[26px] flex-none place-items-center rounded-full text-sm font-bold ${

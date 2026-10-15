@@ -14,8 +14,8 @@ export interface JudgeForm {
   penalties: string;
 }
 
-// Fades in each time its tab is picked (the animation restarts when `hidden` goes off).
-const card = 'grid gap-3.5 rounded-card bg-card p-5 animate-panel-in motion-reduce:animate-none';
+// Fades in each time its tab is picked (the animation restarts when `hidden` goes off). A little less padding on phones.
+const card = 'grid gap-3.5 rounded-card bg-card p-5 animate-panel-in motion-reduce:animate-none max-sm:p-4';
 const emptyLine = 'text-[15px] text-muted';
 
 interface PracticePanelProps {
@@ -88,23 +88,24 @@ export function JudgePanel({ text, events, scores: r, form, onForm, onReject, on
 
   return (
     <section className={card} id="panel-judge" role="tabpanel" aria-labelledby="tab-judge" hidden={hidden}>
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-center justify-between">
         <span className="text-lg font-semibold">Final score</span>
-        <b className="text-[44px] font-bold text-accent tabular-nums">{score(r.final)}</b>
+        <b className="text-[44px] leading-tight font-bold text-accent tabular-nums max-sm:text-[38px]">{score(r.final)}</b>
       </div>
       <div className="grid grid-cols-3 gap-2">
         {part('Difficulty', score(r.D), 'from the app')}
         {part('Execution', score(r.E), r.breakdown.autoE ? `from the app (−${r.breakdown.autoE.toFixed(2)})` : 'from the app')}
         {part(text.artistry, r.A.toFixed(2), 'your score')}
       </div>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      {/* Two short number fields side by side, also on phones; a label that wraps keeps the inputs level (items-end). */}
+      <div className="grid grid-cols-2 items-end gap-2.5">
         {field('artistry', `${text.artistry} (0–10)`, { max: 10, step: 0.05 })}
         {field('penalties', 'Penalties', { step: 0.05 })}
       </div>
       <details className="grid gap-2.5">
         <summary>Points the app can&apos;t see</summary>
         <p className={`${smallText} mt-2`}>{text.extraHelp}</p>
-        <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <div className="mt-2.5 grid grid-cols-2 items-end gap-2.5">
           {field('extraD', 'Extra difficulty', { step: 0.1 })}
           {field('extraE', 'Extra execution points lost', { step: 0.1 })}
         </div>

@@ -9,7 +9,7 @@ import { setPoseLibrary } from '@/lib/elements/balances';
 import { currentLibrary } from '@/lib/ui/libraryStore';
 import { AccountButton } from '../auth/AccountButton';
 import { ThemeToggle } from '../ThemeToggle';
-import { smallText } from '../ui';
+import { crumbLink, smallText } from '../ui';
 
 export function ToolPage({ title, intro, children }: { title: string; intro: ReactNode; children: ReactNode }) {
   return (
@@ -17,7 +17,7 @@ export function ToolPage({ title, intro, children }: { title: string; intro: Rea
       <div className="grid gap-1">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="m-0 text-[13px] font-semibold text-muted">
-            <Link className="text-accent" href="/">Rhymnast</Link> · Developer tool
+            <Link className={crumbLink} href="/">Rhymnast</Link> · Developer tool
           </p>
           <div className="flex min-w-0 items-center gap-2.5">
             <AccountButton />

@@ -57,6 +57,10 @@
 
   --radius-card: 14px;
 
+  /* xs: = 360 px and wider, max-xs: = the smallest phones (320 px wide). A named breakpoint, not
+     max-[359px]: Tailwind puts arbitrary px breakpoints before sm/md/..., so max-sm: would win over them. */
+  --breakpoint-xs: 22.5rem;
+
   /* A card slides onto the video after each move. */
   --animate-card-in: card-in 0.3s ease-out;
   @keyframes card-in {
@@ -239,4 +243,26 @@ label:has(> input[type="file"]:focus-visible) {
 details > summary {
   cursor: pointer;
   font-weight: 600;
+}
+
+/* Phones and tablets (a finger, not a mouse). */
+@media (pointer: coarse) {
+  /* Quick taps on a button don't zoom the page (iPhone zooms on a double tap): judges tap -0.10 fast. */
+  a,
+  button,
+  label,
+  summary,
+  input,
+  select {
+    touch-action: manipulation;
+  }
+  /* "Points the app can't see", "Teach poses", ...: a taller row is easier to hit with a finger. */
+  details > summary {
+    padding-block: 8px;
+  }
+}
+
+/* No grey flash over a tapped button on phones: the buttons show their own pressed and focus states. */
+html {
+  -webkit-tap-highlight-color: transparent;
 }

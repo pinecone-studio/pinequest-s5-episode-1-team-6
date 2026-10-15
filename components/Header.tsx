@@ -4,7 +4,9 @@ import { AccountButton } from './auth/AccountButton';
 import { SportIcon } from './SportIcon';
 import { SportMenu } from './SportMenu';
 import { ThemeToggle } from './ThemeToggle';
-import { navButton } from './ui';
+import { navButton, navIconOnly } from './ui';
+
+const iconOnly = navIconOnly.lg;
 
 interface HeaderProps {
   sport: Sport;
@@ -18,7 +20,15 @@ interface HeaderProps {
  *   right: the Sports menu, then small Competition, Sign in / Sign out, Settings and the dark mode switch (the switch
  *          in the top right corner). The last three are quiet on purpose: not the page's main actions.
  * The Practice / Judge switch is not here: it sits on top of the cards it changes (ModeSwitch.tsx).
- * On phones the navbar buttons are icons only and, on the smallest screens, the name is just "R".
+ *
+ * The row must never overlap, so what shows depends on the screen width (measured, 2026-10-15):
+ *   under 480 px  the sport's icon only (no name), icon-only buttons; under 360 px (max-xs) all a little smaller
+ *   480 px        + the name "Rhymnast"
+ *   580 px        + the sport's short name on the Sports button ("Gymnastics"; SportMenu.tsx)
+ *   768 px        + the full sport name ("Rhythmic gymnastics"), and the icon and name at full size
+ *   1024 px       + the words on Competition, Sign in / Sign out and Settings (navIconOnly.lg in ui.ts)
+ *   1280 px       + the signed-in person's name (AccountButton.tsx)
+ * The name never shrinks under the buttons: the left side keeps its width (flex-none).
  */
 export function Header({ sport, judging, onSettings }: HeaderProps) {
   return (
@@ -26,36 +36,32 @@ export function Header({ sport, judging, onSettings }: HeaderProps) {
       <div className="sport-stripe h-1 print:hidden" />
       <nav
         aria-label="Sport, account and settings"
-        className="flex min-h-[72px] items-center justify-between gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-3 max-sm:min-h-16 max-sm:py-2 print:hidden"
+        className="flex min-h-[72px] items-center justify-between gap-3 border-b border-line px-[clamp(16px,4vw,40px)] py-3 max-sm:min-h-16 max-sm:gap-2 max-sm:py-2 print:hidden"
       >
-        <div className="flex min-w-0 items-center gap-2.5 max-sm:gap-2">
-          <span className="grid h-11 w-11 flex-none place-items-center rounded-full bg-accent-soft max-sm:h-9 max-sm:w-9">
+        <div className="flex flex-none items-center gap-2.5 max-md:gap-2">
+          <span className="grid h-11 w-11 flex-none place-items-center rounded-full bg-accent-soft max-md:h-9 max-md:w-9 max-xs:h-8 max-xs:w-8">
             <SportIcon sport={sport} size={26} />
           </span>
-          <h1 className="m-0 min-w-0 font-brand text-[32px] leading-none text-accent max-sm:text-[26px]">
-            <span className="max-[419px]:hidden">Rhymnast</span>
-            <span className="min-[420px]:hidden" aria-hidden="true">R</span>
-            <span className="sr-only min-[420px]:hidden">Rhymnast</span>
-          </h1>
+          <h1 className="m-0 font-brand text-[32px] leading-none text-accent max-md:text-[26px] max-[479px]:sr-only">Rhymnast</h1>
         </div>
-        <div className="flex flex-none items-center gap-1.5 max-sm:gap-1">
+        <div className="flex min-w-0 items-center gap-1.5 max-sm:gap-1 max-xs:gap-0">
           <span className="mr-1.5 flex max-sm:mr-0.5">
             <SportMenu sport={sport} disabled={judging} />
           </span>
           <Link
             href="/compete"
-            className={`${navButton} no-underline max-sm:px-2 ${judging ? 'pointer-events-none opacity-45' : ''}`}
+            className={`${navButton} ${iconOnly.button} no-underline ${judging ? 'pointer-events-none opacity-45' : ''}`}
             aria-label="Competition"
             aria-disabled={judging || undefined}
             tabIndex={judging ? -1 : undefined}
           >
             <TrophyIcon />
-            <span className="max-sm:hidden">Competition</span>
+            <span className={iconOnly.label}>Competition</span>
           </Link>
-          <AccountButton />
-          <button className={`${navButton} max-sm:px-2`} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
+          <AccountButton iconOnlyBelow="lg" />
+          <button className={`${navButton} ${iconOnly.button}`} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
             <GearIcon />
-            <span className="max-sm:hidden">Settings</span>
+            <span className={iconOnly.label}>Settings</span>
           </button>
           <span className="ml-1.5 flex max-sm:ml-0.5">
             <ThemeToggle />
