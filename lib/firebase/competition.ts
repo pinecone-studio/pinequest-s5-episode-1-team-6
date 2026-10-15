@@ -151,9 +151,16 @@ export async function joinCompetition(cid: string, key: string, name: string): P
   await setDoc(ref, { name: cleanName, joinKey: key, joinedAt: serverTimestamp(), role: null });
 }
 
-/** The signed-in judge's own entry (null before joining): name and role. */
+/**
+ * The signed-in judge's own entry (null before joining): name and role.
+ * Only reports what the server has saved: right after Join, the entry exists on this phone a moment
+ * before it exists on the server, and reading the competition in that moment is (rightly) refused.
+ */
 export function watchMyJudge(cid: string, onChange: (judge: Judge | null) => void, onError: OnError): Unsubscribe {
-  return onSnapshot(doc(judgesRef(cid), myUid()), (snap) => onChange(toJudge(snap)), onError);
+  return onSnapshot(doc(judgesRef(cid), myUid()), { includeMetadataChanges: true }, (snap) => {
+    if (snap.metadata.hasPendingWrites) return;
+    onChange(toJudge(snap));
+  }, onError);
 }
 
 /** Every judge who joined, in joining order (organizer only). */
