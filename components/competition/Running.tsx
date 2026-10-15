@@ -22,6 +22,7 @@ import { Stage } from '../Stage';
 import { bigButton, chip, ghostButton, input, primaryButton, smallText } from '../ui';
 import { card, CardTitle, CompetitionShell, StatusLine } from './CompetitionShell';
 import { ConfirmDialog } from './ConfirmDialog';
+import { ParticipantDetail } from './ParticipantDetail';
 import { useGiveRoles } from './useGiveRoles';
 import { useWatch } from './useWatch';
 
@@ -90,9 +91,21 @@ export function Running({ competition }: { competition: Competition }) {
       title={competition.name}
       wide
       actions={
-        <button type="button" className={ghostButton} disabled={competition.phase !== 'idle'} onClick={() => setFinishing(true)}>
-          Finish competition
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <a
+            className={`${ghostButton} no-underline`}
+            href={`/compete/board?c=${encodeURIComponent(cid)}`}
+            target="_blank"
+            rel="noopener"
+          >
+            Leaderboard ↗
+          </a>
+          {competition.status !== 'finished' && (
+            <button type="button" className={ghostButton} disabled={competition.phase !== 'idle'} onClick={() => setFinishing(true)}>
+              Finish competition
+            </button>
+          )}
+        </div>
       }
     >
       {(error || judges.error || participants.error) && (
@@ -131,6 +144,8 @@ export function Running({ competition }: { competition: Competition }) {
             run={run}
           />
           <ParticipantList
+            cid={cid}
+            judges={judges.value ?? []}
             participants={list}
             canStart={competition.phase === 'idle' && cameraReady}
             onStart={setAsking}
@@ -396,8 +411,17 @@ function groupByRole(scores: JudgeScore[]): Record<Role, number[]> {
   return out;
 }
 
-/** Everyone in starting order, with their status (and final score once done). */
-function ParticipantList({ participants, canStart, onStart }: { participants: Participant[]; canStart: boolean; onStart: (p: Participant) => void }) {
+interface ListProps {
+  cid: string;
+  judges: Judge[];
+  participants: Participant[];
+  canStart: boolean;
+  onStart: (p: Participant) => void;
+}
+
+/** Everyone in starting order, with their status. A finished one opens its breakdown. */
+function ParticipantList({ cid, judges, participants, canStart, onStart }: ListProps) {
+  const [open, setOpen] = useState<string | null>(null);
   return (
     <section className={card} aria-labelledby="running-participants">
       <CardTitle><span id="running-participants">Participants</span></CardTitle>
@@ -405,18 +429,30 @@ function ParticipantList({ participants, canStart, onStart }: { participants: Pa
         {participants.map((p) => {
           const st = PARTICIPANT_STATUS[p.status];
           return (
-            <li key={p.id} className="flex items-center gap-2.5 rounded-xl bg-bg px-3.5 py-2.5">
-              <span className="w-6 flex-none text-right font-bold text-muted tabular-nums">{p.order}.</span>
-              <b className="min-w-0 flex-1 truncate">{p.name}</b>
-              {p.status === 'done' && p.result ? (
-                <b className="text-accent tabular-nums">{score3(p.result.final)}</b>
-              ) : p.status === 'waiting' ? (
-                <button type="button" className={`${ghostButton} min-h-9 px-3.5 text-sm`} disabled={!canStart} onClick={() => onStart(p)}>
-                  Start
-                </button>
-              ) : (
-                <span className={`rounded-full px-2.5 py-[3px] text-sm font-bold ${chip[st.tone]}`}>{st.text}</span>
-              )}
+            <li key={p.id} className="grid gap-2 rounded-xl bg-bg px-3.5 py-2.5">
+              <div className="flex items-center gap-2.5">
+                <span className="w-6 flex-none text-right font-bold text-muted tabular-nums">{p.order}.</span>
+                <b className="min-w-0 flex-1 truncate">{p.name}</b>
+                {p.status === 'done' && p.result ? (
+                  <button
+                    type="button"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full border-0 bg-transparent px-2 py-1 font-bold text-accent tabular-nums hover:bg-accent-soft"
+                    aria-expanded={open === p.id}
+                    aria-label={`${score3(p.result.final)}: show the breakdown for ${p.name}`}
+                    onClick={() => setOpen(open === p.id ? null : p.id)}
+                  >
+                    {score3(p.result.final)}
+                    <span aria-hidden="true" className={`text-xs transition-transform duration-150 motion-reduce:transition-none ${open === p.id ? 'rotate-180' : ''}`}>▾</span>
+                  </button>
+                ) : p.status === 'waiting' ? (
+                  <button type="button" className={`${ghostButton} min-h-9 px-3.5 text-sm`} disabled={!canStart} onClick={() => onStart(p)}>
+                    Start
+                  </button>
+                ) : (
+                  <span className={`rounded-full px-2.5 py-[3px] text-sm font-bold ${chip[st.tone]}`}>{st.text}</span>
+                )}
+              </div>
+              {open === p.id && <ParticipantDetail cid={cid} participant={p} judges={judges} />}
             </li>
           );
         })}
