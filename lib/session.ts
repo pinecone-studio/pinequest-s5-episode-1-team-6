@@ -402,7 +402,11 @@ export class JudgingSession {
     await this.startCamera();
   }
 
-  async loadFile(file: File): Promise<void> {
+  /**
+   * Judge a video file instead of the camera.
+   * @param start false = only open it at its first frame (competition mode starts it per participant)
+   */
+  async loadFile(file: File, { start = true }: { start?: boolean } = {}): Promise<void> {
     const video = this.video!;
     this.set({ busy: true }); // the model can take a while to load the first time
     try {
@@ -419,8 +423,10 @@ export class JudgingSession {
       await firstFrameReady(video);
       this.onSourceReady();
       this.newRoutine();
-      this.setJudging(true); // judge the clip from the start
-      await video.play();
+      if (start) {
+        this.setJudging(true); // judge the clip from the start
+        await video.play();
+      }
     } catch (err) {
       console.error(err);
       this.stopSource(); // don't leave a broken clip on the screen
@@ -666,6 +672,20 @@ export class JudgingSession {
       this.setJudging(true);
       if (source === 'file') this.replayFile();
     } else this.setJudging(!judging);
+  }
+
+  /** Competition mode: judge a new routine from now (the camera, or the video from its start). */
+  startRoutine(): void {
+    const { source, modelReady, judging, busy } = this.state;
+    if (!source || !modelReady || judging || busy) return;
+    this.newRoutine();
+    this.setJudging(true);
+    if (source === 'file') this.replayFile();
+  }
+
+  /** Competition mode: the performance is over; a shape still being held is judged now. */
+  finishRoutine(): void {
+    if (this.state.judging) this.setJudging(false);
   }
 
   private setJudging(on: boolean, { quiet = false } = {}): void {
