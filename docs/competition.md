@@ -38,9 +38,9 @@ changes nothing for this role (D: a repeat, too far from the shape, not in the t
 is a grey line that can't be added ("No points lost."). If the AI's suggestions can't be sent or loaded,
 the organizer's page and the judge's sheet say so.
 A suggestion counts only when the judge taps it (tap again to take it off).
-**The AI's score** (D and E, 2026-10-16) is the first of the quick buttons, the same size: what the sheet would say with
-all of the AI's suggestions (D: the difficulties it counted; E: 10 minus the deductions it measured),
-"–" until the first move. One tap puts every suggestion on the sheet, a second tap takes them all off;
+**The AI's suggestion** (D and E, 2026-10-16) is the first of the quick buttons, the same size and shown
+the same way: what its suggestions add up to (D: the difficulties it counted, "+0.50"; E: the deductions
+it measured, "−0.40"; the score they make, e.g. 9.60, is in its label), "–" until the first move. One tap puts every suggestion on the sheet, a second tap takes them all off;
 the judge's own lines stay (then it turns green with "AI ✓"). Its gradient border (`.ai-border` in `app/globals.css`, the sport's accent to
 its second color) marks it as the AI's; the plain buttons are the judge's. The sheet shows every
 line with ✕ and Undo, stays in the tab if the page reloads, and keeps the phone's screen on.

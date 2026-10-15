@@ -2,7 +2,7 @@
 
 // A judge's score sheet on their phone while a participant performs and right after. No video.
 //   top:     who, the timer, and the judge's score in big numbers ("Execution 9.40")
-//   buttons: one row of big buttons: the AI's score first (D and E: one tap puts all its suggestions on
+//   buttons: one row of big buttons: the AI's suggestion first (D +0.50, E −0.40: one tap puts all of them on
 //            the sheet, another tap takes them off), then the quick buttons (-0.10 / -0.30 / -0.50 for E;
 //            +0.10 … +0.50 for D)
 //   AI:      the AI's suggestions arrive live; one tap adds one to the sheet, another tap takes it off
@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { submitScore, watchLive, watchMyScore } from '@/lib/firebase/competition';
 import { competitionErrorText } from '@/lib/firebase/errors';
 import {
-  addQuick, ADDS, aiScore, allSuggestionsAdded, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor,
+  addQuick, ADDS, aiScore, aiTotal, allSuggestionsAdded, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor,
   toggleAllSuggestions, toggleSuggestion, undo, type SheetItem, type Suggestion,
 } from '@/lib/competition/judgeSheet';
 import { ROLE_NAMES, type Role } from '@/lib/competition/panel';
@@ -165,21 +165,24 @@ const quickButton =
   'min-h-16 cursor-pointer rounded-card text-[22px] font-bold text-ink tabular-nums transition-transform duration-100 not-disabled:active:scale-95 max-xs:text-lg motion-reduce:transition-none';
 
 /**
- * The AI's score, first in the row of quick buttons and the same size: what the sheet would say with
- * all of the AI's suggestions. One tap puts them all on the sheet (the judge's own lines stay), another
+ * The AI's suggestion, first in the row of quick buttons, the same size and shown the same way: what
+ * its suggestions add up to (D: +0.50, E: −0.40; the score they make is in the label). One tap puts them all on the sheet (the judge's own lines stay), another
  * takes them off. Gradient border (.ai-border in globals.css): this one is the AI's, the others the judge's.
  */
 function AiScoreButton({ role, suggestions, items, onTap }: AiScoreProps) {
+  const total = aiTotal(suggestions);
   const score = aiScore(role, suggestions);
   const toAdd = suggestions.filter((s) => s.addable).length;
   const added = allSuggestionsAdded(items, suggestions);
-  const what = score === null
-    ? "AI's score: shows after the first move"
+  // Like the quick buttons: +0.50 / −0.40; nothing to add is 0.00 (not −0.00).
+  const shown = total === null ? '–' : total === 0 ? '0.00' : signed(role, total);
+  const what = total === null || score === null
+    ? 'AI suggestion: shows after the first move'
     : toAdd === 0
-      ? `AI's score ${score.toFixed(2)}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`
+      ? `AI suggests ${shown}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`
       : added
-        ? `AI's score ${score.toFixed(2)}: all its suggestions are on your sheet. Tap to take them off`
-        : `AI's score ${score.toFixed(2)}: tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
+        ? `AI suggests ${shown} (score ${score.toFixed(2)}): all on your sheet. Tap to take them off`
+        : `AI suggests ${shown} (score ${score.toFixed(2)}): tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
   return (
     <button
       type="button"
@@ -193,7 +196,7 @@ function AiScoreButton({ role, suggestions, items, onTap }: AiScoreProps) {
       <span className="text-xs leading-none font-bold" aria-hidden="true">
         <span className="ai-text">✦</span> AI{added ? ' ✓' : ''}
       </span>
-      <span className={`leading-none ${score === null ? 'text-muted' : ''}`} aria-hidden="true">{score === null ? '–' : score.toFixed(2)}</span>
+      <span className={`leading-none ${total === null ? 'text-muted' : ''}`} aria-hidden="true">{shown}</span>
     </button>
   );
 }

@@ -97,6 +97,15 @@ export function aiScore(role: Role, suggestions: Suggestion[]): number | null {
   return sheetScore(role, suggestions.filter((s) => s.addable).map(asItem));
 }
 
+/**
+ * What the AI's suggestions add up to, shown like the quick buttons (D: +0.50, E: −0.40):
+ * D the difficulties it counted, E the deductions it measured. null until the AI has judged a move.
+ */
+export function aiTotal(suggestions: Suggestion[]): number | null {
+  if (suggestions.length === 0) return null;
+  return sheetTotal(suggestions.filter((s) => s.addable).map(asItem));
+}
+
 /** Is every AI suggestion that can be added on the sheet? false when there is none to add. */
 export function allSuggestionsAdded(items: SheetItem[], suggestions: Suggestion[]): boolean {
   const addable = suggestions.filter((s) => s.addable);
