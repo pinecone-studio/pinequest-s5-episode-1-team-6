@@ -176,6 +176,10 @@ Show warnings in the UI and skip low-visibility frames.
    judged by the app as the same element with no points lost. Trimmed, cropped and shrunk (0.4-0.6 MB)
    into `public/reference/`, the only videos in git (for the demo; the user cleared their use). The
    originals are in `data/reference/` (not committed). No clip yet for back split foot-above-head (2.1005).
+   Since 2026-10-16 (user) the clips look like the gymnast's own move video: skeleton drawn on them (no
+   angle labels: an attitude's bent knee would show red), 16:9 with blurred sides, made with
+   `/tools/reference-video`; text burned into a clip is cut off, not painted over with AI. Side by side,
+   both clips sit in the same 16:9 box (`ClipPlayer` `small`), so they are the same size.
 15. **Competition mode (user, 2026-10-15):** an organizer (`/compete`) runs a rhythmic gymnastics
    competition; one or more judges join by scanning **one QR code per competition** (a one-time code per
    judge is planned) and score on their phones (`/judge?c=…&k=…`, no video); spectators get a live
