@@ -39,18 +39,22 @@
 ## Phase 4 - Validate + polish (Days 12-14)
 - [x] Photo tools: `/tools/image-check`, `/tools/validate` (labeled folders → results + fixtures)
 - [x] Photo check: 10/10 Commons photos match their labels (`docs/validation.md`)
-- [ ] Confirm focus-balance D values against the CoP pictograms, p. 88-89 (0.30 / 0.50 / 0.20). **Owner: team**
+- [x] Confirm focus-balance D values against the CoP pictograms, p. 88-89 (done 2026-10-13, see Phase 5 and CLAUDE.md decision 12)
 - [ ] Shoot and label attitude + back split photos (`data/README.md`), run /tools/validate, send results.
       **Owner: team**; tune rules from mismatches. **Owner: Claude**
 - [x] Deploy to Vercel: https://pinequest-s5-episode-1-team-6.vercel.app (live site checked 2026-10-13)
 - [x] Move hosting to Cloudflare Pages: https://rhymnast.pages.dev (2026-10-14)
-- [ ] Add `rhymnast.pages.dev` to Firebase → Authentication → Settings → Authorized domains (for Google sign-in).
-      **Owner: Firebase project owner**
+- [x] Add `rhymnast.pages.dev` to Firebase → Authentication → Settings → Authorized domains; Google sign-in
+      works on the live site (2026-10-15)
 - [ ] Decide on a 2-3° measurement tolerance before the first −0.10 band. **Owner: user**
 - [ ] Check detectors on 5-10 labeled side-on video clips per element; record agreement in
       `docs/validation.md`. **Owner: team + Claude**
 - [x] README
 - [x] Videos of every move, mistakes marked red, correct moves green: download, Saved videos page (2026-10-13)
+- [x] "How it should look": reference clips next to a balance that lost points, in Practice (2026-10-14, decision 14)
+- [ ] Reference clip for back split foot above the head (2.1005). **Owner: team**
+- [x] Layout: one-row navbar with the Sports menu on the right, Practice / Judge switch on the cards, slim footer;
+      portrait videos fit the screen (2026-10-14)
 - [ ] Try the move videos with a real camera on a laptop and a phone. **Owner: team**
 - [ ] Demo script, pitch. **Owner: team**
 
@@ -58,7 +62,8 @@
 - Cloudflare Pages, project `rhymnast` (static export in `out/`). Deploys are manual: `npm run deploy` from an
   up-to-date `main` (needs `npx wrangler@4.151.0 login` once). Tests: `npm test`.
 - Sign-in: Firebase Authentication (email and password, Google, or guest for demos) in the browser. Google on the
-  live site needs `rhymnast.pages.dev` in Firebase → Authentication → Settings → Authorized domains. The public
+  live site works because `rhymnast.pages.dev` is in Firebase → Authentication → Settings → Authorized domains
+  (added 2026-10-15). A new web address (e.g. a custom domain) must be added there too. The public
   `NEXT_PUBLIC_FIREBASE_*` values are not committed (2026-10-13): copy `.env.example` to `.env`; the deploy
   builds them into the site from there.
 
