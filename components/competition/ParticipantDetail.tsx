@@ -32,7 +32,7 @@ export function ParticipantDetail({ cid, participant: p, judges }: { cid: string
               <b className="text-[15px]">{`${ROLE_NAMES[role]} (${role})`}</b>
               <b className="tabular-nums">{panel.score === null ? '–' : panel.score.toFixed(3)}</b>
             </div>
-            {mine.length === 0 && <p className={smallText}>No score.</p>}
+            {mine.length === 0 && <p className={smallText}>{r && r[role] === null ? 'No judge in this role: left out of the total.' : 'No score.'}</p>}
             {mine.map((s, i) => {
               const left = panel.dropped.includes(i);
               return (
@@ -64,7 +64,7 @@ export function ParticipantDetail({ cid, participant: p, judges }: { cid: string
       })}
       {r && (
         <p className="m-0 flex flex-wrap justify-between gap-2 border-t border-line pt-2 text-[15px]">
-          <span className="text-muted">{`${r.D.toFixed(3)} + ${r.A.toFixed(3)} + ${r.E.toFixed(3)} − ${r.penalties.toFixed(2)} penalties`}</span>
+          <span className="text-muted">{`${ROLES.flatMap((role) => { const v = r[role]; return v === null ? [] : [v.toFixed(3)]; }).join(' + ')} −${r.penalties.toFixed(2)} penalties`}</span>
           <b className="text-accent tabular-nums">{r.final.toFixed(3)}</b>
         </p>
       )}

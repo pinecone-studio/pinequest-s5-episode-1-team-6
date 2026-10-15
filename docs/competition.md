@@ -1,7 +1,7 @@
 # Competition mode
 
 A rhythmic gymnastics competition with **human judges on their phones** and the **AI camera as an
-assistant**. The organizer runs it from a laptop; at least 3 judges join by scanning a QR code; the
+assistant**. The organizer runs it from a laptop; one or more judges join by scanning a QR code; the
 judges' scores, not the AI's, make the result.
 
 ## Who does what
@@ -15,12 +15,12 @@ judges' scores, not the AI's, make the result.
 ## The flow
 
 1. **Lobby.** The organizer creates a competition and shows the QR code (one per competition, see
-   [Decisions](#decisions)). Each judge scans it with the phone camera, signs in and joins. The organizer's page gives every new judge a role at once (D, A, E, D, …: the role with the fewest judges) and the organizer can change it. The number of participants can be set before or after the judges join; they are "Participant 1, 2, …" until renamed. **Start competition** works once there are at least 3 judges, every role has one, and there is a participant.
+   [Decisions](#decisions)). Each judge scans it with the phone camera, signs in and joins. The organizer's page gives every new judge a role at once (D, A, E, D, …: the role with the fewest judges) and the organizer can change it. The number of participants can be set before or after the judges join; they are "Participant 1, 2, …" until renamed. **Start competition** works once there is at least one judge (any role) and a participant. A role nobody judges is left out of the total (see [How the result is made](#how-the-result-is-made)); the lobby names it.
 2. **Running.** The organizer turns the camera on (or picks a video for a demo) and presses **Start** for the next participant (or any participant on the list). The app asks first: "Start judging 2. Anu?". Then the AI judges the routine and the judges' phones show the participant, a timer and the AI's suggestions.
 3. **Finish performance.** The judges can now send their scores (once; it can't be changed after).
    The organizer sees who has sent ("2 of 3 sent"), the result so far, and enters penalties.
    **Save result** stores it and the leaderboard updates. If a judge drops out, **Save result now**
-   uses the scores that came in (every role needs at least one).
+   uses the scores that came in (every role with a judge needs at least one).
 4. **Finish competition.** The leaderboard shows the final ranking.
 
 ## The judges' score sheet
@@ -42,6 +42,9 @@ Code: `lib/competition/judgeSheet.ts`, `components/competition/ScoreSheet.tsx`.
 `lib/competition/panel.ts`:
 
 - **Final = D + A + E − penalties** (General #5.2, p. 12; the same formula as `lib/scoring.ts`).
+- **Roles without a judge** (user, 2026-10-15): a competition can run with one judge. A role nobody
+  judges is left out: with only a D judge, Final = D − penalties. Every participant of one competition
+  has the same panel, so the ranking stays fair; totals are not comparable with a full D + A + E panel.
 - **Several judges in one role:** with **4 or more**, the highest and the lowest score are left out
   and the rest averaged (as FIG does for its 4-judge A and E panels); with fewer, a plain average.
   This is a **team rule** for small panels: the repo has no Code of Points text on panel sizes.
@@ -102,4 +105,5 @@ plays it from the start. Judges can join from other browser windows (guest) or p
 ## Decisions
 
 From the user, 2026-10-15: one role per judge (D / A / E); one QR code per competition (one per judge
-later); the AI only suggests, the result is the judges'; Firestore in the existing Firebase project.
+later); the AI only suggests, the result is the judges'; Firestore in the existing Firebase project;
+no minimum of 3 judges: one judge is enough, roles without a judge are left out of the total.

@@ -116,6 +116,7 @@ Moved from the plain-JS `web/` app (Rhymnast repo) to this Next.js 16 + TypeScri
 - [x] Running: one participant at a time with the AI camera (or a video), confirm before starting,
       scoring progress, penalties, save result
 - [x] Spectators' leaderboard (totals only, full screen) and the organizer's breakdown per participant
+- [x] One judge is enough to start (no minimum of 3); roles without a judge are left out of the total
 - [ ] Try a full competition with 3 real phones on the live site (`npm run deploy` first). **Owner: team**
 - [ ] One-time QR code per judge. **Owner: Claude, when asked**
 - [ ] A real RG judge checks the score sheets and the panel rule. **Owner: team**

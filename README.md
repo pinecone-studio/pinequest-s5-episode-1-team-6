@@ -78,7 +78,7 @@ live site (HTTPS). Every page is static: `npm run build` writes the whole site t
 
 ## Competition mode
 
-**Competition** in the navbar runs a rhythmic gymnastics competition with at least 3 human judges on
+**Competition** in the navbar runs a rhythmic gymnastics competition with one or more human judges on
 their phones (details: [docs/competition.md](docs/competition.md)):
 
 1. The organizer creates a competition and shows the **QR code**. Each judge scans it with the phone

@@ -10,6 +10,10 @@
 // Several judges in one role: with 4 or more, the highest and the lowest score are dropped and
 // the rest averaged (as FIG does for its 4-judge A and E panels); with fewer, a plain average.
 // This is a TEAM rule for small panels: the repo has no CoP text on panel sizes (docs/competition.md).
+//
+// A competition can run with any number of judges, even one (user, 2026-10-15). A role nobody judges
+// is left out of the total: with only a D judge, Final = D - penalties. Every participant of one
+// competition has the same panel, so the ranking stays fair.
 
 import { A_MAX, E_MAX } from '../rules';
 
@@ -22,8 +26,8 @@ export const ROLE_NAMES: Record<Role, string> = {
   E: 'Execution',
 };
 
-/** The organizer can start once this many judges have joined (at least one per role). */
-export const MIN_JUDGES = 3;
+/** The organizer can start once this many judges have joined (any roles). */
+export const MIN_JUDGES = 1;
 
 /** Panels this big or bigger drop their highest and lowest score. */
 export const TRIM_FROM = 4;
@@ -51,26 +55,33 @@ export function panelScore(values: number[]): PanelScore {
 }
 
 export interface CompetitionResult {
-  D: number;
-  A: number;
-  E: number;
+  /** A role's panel score, or null when the role had no judge (left out of the final). */
+  D: number | null;
+  A: number | null;
+  E: number | null;
   penalties: number;
   final: number;
 }
 
 /**
  * The participant's result from the scores the judges sent, grouped by role.
- * null while a role has no score yet.
+ * `panel` lists the roles that have a judge: each of them needs a score before there is a result
+ * (null until then). A role outside the panel with no score is left out of the final.
  */
-export function combineScores(scores: Record<Role, number[]>, penalties = 0): CompetitionResult | null {
-  const D = panelScore(scores.D).score;
-  const A = panelScore(scores.A).score;
-  const E = panelScore(scores.E).score;
-  if (D === null || A === null || E === null) return null;
-  const a = clamp(A, 0, A_MAX);
-  const e = clamp(E, 0, E_MAX);
+export function combineScores(scores: Record<Role, number[]>, penalties = 0, panel: Role[] = ROLES): CompetitionResult | null {
+  const part = (r: Role) => panelScore(scores[r]).score;
+  const D = part('D');
+  const A = part('A');
+  const E = part('E');
+  const byRole = { D, A, E };
+  if (panel.some((r) => byRole[r] === null)) return null;
+  if (D === null && A === null && E === null) return null;
+  const d = D === null ? null : Math.max(0, D);
+  const a = A === null ? null : clamp(A, 0, A_MAX);
+  const e = E === null ? null : clamp(E, 0, E_MAX);
   const p = Math.max(0, penalties);
-  return { D: Math.max(0, D), A: a, E: e, penalties: round3(p), final: round3(Math.max(0, D + a + e - p)) };
+  const sum = (d ?? 0) + (a ?? 0) + (e ?? 0);
+  return { D: d, A: a, E: e, penalties: round3(p), final: round3(Math.max(0, sum - p)) };
 }
 
 /** Role for the next judge who joins: the role with the fewest judges (D, then A, then E on a tie). */
@@ -85,18 +96,16 @@ export interface StartCheck {
   reason: string | null;
 }
 
-/** Can the competition start? At least MIN_JUDGES judges, one in every role, and one participant. */
+/** Can the competition start? At least MIN_JUDGES judge (any role) and one participant. */
 export function canStart(roles: Role[], participants: number): StartCheck {
-  if (roles.length < MIN_JUDGES) {
-    const missing = MIN_JUDGES - roles.length;
-    return { ok: false, reason: `Waiting for ${missing} more judge${missing === 1 ? '' : 's'}.` };
-  }
-  const empty = ROLES.filter((r) => !roles.includes(r));
-  if (empty.length) {
-    return { ok: false, reason: `Give someone the ${empty.map((r) => ROLE_NAMES[r]).join(' and ')} role.` };
-  }
+  if (roles.length < MIN_JUDGES) return { ok: false, reason: 'Waiting for a judge to join.' };
   if (participants < 1) return { ok: false, reason: 'Add at least one participant.' };
   return { ok: true, reason: null };
+}
+
+/** Roles nobody judges: they are left out of every total. */
+export function rolesWithoutJudge(roles: Role[]): Role[] {
+  return ROLES.filter((r) => !roles.includes(r));
 }
 
 /** Name a participant gets until the organizer types a real one. */

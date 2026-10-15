@@ -342,8 +342,8 @@ function ScoringCard({ cid, participant: p, judges, run }: { cid: string; partic
   const sent = scores.value ?? [];
   const byRole = groupByRole(sent);
   const penaltyValue = Math.max(0, Number.parseFloat(penalties) || 0);
-  const result = combineScores(byRole, penaltyValue);
-  const withRole = judges.filter((j) => j.role !== null);
+  const withRole = judges.filter((j): j is Judge & { role: Role } => j.role !== null);
+  const result = combineScores(byRole, penaltyValue, withRole.map((j) => j.role));
   const allSent = withRole.length > 0 && withRole.every((j) => sent.some((s) => s.judgeUid === j.uid));
 
   return (
@@ -389,7 +389,7 @@ function ScoringCard({ cid, participant: p, judges, run }: { cid: string; partic
       </button>
       <p className={smallText}>
         {!result
-          ? 'Every role (D, A, E) needs at least one score before the result can be saved.'
+          ? 'Every role with a judge needs at least one score before the result can be saved.'
           : allSent ? 'All judges have sent their scores.' : 'Not every judge has sent yet. Wait, or save with the scores you have.'}
       </p>
     </section>

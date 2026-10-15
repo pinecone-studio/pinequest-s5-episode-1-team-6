@@ -46,7 +46,7 @@ export function CompetitionList() {
     <CompetitionShell
       crumb="Competition"
       title="Competition"
-      intro="Run a rhythmic gymnastics competition with at least 3 judges. Judges join with their phones by scanning a QR code; the AI camera helps them while each gymnast performs."
+      intro="Run a rhythmic gymnastics competition with one judge or more. Judges join with their phones by scanning a QR code; the AI camera helps them while each gymnast performs."
     >
       <form className={card} onSubmit={(e) => void create(e)}>
         <CardTitle>New competition</CardTitle>
