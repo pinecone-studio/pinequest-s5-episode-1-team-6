@@ -68,9 +68,13 @@ export interface JudgeScore {
 export interface LiveMove {
   id: number;
   name: string;
-  /** Difficulty value if it counts (0 when the shape was too far off). */
+  /** Difficulty value (0 when the shape was too far off to count). */
   dbValue: number;
+  /** Does it count as a difficulty (not a repeat, valid, within the highest 8)? */
+  counts: boolean;
   deductions: { text: string; value: number }[];
+  /** One plain sentence when something is worth a look ("Not counted again: …"), else null. */
+  note: string | null;
 }
 
 /** What the AI sees right now, sent to the judges' phones while someone performs. */

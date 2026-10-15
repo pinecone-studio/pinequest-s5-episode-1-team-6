@@ -5,10 +5,10 @@
 //   right: the participants (how many, names);
 //   top:   Start competition, once there are 3 judges, every role and a participant.
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getJoinKey, setJudgeRole, startCompetition, watchJudges, watchParticipants } from '@/lib/firebase/competition';
+import { useCallback, useEffect, useState } from 'react';
+import { getJoinKey, startCompetition, watchJudges, watchParticipants } from '@/lib/firebase/competition';
 import { competitionErrorText } from '@/lib/firebase/errors';
-import { canStart, MIN_JUDGES, roleForNewJudge, type Role } from '@/lib/competition/panel';
+import { canStart, MIN_JUDGES, type Role } from '@/lib/competition/panel';
 import { judgeLink } from '@/lib/competition/links';
 import type { Competition, Judge, Participant } from '@/lib/competition/types';
 import { bigButton, primaryButton, smallText } from '../ui';
@@ -16,6 +16,7 @@ import { card, CardTitle, CompetitionShell, StatusLine } from './CompetitionShel
 import { JoinQr } from './JoinQr';
 import { JudgesList } from './JudgesList';
 import { ParticipantsEditor } from './ParticipantsEditor';
+import { useGiveRoles } from './useGiveRoles';
 import { useWatch } from './useWatch';
 
 export function Lobby({ competition }: { competition: Competition }) {
@@ -102,20 +103,4 @@ function useJoinLink(cid: string): string | null {
     return () => { alive = false; };
   }, [cid]);
   return link;
-}
-
-/** A judge who just joined has no role yet: give them the role with the fewest judges (D, A, E, D, …). */
-function useGiveRoles(cid: string, judges: Judge[] | undefined): void {
-  const pending = useRef(new Set<string>());
-  useEffect(() => {
-    if (!judges) return;
-    const roles = judges.map((j) => j.role).filter((r): r is Role => r !== null);
-    for (const j of judges) {
-      if (j.role !== null || pending.current.has(j.uid)) continue;
-      const role = roleForNewJudge(roles);
-      roles.push(role);
-      pending.current.add(j.uid);
-      void setJudgeRole(cid, j.uid, role).finally(() => pending.current.delete(j.uid));
-    }
-  }, [cid, judges]);
 }
