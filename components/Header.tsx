@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Sport } from '@/lib/sport';
 import { AccountButton } from './auth/AccountButton';
 import { SportIcon } from './SportIcon';
@@ -14,7 +15,7 @@ interface HeaderProps {
 /**
  * One row under the sport's thin stripe:
  *   left:  the sport's icon and the name;
- *   right: the Sports menu, then small Sign in / Sign out, Settings and the dark mode switch (the switch
+ *   right: the Sports menu, then small Competition, Sign in / Sign out, Settings and the dark mode switch (the switch
  *          in the top right corner). The last three are quiet on purpose: not the page's main actions.
  * The Practice / Judge switch is not here: it sits on top of the cards it changes (ModeSwitch.tsx).
  * On phones the navbar buttons are icons only and, on the smallest screens, the name is just "R".
@@ -41,6 +42,16 @@ export function Header({ sport, judging, onSettings }: HeaderProps) {
           <span className="mr-1.5 flex max-sm:mr-0.5">
             <SportMenu sport={sport} disabled={judging} />
           </span>
+          <Link
+            href="/compete"
+            className={`${navButton} no-underline max-sm:px-2 ${judging ? 'pointer-events-none opacity-45' : ''}`}
+            aria-label="Competition"
+            aria-disabled={judging || undefined}
+            tabIndex={judging ? -1 : undefined}
+          >
+            <TrophyIcon />
+            <span className="max-sm:hidden">Competition</span>
+          </Link>
           <AccountButton />
           <button className={`${navButton} max-sm:px-2`} aria-controls="settings" aria-label="Settings" onClick={onSettings}>
             <GearIcon />
@@ -52,6 +63,16 @@ export function Header({ sport, judging, onSettings }: HeaderProps) {
         </div>
       </nav>
     </>
+  );
+}
+
+/** A small cup for the Competition link. */
+function TrophyIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z" />
+      <path d="M17 6h2.5a1.5 1.5 0 0 1 1.5 1.5v.5a4 4 0 0 1-4 4M7 6H4.5A1.5 1.5 0 0 0 3 7.5V8a4 4 0 0 0 4 4" />
+    </svg>
   );
 }
 

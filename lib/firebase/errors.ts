@@ -31,3 +31,17 @@ export function firebaseErrorCode(err: unknown): string {
   if (err && typeof err === 'object' && 'code' in err && typeof err.code === 'string') return err.code;
   return '';
 }
+
+/** Competition mode (Firestore) errors as a plain sentence. */
+export function competitionErrorText(err: unknown): string {
+  switch (firebaseErrorCode(err)) {
+    case 'permission-denied':
+      return 'You don\'t have access to this. Check that the link is right, or ask the organizer for a new QR code.';
+    case 'unavailable':
+      return 'No connection. Check the internet; the page catches up by itself when it is back.';
+    case 'not-found':
+      return 'This competition doesn\'t exist any more.';
+    default:
+      return 'Something went wrong. Try again.';
+  }
+}
