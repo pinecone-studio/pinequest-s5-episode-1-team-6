@@ -1,6 +1,6 @@
 import { test, assert, assertEqual } from './harness';
 import { readFirebaseConfig } from '../lib/firebase/config';
-import { authErrorText } from '../lib/firebase/errors';
+import { authErrorText, competitionErrorText } from '../lib/firebase/errors';
 import { toAccount } from '../lib/firebase/auth';
 
 const FULL = {
@@ -57,4 +57,10 @@ test('account shows the name, else the email, else Guest', () => {
   const guest = toAccount({ ...base, isAnonymous: true });
   assertEqual(guest.name, 'Guest');
   assertEqual(guest.isGuest, true);
+});
+
+test('competition errors use plain sentences', () => {
+  assert(competitionErrorText({ code: 'permission-denied' }).includes('ask the organizer for a new QR code'));
+  assert(competitionErrorText({ code: 'unavailable' }).startsWith('No connection'));
+  assertEqual(competitionErrorText(new Error('boom')), 'Something went wrong. Try again.');
 });
