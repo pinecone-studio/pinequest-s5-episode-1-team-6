@@ -65,8 +65,12 @@ The originals of the "How it should look" clips go in `data/reference/` (not com
 help, back split (body forward), attitude. The app uses trimmed, cropped and shrunk copies (0.4-0.6 MB
 each) in `public/reference/`, the only videos in git; they were made in the browser (MediaRecorder), and
 `lib/reference.ts` maps each element code to its clip. To replace one, judge the new clip in the app
-first (same element, no points lost), then make a small MP4 (about 720 px on the long side) with the
-same file name.
+first (same element, no points lost), trim it to the move, then open
+<http://localhost:3000/tools/reference-video> and save its result in `public/reference/` with the same
+file name. The tool draws the skeleton like on the gymnast's own move video, puts the clip in a 16:9
+frame (a portrait clip gets blurred sides) and can cut text off the top or bottom.
+Since 2026-10-16 all three clips are made this way (from the previous copies, as the originals were not
+at hand); the front split with help had "Difficulty: 0.3" burned in at the top: 19% cut off the top.
 
 ## Validation videos (new elements, 2026-10-13)
 Same rules as the photos: real people, never commit, share through the team's private drive.

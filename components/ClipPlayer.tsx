@@ -13,7 +13,7 @@ interface ClipPlayerProps {
   poster?: string;
   label: string; // what the video shows, for screen readers
   name: string; // the move, for the button labels
-  small?: boolean; // two clips side by side: each at most 420 px instead of 520 px
+  small?: boolean; // two clips side by side: both in the same 16:9 box, 420 px wide at most
 }
 
 export function ClipPlayer({ src, poster, label, name, small = false }: ClipPlayerProps) {
@@ -33,15 +33,17 @@ export function ClipPlayer({ src, poster, label, name, small = false }: ClipPlay
   const box = stretched
     ? 'fixed inset-0 z-50 rounded-none' // iPhone: cover the page
     : `relative w-fit max-w-full ${fullscreen ? '' : 'rounded-[10px]'}`;
-  // Keeps the clip's shape within 520 px wide (420 px side by side) and 60% of the screen high, so a
-  // portrait clip is narrower instead of taller than the screen. In full screen it fills the screen,
-  // letterboxed. No % in the width limit: the box around is as wide as the video (w-fit), and a %
-  // limit would be ignored when that width is worked out (the box came out wider than the video).
-  // On a phone, 112 px is the room the page, the card and the list take beside the video.
+  // Keeps the clip's shape within 520 px wide and 60% of the screen high, so a portrait clip is
+  // narrower instead of taller than the screen. Side by side (the gymnast's move next to "How it
+  // should look") both clips get the same 16:9 box, whatever their shape, so they are the same size.
+  // In full screen it fills the screen, letterboxed. No % in the width limit: the box around is as
+  // wide as the video (w-fit), and a % limit would be ignored when that width is worked out (the box
+  // came out wider than the video). On a phone, 112 px is the room the page, the card and the list
+  // take beside the video.
   const size = fullscreen
     ? 'absolute inset-0 h-full w-full object-contain'
     : small
-      ? 'block h-auto max-h-[min(60dvh,420px)] w-auto max-w-[min(420px,calc(100vw-112px))]'
+      ? 'block aspect-video h-auto w-[min(420px,calc(100vw-112px))] object-contain'
       : 'block h-auto max-h-[min(60dvh,520px)] w-auto max-w-[min(520px,calc(100vw-112px))]';
 
   return (

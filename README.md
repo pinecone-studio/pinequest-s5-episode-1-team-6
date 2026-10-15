@@ -239,6 +239,9 @@ show whether the rules agree with a judge, and their landmarks (no images) becom
 To see what the app recognizes in a recorded routine, frame by frame, open
 <http://localhost:3000/tools/video-analyze>.
 
+To make a "How it should look" clip (skeleton drawn on it, 16:9), open
+<http://localhost:3000/tools/reference-video> (see "Reference videos" in `data/README.md`).
+
 ## Adding an element
 
 1. Quote the rule and value from the Code of Points in `docs/rules.md` with the page number.
