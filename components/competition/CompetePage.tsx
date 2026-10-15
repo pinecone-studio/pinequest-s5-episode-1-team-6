@@ -15,6 +15,7 @@ import { useAuth } from '../auth/AuthProvider';
 import { CompetitionList } from './CompetitionList';
 import { CompetitionShell, StatusLine } from './CompetitionShell';
 import { Lobby } from './Lobby';
+import { Running } from './Running';
 import { useWatch } from './useWatch';
 
 export function CompetePage() {
@@ -54,9 +55,5 @@ function CompetitionDashboard({ cid }: { cid: string }) {
     );
   }
   if (competition.status === 'lobby') return <Lobby competition={competition} />;
-  return (
-    <CompetitionShell crumb="Competition" title={competition.name}>
-      <StatusLine>{competition.status === 'finished' ? 'This competition has finished.' : 'The competition is running.'}</StatusLine>
-    </CompetitionShell>
-  );
+  return <Running competition={competition} />;
 }
