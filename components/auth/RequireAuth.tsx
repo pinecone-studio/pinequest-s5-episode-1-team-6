@@ -16,7 +16,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (state.status === 'signed-out') router.replace(loginPath(pathname));
+    // Keep the query too: a judge's QR link (/judge?c=…&k=…) must survive the sign-in.
+    if (state.status === 'signed-out') router.replace(loginPath(pathname + window.location.search));
   }, [state.status, pathname, router]);
 
   if (state.status === 'setup-needed') return <SetupNeeded missing={state.missing} />;
