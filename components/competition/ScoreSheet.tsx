@@ -2,8 +2,9 @@
 
 // A judge's score sheet on their phone while a participant performs and right after. No video.
 //   top:     who, the timer, and the judge's score in big numbers ("Execution 9.40")
-//   buttons: the AI's score first (D and E: one tap puts all its suggestions on the sheet, another
-//            tap takes them off), then big quick buttons (-0.10 / -0.30 / -0.50 for E; +0.10 … +0.50 for D)
+//   buttons: one row of big buttons: the AI's score first (D and E: one tap puts all its suggestions on
+//            the sheet, another tap takes them off), then the quick buttons (-0.10 / -0.30 / -0.50 for E;
+//            +0.10 … +0.50 for D)
 //   AI:      the AI's suggestions arrive live; one tap adds one to the sheet, another tap takes it off
 //   sheet:   every line, with ✕ and Undo
 //   send:    once the performance is over ("Send score 9.40", asked once more: it can't be changed)
@@ -94,15 +95,16 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
       </section>
 
       <section aria-label={ADDS[role] ? 'Add a difficulty' : 'Add a deduction'} className="grid gap-2">
-        {role !== 'A' && (
-          <AiScoreButton role={role} suggestions={suggestions} items={items} onTap={() => setItems(toggleAllSuggestions(items, suggestions))} />
-        )}
-        <div className={`grid gap-2 ${QUICK_VALUES[role].length > 3 ? 'grid-cols-3 sm:grid-cols-5' : 'grid-cols-3'}`}>
+        {/* E (AI + 3) and A (4): one row of 4. D (AI + 5): 3 × 2 on a phone, one row of 6 from 640 px. */}
+        <div className={`grid gap-2 ${QUICK_VALUES[role].length + (role === 'A' ? 0 : 1) === 4 ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-6'}`}>
+          {role !== 'A' && (
+            <AiScoreButton role={role} suggestions={suggestions} items={items} onTap={() => setItems(toggleAllSuggestions(items, suggestions))} />
+          )}
           {QUICK_VALUES[role].map((v) => (
             <button
               key={v}
               type="button"
-              className="min-h-16 cursor-pointer rounded-card border-[1.5px] border-line bg-card text-[22px] font-bold text-ink tabular-nums transition-transform duration-100 active:scale-95 not-disabled:hover:border-accent motion-reduce:transition-none"
+              className={`${quickButton} border-[1.5px] border-line bg-card not-disabled:hover:border-accent`}
               onClick={() => add(v)}
             >
               {signed(role, v)}
@@ -158,42 +160,40 @@ interface AiScoreProps {
   onTap: () => void;
 }
 
+/** A big button in the row under the score: the AI's score and the quick buttons share its size. */
+const quickButton =
+  'min-h-16 cursor-pointer rounded-card text-[22px] font-bold text-ink tabular-nums transition-transform duration-100 not-disabled:active:scale-95 max-xs:text-lg motion-reduce:transition-none';
+
 /**
- * The AI's score, before the quick buttons: what the sheet would say with all of the AI's
- * suggestions. One tap puts them all on the sheet (the judge's own lines stay), another takes them off.
- * Gradient border (.ai-border in globals.css): this one is the AI's, the buttons below are the judge's.
+ * The AI's score, first in the row of quick buttons and the same size: what the sheet would say with
+ * all of the AI's suggestions. One tap puts them all on the sheet (the judge's own lines stay), another
+ * takes them off. Gradient border (.ai-border in globals.css): this one is the AI's, the others the judge's.
  */
 function AiScoreButton({ role, suggestions, items, onTap }: AiScoreProps) {
   const score = aiScore(role, suggestions);
   const toAdd = suggestions.filter((s) => s.addable).length;
   const added = allSuggestionsAdded(items, suggestions);
-  const hint = score === null
-    ? 'Shows after the first move.'
+  const what = score === null
+    ? "AI's score: shows after the first move"
     : toAdd === 0
-      ? (role === 'D' ? 'No difficulty to add yet.' : 'No points lost so far.')
+      ? `AI's score ${score.toFixed(2)}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`
       : added
-        ? 'All on your sheet. Tap to take them off.'
-        : `Tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet.`;
+        ? `AI's score ${score.toFixed(2)}: all its suggestions are on your sheet. Tap to take them off`
+        : `AI's score ${score.toFixed(2)}: tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
   return (
     <button
       type="button"
       aria-pressed={added}
+      aria-label={what}
+      title={what}
       disabled={toAdd === 0}
       onClick={onTap}
-      className="ai-border flex min-h-16 w-full cursor-pointer items-center gap-3 rounded-card border-2 px-4 py-2 text-left text-ink transition-transform duration-100 not-disabled:active:scale-[0.98] disabled:cursor-default motion-reduce:transition-none"
+      className={`${quickButton} ai-border grid content-center justify-items-center gap-0.5 border-2 px-1 disabled:cursor-default`}
     >
-      <span className="grid min-w-0 flex-1">
-        <b className="text-[15px]"><span className="ai-text" aria-hidden="true">✦ </span>AI&apos;s score</b>
-        <span className="text-sm text-muted">{hint}</span>
+      <span className="text-xs leading-none font-bold" aria-hidden="true">
+        <span className="ai-text">✦</span> AI{added ? ' ✓' : ''}
       </span>
-      <b className={`flex-none font-display text-[28px] leading-none tabular-nums ${score === null ? 'text-muted' : ''}`}>
-        {score === null ? '–' : score.toFixed(2)}
-      </b>
-      {toAdd > 0 && (
-        <span className={`flex-none rounded-full px-2.5 py-1 text-sm font-bold ${added ? 'bg-good text-on-fill' : 'bg-accent-soft text-accent'}`}>
-          {added ? 'Added ✓' : 'Use'}
-        </span>
-      )}
+      <span className={`leading-none ${score === null ? 'text-muted' : ''}`} aria-hidden="true">{score === null ? '–' : score.toFixed(2)}</span>
     </button>
   );
 }
