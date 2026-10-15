@@ -1,7 +1,8 @@
 // Competition mode: one judge's score sheet for one participant (no React, no Firebase).
 //   D judge: adds the difficulties they count (D = the sum).
 //   A / E judge: adds deductions (score = 10 - the deductions).
-// Each line comes from a quick button (+0.30, -0.10, …) or, with one tap, from the AI's suggestion.
+// Each line comes from a quick button (+0.30, -0.10, …) or, with one tap, from the AI's suggestion
+// (or all of them at once, with the AI's score button).
 // The AI never decides: a suggestion only counts once the judge taps it.
 
 import { A_MAX, E_MAX } from '../rules';
@@ -79,7 +80,38 @@ export function toggleSuggestion(items: SheetItem[], s: Suggestion): SheetItem[]
   if (!s.addable) return items;
   return items.some((i) => i.id === s.key)
     ? items.filter((i) => i.id !== s.key)
-    : [...items, { id: s.key, label: s.label, value: s.value, fromAi: true }];
+    : [...items, asItem(s)];
+}
+
+function asItem(s: Suggestion): SheetItem {
+  return { id: s.key, label: s.label, value: s.value, fromAi: true };
+}
+
+/**
+ * The AI's score: what this sheet would say with every AI suggestion on it and nothing else
+ * (D: the difficulties it counted; E: 10 minus the deductions it measured).
+ * null until the AI has judged a move.
+ */
+export function aiScore(role: Role, suggestions: Suggestion[]): number | null {
+  if (suggestions.length === 0) return null;
+  return sheetScore(role, suggestions.filter((s) => s.addable).map(asItem));
+}
+
+/** Is every AI suggestion that can be added on the sheet? false when there is none to add. */
+export function allSuggestionsAdded(items: SheetItem[], suggestions: Suggestion[]): boolean {
+  const addable = suggestions.filter((s) => s.addable);
+  return addable.length > 0 && addable.every((s) => items.some((i) => i.id === s.key));
+}
+
+/**
+ * Tap on the AI's score: puts every AI suggestion on the sheet (oldest first, after the judge's
+ * lines), or takes them all back off when they are all on it. The judge's own lines always stay.
+ */
+export function toggleAllSuggestions(items: SheetItem[], suggestions: Suggestion[]): SheetItem[] {
+  const addable = suggestions.filter((s) => s.addable);
+  if (allSuggestionsAdded(items, suggestions)) return items.filter((i) => !addable.some((s) => s.key === i.id));
+  const missing = addable.filter((s) => !items.some((i) => i.id === s.key)).reverse(); // suggestions are newest first
+  return [...items, ...missing.map(asItem)];
 }
 
 /** A quick button: one more line with this value (ids q1, q2, …: unique on the sheet). */

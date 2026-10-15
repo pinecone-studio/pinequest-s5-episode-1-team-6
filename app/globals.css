@@ -212,6 +212,24 @@
   background: var(--sport-stripe);
 }
 
+/* What the AI suggests (the AI's score button on a judge's sheet): a gradient border from the
+   sport's accent to its second color, with a soft glow. Follows the sport and dark mode. Set the
+   border width with a border-[..] class; the border color must stay transparent. */
+.ai-border {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--color-bg), var(--color-bg)) padding-box,
+    linear-gradient(120deg, var(--color-accent), var(--color-spark)) border-box;
+  box-shadow: 0 2px 14px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+/* Text in the same gradient (the ✦ AI mark). */
+.ai-text {
+  background: linear-gradient(120deg, var(--color-accent), var(--color-spark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-ink);

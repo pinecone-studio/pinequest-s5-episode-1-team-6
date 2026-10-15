@@ -185,7 +185,8 @@ Show warnings in the UI and skip low-visibility frames.
    judge is planned) and score on their phones (`/judge?c=…&k=…`, no video); spectators get a live
    leaderboard with totals only (`/compete/board?c=…`); the organizer sees every judge's score and sheet.
    Each judge has **one role: D, A or E** (FIG-style panels). **The AI only suggests** (live, one tap adds a
-   suggestion to the judge's sheet); the result is the judges' scores: Final = D + A + E − penalties,
+   suggestion to the judge's sheet; the **AI's score** button before the quick buttons, with a gradient
+   border, adds all of them at once, user 2026-10-16); the result is the judges' scores: Final = D + A + E − penalties,
    several judges per role averaged, with 4+ the highest and lowest left out (a team rule; no CoP text
    on panel sizes in the repo). **One judge is enough** (user, 2026-10-15; was at least 3): a role nobody
    judges is left out of the total (only a D judge: Final = D − penalties). Realtime data: **Firestore** in the same Firebase project, client SDK
