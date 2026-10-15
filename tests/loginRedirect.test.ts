@@ -6,6 +6,12 @@ test('sign-in page returns to the page you came from', () => {
   assertEqual(loginPath('/tools/validate'), '/login?next=%2Ftools%2Fvalidate');
 });
 
+test('a link with a query (a judge\'s QR code) keeps its query through the sign-in', () => {
+  const link = '/judge?c=abc123&k=XyZ_9';
+  assertEqual(loginPath(link), '/login?next=%2Fjudge%3Fc%3Dabc123%26k%3DXyZ_9');
+  assertEqual(safeNextPath(link), link);
+});
+
 test('next path stays on this site', () => {
   assertEqual(safeNextPath('/tools/validate'), '/tools/validate');
   assertEqual(safeNextPath(null), '/');

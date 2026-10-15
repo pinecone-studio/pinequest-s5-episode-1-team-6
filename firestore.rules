@@ -1,0 +1,85 @@
+// Firestore security rules for competition mode (docs/competition.md).
+// The Firebase project owner pastes this file into Firebase console -> Firestore Database -> Rules
+// and presses Publish. Nothing else in the app uses Firestore.
+//
+//   competitions/{cid}                       the organizer's competition (ownerUid)
+//     private/join                           the join key in the QR code: only the organizer reads it
+//     judges/{uid}                           one per judge; created by the judge with the right key
+//     participants/{pid}                     names, status and results: organizer only
+//       scores/{judgeUid}                    one judge's score; each judge sees only their own
+//     live/current                           the AI's suggestions while someone performs
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function competition(cid) {
+      return get(/databases/$(database)/documents/competitions/$(cid)).data;
+    }
+    function isOwner(cid) {
+      return signedIn() && competition(cid).ownerUid == request.auth.uid;
+    }
+    function judgeDoc(cid) {
+      return /databases/$(database)/documents/competitions/$(cid)/judges/$(request.auth.uid);
+    }
+    function isJudge(cid) {
+      return signedIn() && exists(judgeDoc(cid));
+    }
+
+    match /competitions/{cid} {
+      // "My competitions" list: only your own.
+      allow list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow get: if signedIn() && (resource.data.ownerUid == request.auth.uid || isJudge(cid));
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      match /private/{doc} {
+        allow read, write: if isOwner(cid);
+      }
+
+      match /judges/{uid} {
+        allow read: if isOwner(cid) || (signedIn() && request.auth.uid == uid);
+        // Join: only yourself, only with the key from the QR code, without a role (the organizer gives it).
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['name', 'joinKey', 'joinedAt', 'role'])
+          && request.resource.data.role == null
+          && request.resource.data.name is string && request.resource.data.name.size() <= 60
+          && request.resource.data.joinKey
+            == get(/databases/$(database)/documents/competitions/$(cid)/private/join).data.key;
+        // The organizer sets the role; a judge may only change their own name.
+        allow update: if isOwner(cid)
+          || (signedIn() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+            && request.resource.data.name is string && request.resource.data.name.size() <= 60);
+        allow delete: if isOwner(cid) || (signedIn() && request.auth.uid == uid);
+      }
+
+      match /participants/{pid} {
+        allow read, write: if isOwner(cid);
+
+        match /scores/{judgeUid} {
+          allow read: if isOwner(cid) || (signedIn() && request.auth.uid == judgeUid);
+          // A judge sends once, for the participant being scored right now, in their own role.
+          allow create: if signedIn() && request.auth.uid == judgeUid && isJudge(cid)
+            && competition(cid).phase == 'scoring'
+            && competition(cid).current.pid == pid
+            && request.resource.data.role == get(judgeDoc(cid)).data.role
+            && request.resource.data.value is number
+            && request.resource.data.value >= 0 && request.resource.data.value <= 30;
+          allow update, delete: if isOwner(cid);
+        }
+      }
+
+      match /live/{doc} {
+        allow read: if isOwner(cid) || isJudge(cid);
+        allow write: if isOwner(cid);
+      }
+    }
+  }
+}
