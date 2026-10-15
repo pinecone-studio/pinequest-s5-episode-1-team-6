@@ -16,7 +16,7 @@ judges' scores, not the AI's, make the result.
 
 1. **Lobby.** The organizer creates a competition and shows the QR code (one per competition, see
    [Decisions](#decisions)). Each judge scans it with the phone camera, signs in and joins. The organizer's page gives every new judge a role at once (D, A, E, D, …: the role with the fewest judges) and the organizer can change it. The number of participants can be set before or after the judges join; they are "Participant 1, 2, …" until renamed. **Start competition** works once there is at least one judge (any role) and a participant. A role nobody judges is left out of the total (see [How the result is made](#how-the-result-is-made)); the lobby names it.
-2. **Running.** The organizer turns the camera on (or picks a video for a demo) and presses **Start** for the next participant (or any participant on the list). The app asks first: "Start judging 2. Anu?". Then the AI judges the routine and the judges' phones show the participant, a timer and the AI's suggestions.
+2. **Running.** The organizer turns the camera on (camera only: no video file, user 2026-10-16) and presses **Start** for the next participant (or any participant on the list). The app asks first: "Start judging 2. Anu?". Then the AI judges the routine and the judges' phones show the participant, a timer and the AI's suggestions.
 3. **Finish performance.** The judges can now send their scores (once; it can't be changed after).
    The organizer sees who has sent ("2 of 3 sent"), the result so far, and enters penalties.
    **Save result** stores it and the leaderboard updates. If a judge drops out, **Save result now**
@@ -97,10 +97,10 @@ Done for `rhymnast-35f9e` on 2026-10-15. For another project:
    Do this again whenever `firestore.rules` changes.
 3. Authentication must allow **Anonymous** (for "Try without an account") as for the rest of the app.
 
-## Demo without a gymnast
+## Demo
 
-Pick **or use a video** on the organizer's page (e.g. `public/reference/attitude.mp4`); each participant
-plays it from the start. Judges can join from other browser windows (guest) or phones on the live site.
+The organizer's page takes the camera only (the video file button was removed, user 2026-10-16): a
+teammate performs in front of it. Judges can join from other browser windows (guest) or phones on the live site.
 
 ## Known limits
 

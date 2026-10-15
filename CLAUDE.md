@@ -183,7 +183,7 @@ Show warnings in the UI and skip low-visibility frames.
 15. **Competition mode (user, 2026-10-15):** an organizer (`/compete`) runs a rhythmic gymnastics
    competition; one or more judges join by scanning **one QR code per competition** (a one-time code per
    judge is planned) and score on their phones (`/judge?c=…&k=…`, no video); spectators get a live
-   leaderboard with totals only (`/compete/board?c=…`); the organizer sees every judge's score and sheet.
+   leaderboard with totals only (the organizer's page uses the camera only, no video file; user 2026-10-16) (`/compete/board?c=…`); the organizer sees every judge's score and sheet.
    Each judge has **one role: D, A or E** (FIG-style panels). **The AI only suggests** (live, one tap adds a
    suggestion to the judge's sheet; the **AI's suggestion** button, first in the row of quick buttons, the same
    size and shown the same way (E −0.40, D +0.50), with a gradient border, adds all of them at once, user 2026-10-16); the result is the judges' scores: Final = D + A + E − penalties,

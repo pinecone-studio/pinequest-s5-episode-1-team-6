@@ -5,9 +5,9 @@
 //               show the participant and the AI's suggestions
 //   performing  Finish performance -> the judges can send their scores
 //   scoring     who has sent (live), the result so far, penalties -> Save result -> next participant
-// The camera stays on between participants. A video can replace the camera (for a demo).
+// The camera stays on between participants. Camera only: no video file (user, 2026-10-16).
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   endPerformance, finalizeParticipant, finishCompetition, publishLive, setPenalties, startParticipant,
   watchJudges, watchParticipants, watchScores,
@@ -139,7 +139,6 @@ export function Running({ competition }: { competition: Competition }) {
             next={next}
             cameraReady={cameraReady}
             aiRunning={state.judging}
-            aiFinished={state.finished}
             startedAt={startedAt}
             onAsk={setAsking}
             onFinishPerformance={finishPerformance}
@@ -219,58 +218,24 @@ function usePublishLive(cid: string, session: JudgingSession, pid: string | null
   return { startedAt: pid ? startedAt : null, error: pid ? error : null };
 }
 
-/** Camera / video buttons under the video. */
+/** Camera buttons under the video. */
 function CameraControls({ session, state, performing }: { session: JudgingSession; state: SessionState; performing: boolean }) {
-  const link = 'cursor-pointer border-0 bg-transparent p-0 font-semibold text-accent underline underline-offset-[3px] disabled:cursor-default disabled:opacity-45';
   if (!state.source) {
     return (
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-        <button className={`${primaryButton} ${bigButton} max-sm:w-full`} disabled={state.busy} onClick={() => session.onMainButton()}>
+      <div className="grid gap-3">
+        <button className={`${primaryButton} ${bigButton} w-fit max-sm:w-full`} disabled={state.busy} onClick={() => session.onMainButton()}>
           {state.busy ? 'Please wait…' : 'Turn on camera'}
         </button>
-        <VideoPicker className={link} disabled={state.busy} onFile={(f) => void session.loadFile(f, { start: false })}>
-          or use a video
-        </VideoPicker>
-        <p className={`${smallText} basis-full`}>Turn the camera on before the first participant. It stays on between participants.</p>
+        <p className={smallText}>Turn the camera on before the first participant. It stays on between participants.</p>
       </div>
     );
   }
   if (performing) return <p className={smallText}>The AI judges this performance. Its suggestions appear on the judges&apos; phones.</p>;
+  if (state.cameraCount < 2) return null;
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-      {state.source === 'file' ? (
-        <>
-          <button type="button" className={link} disabled={state.busy} onClick={() => void session.useCamera()}>Use the camera</button>
-          <VideoPicker className={link} disabled={state.busy} onFile={(f) => void session.loadFile(f, { start: false })}>Use another video</VideoPicker>
-        </>
-      ) : (
-        <>
-          {state.cameraCount > 1 && (
-            <button type="button" className={ghostButton} disabled={state.busy} onClick={() => void session.switchCamera()}>Switch camera</button>
-          )}
-          <VideoPicker className={link} disabled={state.busy} onFile={(f) => void session.loadFile(f, { start: false })}>Use a video instead</VideoPicker>
-        </>
-      )}
+      <button type="button" className={ghostButton} disabled={state.busy} onClick={() => void session.switchCamera()}>Switch camera</button>
     </div>
-  );
-}
-
-function VideoPicker({ className, disabled, onFile, children }: { className: string; disabled: boolean; onFile: (f: File) => void; children: ReactNode }) {
-  return (
-    <label className={className} aria-disabled={disabled || undefined}>
-      {children}
-      <input
-        type="file"
-        accept="video/*"
-        className="sr-only"
-        disabled={disabled}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          e.target.value = '';
-          if (file) onFile(file);
-        }}
-      />
-    </label>
   );
 }
 
@@ -281,8 +246,6 @@ interface NowCardProps {
   next: Participant | null;
   cameraReady: boolean;
   aiRunning: boolean;
-  /** The AI's routine ended by itself (the video reached its end). */
-  aiFinished: boolean;
   startedAt: number | null;
   onAsk: (p: Participant) => void;
   onFinishPerformance: () => void;
@@ -291,14 +254,13 @@ interface NowCardProps {
 }
 
 /** What happens now: who is next, who is performing, or who is being scored. */
-function NowCard({ competition: c, participants, judges, next, cameraReady, aiRunning, aiFinished, startedAt, onAsk, onFinishPerformance, onRestartAi, run }: NowCardProps) {
+function NowCard({ competition: c, participants, judges, next, cameraReady, aiRunning, startedAt, onAsk, onFinishPerformance, onRestartAi, run }: NowCardProps) {
   if (c.phase === 'performing' && c.current) {
     return (
       <section className={`${card} border-l-[6px] border-l-bad`} aria-live="polite">
         <CardTitle aside={startedAt ? <Timer since={startedAt} /> : null}>Now performing</CardTitle>
         <p className="m-0 font-display text-[30px] leading-tight">{`${c.current.order}. ${c.current.name}`}</p>
-        {!aiRunning && aiFinished && <p className={smallText}>The video has ended. Press Finish performance.</p>}
-        {!aiRunning && !aiFinished && (
+        {!aiRunning && (
           <p className="m-0 text-[15px] text-warn">
             The AI is not judging (the page was reloaded?).{' '}
             <button type="button" className="cursor-pointer border-0 bg-transparent p-0 font-semibold text-accent underline" onClick={onRestartAi}>Start the AI again</button>
@@ -324,7 +286,7 @@ function NowCard({ competition: c, participants, judges, next, cameraReady, aiRu
           <button className={`${primaryButton} ${bigButton} w-full`} disabled={!cameraReady} onClick={() => onAsk(next)}>
             {`Start ${next.name}`}
           </button>
-          {!cameraReady && <p className={smallText}>Turn on the camera (or choose a video) first.</p>}
+          {!cameraReady && <p className={smallText}>Turn on the camera first.</p>}
         </>
       ) : (
         <p className="m-0">Everyone has performed. Finish the competition when you are ready.</p>
