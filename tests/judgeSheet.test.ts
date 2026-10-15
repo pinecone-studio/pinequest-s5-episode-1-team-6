@@ -1,0 +1,82 @@
+import { test, assert, assertEqual } from './harness';
+import {
+  addQuick, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleSuggestion, undo, type SheetItem,
+} from '../lib/competition/judgeSheet';
+import type { LiveState } from '../lib/competition/types';
+
+const live: LiveState = {
+  pid: 'p001',
+  startedAt: 0,
+  updatedAt: 0,
+  now: null,
+  moves: [
+    { id: 1, name: 'Attitude', dbValue: 0.2, counts: true, deductions: [{ text: 'The raised thigh was 14° below hip height.', value: 0.3 }], note: null },
+    { id: 2, name: 'Front split, holding the leg', dbValue: 0.3, counts: true, deductions: [], note: null },
+    { id: 3, name: 'Attitude', dbValue: 0.2, counts: false, deductions: [{ text: 'Held for 0.8 seconds.', value: 0.3 }], note: 'Not counted again: this move was already done earlier.' },
+  ],
+};
+
+test('D judge: the AI suggests every difficulty that counts, newest first', () => {
+  const s = suggestionsFor('D', live);
+  assertEqual(s.map((x) => `${x.label} ${x.value}`).join(' | '), 'Front split, holding the leg 0.3 | Attitude 0.2');
+});
+
+test('E judge: the AI suggests every deduction it measured, also on a repeated move', () => {
+  const s = suggestionsFor('E', live);
+  assertEqual(s.length, 2);
+  assertEqual(s[0].detail, 'Held for 0.8 seconds.');
+  assertEqual(s[1].value, 0.3);
+});
+
+test('A judge: no AI suggestions (the AI does not judge artistry)', () => {
+  assertEqual(suggestionsFor('A', live).length, 0);
+  assertEqual(suggestionsFor('E', null).length, 0);
+});
+
+test('D adds up; A and E are 10 minus the deductions', () => {
+  const items: SheetItem[] = [
+    { id: '1', label: 'x', value: 0.3, fromAi: false },
+    { id: '2', label: 'x', value: 0.1, fromAi: false },
+    { id: '3', label: 'x', value: 0.2, fromAi: false },
+  ];
+  assertEqual(sheetScore('D', items), 0.6);
+  assertEqual(sheetScore('E', items), 9.4);
+  assertEqual(sheetScore('A', items), 9.4);
+  assertEqual(sheetTotal(items), 0.6);
+  assertEqual(sheetScore('E', []), 10);
+});
+
+test('a score never goes below 0', () => {
+  const many = Array.from({ length: 30 }, (_, i): SheetItem => ({ id: String(i), label: 'x', value: 0.5, fromAi: false }));
+  assertEqual(sheetScore('E', many), 0);
+});
+
+test('tapping a suggestion adds it; tapping again takes it off', () => {
+  const s = suggestionsFor('E', live)[1];
+  let items = toggleSuggestion([], s);
+  assertEqual(items.length, 1);
+  assert(items[0].fromAi);
+  items = toggleSuggestion(items, s);
+  assertEqual(items.length, 0);
+});
+
+test('quick buttons, remove and undo', () => {
+  let items = addQuick([], 'E', 0.1);
+  items = addQuick(items, 'E', 0.5);
+  assertEqual(items[0].label, 'Deduction');
+  assertEqual(addQuick([], 'D', 0.3).at(0)?.label, 'Difficulty');
+  assertEqual(undo(items).map((i) => i.id).join(), 'q1');
+  assertEqual(removeItem(items, 'q1').map((i) => i.id).join(), 'q2');
+});
+
+test('quick lines get ids that are unique on the sheet, also after a removal', () => {
+  let items = addQuick(addQuick([], 'E', 0.1), 'E', 0.3); // q1, q2
+  items = removeItem(items, 'q1');
+  items = addQuick(items, 'E', 0.5);
+  assertEqual(items.map((i) => i.id).join(), 'q2,q3');
+});
+
+test('values show their direction', () => {
+  assertEqual(signed('D', 0.3), '+0.30');
+  assertEqual(signed('E', 0.1), '−0.10');
+});

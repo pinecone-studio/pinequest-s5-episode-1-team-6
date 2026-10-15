@@ -4,7 +4,7 @@
 // Made for a phone; no video here, only what a judge needs.
 //   1. Join: your name (the account's name is filled in) -> Join as a judge.
 //   2. Wait: your role, and what happens next ("Waiting for the organizer to start…").
-//   3. Score: while a participant performs and right after (ScoreSheet, step 6).
+//   3. Score: while a participant performs and right after (ScoreSheet).
 
 import { useCallback, useState, type FormEvent, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -15,6 +15,7 @@ import type { Competition, Judge } from '@/lib/competition/types';
 import { useAuth } from '../auth/AuthProvider';
 import { bigButton, input, primaryButton, smallText } from '../ui';
 import { card, CompetitionShell, StatusLine } from './CompetitionShell';
+import { ScoreSheet } from './ScoreSheet';
 import { useWatch } from './useWatch';
 
 export function JudgePage() {
@@ -103,6 +104,14 @@ function Joined({ cid, me }: { cid: string; me: Judge }) {
   if (c === undefined) return <JudgeShell><StatusLine>Loading…</StatusLine></JudgeShell>;
   if (c === null) return <JudgeShell><StatusLine error>This competition doesn&apos;t exist any more.</StatusLine></JudgeShell>;
 
+  const onFloor = c.status === 'running' && c.current !== null && c.phase !== 'idle';
+  if (onFloor && me.role) {
+    return (
+      <JudgeShell title={c.name}>
+        <ScoreSheet key={c.current!.pid} competition={c} role={me.role} />
+      </JudgeShell>
+    );
+  }
   return (
     <JudgeShell title={c.name}>
       <RoleCard name={me.name} role={me.role} />
