@@ -112,7 +112,7 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
         </div>
       </section>
 
-      <AiSuggestions role={role} live={liveHere} suggestions={suggestions} items={items} onToggle={(s) => setItems(toggleSuggestion(items, s))} />
+      <AiSuggestions role={role} live={liveHere} error={live.error} suggestions={suggestions} items={items} onToggle={(s) => setItems(toggleSuggestion(items, s))} />
 
       {items.length > 0 && (
         <section className={card} aria-labelledby="sheet-title">
@@ -150,13 +150,15 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
 interface AiProps {
   role: Role;
   live: LiveState | null;
+  /** The AI's suggestions could not be loaded (e.g. no access). */
+  error: Error | null;
   suggestions: ReturnType<typeof suggestionsFor>;
   items: SheetItem[];
   onToggle: (s: ReturnType<typeof suggestionsFor>[number]) => void;
 }
 
 /** The AI assistant: what it sees now, and its suggestions (one tap = on your sheet). */
-function AiSuggestions({ role, live, suggestions, items, onToggle }: AiProps) {
+function AiSuggestions({ role, live, error, suggestions, items, onToggle }: AiProps) {
   return (
     <section className={card} aria-labelledby="ai-title">
       <div className="flex items-baseline justify-between gap-3">
@@ -167,6 +169,9 @@ function AiSuggestions({ role, live, suggestions, items, onToggle }: AiProps) {
         <p className={smallText}>The AI doesn&apos;t judge artistry. Use the buttons above as you watch.</p>
       ) : (
         <>
+          {error && (
+            <p className="m-0 text-sm text-bad" role="alert">{`The AI's suggestions can't be loaded. ${competitionErrorText(error)}`}</p>
+          )}
           <p className="m-0 rounded-xl bg-bg px-3.5 py-2.5 text-[15px]" aria-live="polite">
             {live?.now ? <><b>{live.now.pose}</b>{` · ${live.now.text}`}</> : <span className="text-muted">Watching…</span>}
           </p>
@@ -177,6 +182,17 @@ function AiSuggestions({ role, live, suggestions, items, onToggle }: AiProps) {
           ) : (
             <ol className="m-0 grid list-none gap-2 p-0">
               {suggestions.map((s) => {
+                if (!s.addable) {
+                  // Judged, but nothing to add for this role: information only.
+                  return (
+                    <li key={s.key} className="animate-card-in rounded-xl border-[1.5px] border-dashed border-line px-3.5 py-3 motion-reduce:animate-none">
+                      <span className="grid min-w-0">
+                        <b className="truncate text-muted">{s.label}</b>
+                        {s.detail && <span className="text-sm text-muted">{s.detail}</span>}
+                      </span>
+                    </li>
+                  );
+                }
                 const added = items.some((i) => i.id === s.key);
                 return (
                   <li key={s.key} className="animate-card-in motion-reduce:animate-none">

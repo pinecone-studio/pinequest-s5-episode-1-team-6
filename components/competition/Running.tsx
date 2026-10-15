@@ -54,7 +54,7 @@ export function Running({ competition }: { competition: Competition }) {
 
   const current = competition.current;
   const performing = competition.phase === 'performing' && current !== null;
-  const startedAt = usePublishLive(cid, session, performing ? current.pid : null);
+  const { startedAt, error: liveError } = usePublishLive(cid, session, performing ? current.pid : null);
 
   const [asking, setAsking] = useState<Participant | null>(null);
   const [finishing, setFinishing] = useState(false);
@@ -110,6 +110,9 @@ export function Running({ competition }: { competition: Competition }) {
     >
       {(error || judges.error || participants.error) && (
         <StatusLine error>{error ?? competitionErrorText(judges.error ?? participants.error)}</StatusLine>
+      )}
+      {liveError !== null && (
+        <StatusLine error>{`The judges' phones are not getting the AI's suggestions. ${competitionErrorText(liveError)}`}</StatusLine>
       )}
       <div className="grid grid-cols-1 gap-6 min-[960px]:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
         <section className="grid min-w-0 content-start gap-4">
@@ -181,19 +184,26 @@ export function Running({ competition }: { competition: Competition }) {
 
 /**
  * While a participant performs, send the AI's suggestions to the judges (at most every 500 ms).
- * Returns when the performance started (for the timer).
+ * Returns when the performance started (for the timer) and the last failed send (null once one works).
  */
-function usePublishLive(cid: string, session: JudgingSession, pid: string | null): number | null {
+function usePublishLive(cid: string, session: JudgingSession, pid: string | null): { startedAt: number | null; error: unknown } {
   const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [error, setError] = useState<unknown>(null);
   useEffect(() => {
     if (!pid) return;
     const since = Date.now();
     // Not a render-time value: the moment this participant started, kept for the timer.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setStartedAt(since);
-    const publisher = new LivePublisher((live) => void publishLive(cid, live).catch(() => undefined));
+    const publisher = new LivePublisher((live) => void publishLive(cid, live).then(() => setError(null), setError));
+    // Send nothing until the AI judges this participant: right after Start the new phase arrives
+    // before startRoutine() has cleared the previous participant's moves, and the judges would see
+    // (and could tap) those.
+    let aiStarted = false;
     const push = () => {
       const s = session.getSnapshot();
+      aiStarted ||= s.judging;
+      if (!aiStarted) return;
       const status = session.scoreboard.compute().status;
       publisher.update(buildLiveState(pid, session.scoreboard.events, status, s.live, since, Date.now()));
     };
@@ -206,7 +216,7 @@ function usePublishLive(cid: string, session: JudgingSession, pid: string | null
       publisher.stop();
     };
   }, [cid, session, pid]);
-  return pid ? startedAt : null;
+  return { startedAt: pid ? startedAt : null, error: pid ? error : null };
 }
 
 /** Camera / video buttons under the video. */

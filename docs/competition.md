@@ -33,6 +33,10 @@ Each judge has **one role**, like the panels at an FIG competition:
 | **A** Artistry | 10 − their artistic deductions | −0.10, −0.20, −0.30, −0.50 | none: the AI does not judge artistry (the sheet says so) |
 | **E** Execution | 10 − their technical deductions | −0.10, −0.30, −0.50 (small / medium / large, #2.5) | every deduction the AI measured, with the reason ("The raised thigh was 14° below hip height.") |
 
+Every move the AI judged shows up once it is over, so the judge sees that the AI judged it: a move that
+changes nothing for this role (D: a repeat, too far from the shape, not in the top 8; E: no points lost)
+is a grey line that can't be added ("No points lost."). If the AI's suggestions can't be sent or loaded,
+the organizer's page and the judge's sheet say so.
 A suggestion counts only when the judge taps it (tap again to take it off). The sheet shows every
 line with ✕ and Undo, stays in the tab if the page reloads, and keeps the phone's screen on.
 Code: `lib/competition/judgeSheet.ts`, `components/competition/ScoreSheet.tsx`.
