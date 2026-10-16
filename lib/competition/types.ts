@@ -77,12 +77,24 @@ export interface LiveMove {
   note: string | null;
 }
 
+/** The move being held right now, as the AI sees it in this frame. */
+export interface LiveNow {
+  pose: string;
+  text: string;
+  /**
+   * An estimate while the move is held (a balance): its difficulty value (0 = too far off to count)
+   * and its deductions so far. null for other moves; missing in documents from before 2026-10-16.
+   */
+  dbValue?: number | null;
+  deduction?: number | null;
+}
+
 /** What the AI sees right now, sent to the judges' phones while someone performs. */
 export interface LiveState {
   pid: string;
   moves: LiveMove[];
   /** The live box: pose being held and one plain sentence; null when nothing is held. */
-  now: { pose: string; text: string } | null;
+  now: LiveNow | null;
   /** When the performance started (ms since epoch), for the timer on the judges' phones. */
   startedAt: number | null;
   updatedAt: number; // ms

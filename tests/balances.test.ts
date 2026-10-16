@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness';
-import { BalanceDetector, measureBalance } from '../lib/elements/balances';
+import { BalanceDetector, liveEstimate, measureBalance, SHAPES } from '../lib/elements/balances';
 import { Scoreboard } from '../lib/scoring';
 import type { ElementEvent } from '../lib/types';
 import type { Landmarks } from '../lib/geometry';
@@ -288,4 +288,18 @@ test('front split with and without help are the same box: second one is a repeat
   assertEqual(r.status.get(a.id), 'counted');
   assertEqual(r.status.get(b.id), 'repeat');
   assertEqual(r.D, 0.3);
+});
+
+test('live estimate while a balance is held: its value and this frame\'s deductions', () => {
+  const value = SHAPES.attitude.variant.value;
+  const base = { shape: 'attitude' as const, label: 'Attitude', mainDeg: null, holdMs: 500, deduction: null, hint: null };
+  // 8° off is 5° after the 3° camera margin: small (−0.10), still counts.
+  const small = liveEstimate({ ...base, deviations: [{ segment: 'thigh', label: 'Thigh', deg: 8 }] });
+  assertEqual(small?.dbValue, value);
+  assertEqual(small?.deduction, 0.1);
+  // 30° off: large (−0.50), too far off to count as a difficulty.
+  const large = liveEstimate({ ...base, deviations: [{ segment: 'thigh', label: 'Thigh', deg: 30 }] });
+  assertEqual(large?.dbValue, 0);
+  assertEqual(large?.deduction, 0.5);
+  assertEqual(liveEstimate({ ...base, shape: null }), null);
 });

@@ -391,6 +391,29 @@ export function photoDeduction(m: Pick<BalanceMeasurement, 'shape' | 'deviations
   return round2(m.deviations.reduce((total, d) => total + judgedBand(d.deg).penalty, 0));
 }
 
+/** What the balance being held is worth if it ended in this frame (BalanceDetector.live). */
+export interface LiveEstimate {
+  /** Its difficulty value; 0 when the shape is too far off to count. */
+  dbValue: number;
+  /** The shape deductions of this frame. */
+  deduction: number;
+}
+
+/**
+ * An estimate while the balance is still held, for the judges' phones in competition mode.
+ * One frame only: the hold time, relevé and repeats are judged when the hold ends, so the
+ * final values can differ. null when no balance is held.
+ */
+export function liveEstimate(live: BalanceLive): LiveEstimate | null {
+  if (!live.shape) return null;
+  const deviations = live.deviations ?? [];
+  const valid = deviations.every((d) => judgedBand(d.deg).dbValid);
+  return {
+    dbValue: valid ? SHAPES[live.shape].variant.value : 0,
+    deduction: photoDeduction({ shape: live.shape, deviations }) ?? 0,
+  };
+}
+
 /** A finished hold, ready to be judged. */
 export interface MeasuredBalance {
   shape: Shape;

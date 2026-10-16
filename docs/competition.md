@@ -42,7 +42,11 @@ A suggestion counts only when the judge taps it (tap again to take it off).
 the same way: what its suggestions add up to (D: the difficulties it counted, "+0.50"; E: the deductions
 it measured, "−0.40"; the score they make, e.g. 9.60, is in its label), "–" until the first move. One tap puts every suggestion on the sheet, a second tap takes them all off;
 the judge's own lines stay (then it turns green with "AI ✓"). Its gradient border (`.ai-border` in `app/globals.css`, the sport's accent to
-its second color) marks it as the AI's; the plain buttons are the judge's. The sheet shows every
+its second color) marks it as the AI's; the plain buttons are the judge's. **While a balance is held**
+(user, 2026-10-16) the number already includes it, with "~" (e.g. "~+0.30", "~−0.50"): the organizer's
+camera sends an estimate from the current frame (`liveEstimate` in `lib/elements/balances.ts`: the D value,
+0 when the shape is too far off, and the shape deductions). Hold time, relevé and repeats are judged
+when the hold ends, so the final number can differ; the held move can be added once it ends. The sheet shows every
 line with ✕ and Undo, stays in the tab if the page reloads, and keeps the phone's screen on.
 Code: `lib/competition/judgeSheet.ts`, `components/competition/ScoreSheet.tsx`.
 
