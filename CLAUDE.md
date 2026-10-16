@@ -192,7 +192,8 @@ Show warnings in the UI and skip low-visibility frames.
    judges is left out of the total (only a D judge: Final = D − penalties). Realtime data: **Firestore** in the same Firebase project, client SDK
    only (no server); `firestore.rules` is pasted into the console by hand after every change (creating
    the database needed the project Owner). Code: `lib/competition/`, `lib/firebase/competition.ts`,
-   `components/competition/`. See `docs/competition.md`.
+   `components/competition/`. See `docs/competition.md`. The competition pages have the judging page's
+   navbar logo (`components/BrandLogo.tsx`, a link home; user 2026-10-16).
 
 ## Open decisions (ask the user before assuming)
 - None right now.
