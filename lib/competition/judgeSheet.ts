@@ -98,12 +98,26 @@ export function aiScore(role: Role, suggestions: Suggestion[]): number | null {
 }
 
 /**
- * What the AI's suggestions add up to, shown like the quick buttons (D: +0.50, E: −0.40):
- * D the difficulties it counted, E the deductions it measured. null until the AI has judged a move.
+ * The AI's estimate for the move being held right now, for this role: D its difficulty value
+ * (0 when the shape is too far off), E its deductions so far. null when nothing is held, the move
+ * gives no estimate (a turn, a leap) or the role is A.
  */
-export function aiTotal(suggestions: Suggestion[]): number | null {
-  if (suggestions.length === 0) return null;
-  return sheetTotal(suggestions.filter((s) => s.addable).map(asItem));
+export function heldEstimate(role: Role, live: LiveState | null): number | null {
+  const now = live?.now;
+  if (!now || role === 'A') return null;
+  const value = role === 'D' ? now.dbValue : now.deduction;
+  return typeof value === 'number' ? value : null;
+}
+
+/**
+ * What the AI's suggestions add up to, shown like the quick buttons (D: +0.50, E: −0.40):
+ * D the difficulties it counted, E the deductions it measured, plus `held`, the estimate for the
+ * move being held right now (heldEstimate), so the number moves live. null until the AI sees a move.
+ */
+export function aiTotal(suggestions: Suggestion[], held: number | null = null): number | null {
+  if (suggestions.length === 0 && held === null) return null;
+  const done = sheetTotal(suggestions.filter((s) => s.addable).map(asItem));
+  return (Math.round(done * 100) + Math.round((held ?? 0) * 100)) / 100;
 }
 
 /** Is every AI suggestion that can be added on the sheet? false when there is none to add. */

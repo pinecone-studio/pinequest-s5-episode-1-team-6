@@ -1,6 +1,6 @@
 import { test, assert, assertEqual } from './harness';
 import {
-  addQuick, aiScore, aiTotal, allSuggestionsAdded, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleAllSuggestions,
+  addQuick, aiScore, aiTotal, allSuggestionsAdded, heldEstimate, removeItem, sheetScore, sheetTotal, signed, suggestionsFor, toggleAllSuggestions,
   toggleSuggestion, undo, type SheetItem,
 } from '../lib/competition/judgeSheet';
 import type { LiveState } from '../lib/competition/types';
@@ -86,6 +86,30 @@ test("the AI's button shows what its suggestions add up to, like the quick butto
   assertEqual(aiTotal(suggestionsFor('E', live)), 0.6); // −0.60
   assertEqual(aiTotal(suggestionsFor('E', null)), null);
   assertEqual(aiTotal(suggestionsFor('E', { ...live, moves: [live.moves[1]] })), 0);
+});
+
+test("while a balance is held, the AI's button already counts its estimate (live)", () => {
+  const holding: LiveState = { ...live, now: { pose: 'Attitude', text: '', dbValue: 0.3, deduction: 0.5 } };
+  assertEqual(heldEstimate('D', holding), 0.3);
+  assertEqual(heldEstimate('E', holding), 0.5);
+  assertEqual(heldEstimate('A', holding), null);
+  assertEqual(aiTotal(suggestionsFor('D', holding), heldEstimate('D', holding)), 0.8); // +0.50 done, +0.30 held
+  assertEqual(aiTotal(suggestionsFor('E', holding), heldEstimate('E', holding)), 1.1); // −0.60 done, −0.50 held
+  // The first move, still held: the button shows it before any move has ended.
+  const first: LiveState = { ...holding, moves: [] };
+  assertEqual(aiTotal(suggestionsFor('D', first), heldEstimate('D', first)), 0.3);
+});
+
+test('no estimate when nothing is held, for a turn or a leap, or from an older live document', () => {
+  assertEqual(heldEstimate('D', { ...live, now: null }), null);
+  assertEqual(heldEstimate('D', { ...live, now: { pose: 'Attitude', text: '', dbValue: null, deduction: null } }), null);
+  assertEqual(heldEstimate('E', { ...live, now: { pose: 'Attitude', text: '' } }), null);
+  assertEqual(heldEstimate('D', null), null);
+});
+
+test('a held shape too far off to count: the D estimate is 0', () => {
+  const off: LiveState = { ...live, moves: [], now: { pose: 'Attitude', text: '', dbValue: 0, deduction: 0.5 } };
+  assertEqual(aiTotal(suggestionsFor('D', off), heldEstimate('D', off)), 0);
 });
 
 test("tapping the AI's score adds every suggestion once, keeps the judge's lines; again takes them off", () => {

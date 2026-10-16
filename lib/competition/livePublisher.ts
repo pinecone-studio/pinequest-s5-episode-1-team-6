@@ -15,6 +15,8 @@ export interface LiveBox {
   pose: string;
   showDots: boolean; // true while a balance is being held (false: "Watching…")
   text: string;
+  /** What the balance being held is worth so far (gymnastics balances only). */
+  estimate?: { dbValue: number; deduction: number } | null;
 }
 
 /** The AI's suggestions for one participant, from the session's judged moves and live box. */
@@ -42,7 +44,10 @@ export function buildLiveState(
   return {
     pid,
     moves,
-    now: live && live.showDots ? { pose: live.pose, text: live.text } : null,
+    // Firestore refuses undefined: no estimate is sent as null.
+    now: live && live.showDots
+      ? { pose: live.pose, text: live.text, dbValue: live.estimate?.dbValue ?? null, deduction: live.estimate?.deduction ?? null }
+      : null,
     startedAt,
     updatedAt: now,
   };

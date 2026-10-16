@@ -186,7 +186,8 @@ Show warnings in the UI and skip low-visibility frames.
    leaderboard with totals only (the organizer's page uses the camera only, no video file; user 2026-10-16) (`/compete/board?c=…`); the organizer sees every judge's score and sheet.
    Each judge has **one role: D, A or E** (FIG-style panels). **The AI only suggests** (live, one tap adds a
    suggestion to the judge's sheet; the **AI's suggestion** button, first in the row of quick buttons, the same
-   size and shown the same way (E −0.40, D +0.50), with a gradient border, adds all of them at once, user 2026-10-16); the result is the judges' scores: Final = D + A + E − penalties,
+   size and shown the same way (E −0.40, D +0.50), with a gradient border, adds all of them at once, user 2026-10-16;
+   while a balance is held it already counts an estimate from the current frame, shown with "~", user 2026-10-16); the result is the judges' scores: Final = D + A + E − penalties,
    several judges per role averaged, with 4+ the highest and lowest left out (a team rule; no CoP text
    on panel sizes in the repo). **One judge is enough** (user, 2026-10-15; was at least 3): a role nobody
    judges is left out of the total (only a D judge: Final = D − penalties). Realtime data: **Firestore** in the same Firebase project, client SDK

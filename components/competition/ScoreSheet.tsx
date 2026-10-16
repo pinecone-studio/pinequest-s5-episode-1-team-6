@@ -14,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { submitScore, watchLive, watchMyScore } from '@/lib/firebase/competition';
 import { competitionErrorText } from '@/lib/firebase/errors';
 import {
-  addQuick, ADDS, aiScore, aiTotal, allSuggestionsAdded, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor,
+  addQuick, ADDS, aiScore, aiTotal, allSuggestionsAdded, heldEstimate, QUICK_VALUES, removeItem, sheetScore, sheetTotal, signed, suggestionsFor,
   toggleAllSuggestions, toggleSuggestion, undo, type SheetItem, type Suggestion,
 } from '@/lib/competition/judgeSheet';
 import { ROLE_NAMES, type Role } from '@/lib/competition/panel';
@@ -98,7 +98,7 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
         {/* E (AI + 3) and A (4): one row of 4. D (AI + 5): 3 × 2 on a phone, one row of 6 from 640 px. */}
         <div className={`grid gap-2 ${QUICK_VALUES[role].length + (role === 'A' ? 0 : 1) === 4 ? 'grid-cols-4' : 'grid-cols-3 sm:grid-cols-6'}`}>
           {role !== 'A' && (
-            <AiScoreButton role={role} suggestions={suggestions} items={items} onTap={() => setItems(toggleAllSuggestions(items, suggestions))} />
+            <AiScoreButton role={role} live={liveHere} suggestions={suggestions} items={items} onTap={() => setItems(toggleAllSuggestions(items, suggestions))} />
           )}
           {QUICK_VALUES[role].map((v) => (
             <button
@@ -155,6 +155,7 @@ export function ScoreSheet({ competition: c, role }: SheetProps) {
 
 interface AiScoreProps {
   role: Role;
+  live: LiveState | null;
   suggestions: Suggestion[];
   items: SheetItem[];
   onTap: () => void;
@@ -168,21 +169,23 @@ const quickButton =
  * The AI's suggestion, first in the row of quick buttons, the same size and shown the same way: what
  * its suggestions add up to (D: +0.50, E: −0.40; the score they make is in the label). One tap puts them all on the sheet (the judge's own lines stay), another
  * takes them off. Gradient border (.ai-border in globals.css): this one is the AI's, the others the judge's.
+ * While a balance is held, its estimate is already in the number (with "~"): it moves live, and the
+ * move can be added once it ends.
  */
-function AiScoreButton({ role, suggestions, items, onTap }: AiScoreProps) {
-  const total = aiTotal(suggestions);
+function AiScoreButton({ role, live, suggestions, items, onTap }: AiScoreProps) {
+  const held = heldEstimate(role, live);
+  const total = aiTotal(suggestions, held);
   const score = aiScore(role, suggestions);
   const toAdd = suggestions.filter((s) => s.addable).length;
   const added = allSuggestionsAdded(items, suggestions);
-  // Like the quick buttons: +0.50 / −0.40; nothing to add is 0.00 (not −0.00).
-  const shown = total === null ? '–' : total === 0 ? '0.00' : signed(role, total);
-  const what = total === null || score === null
-    ? 'AI suggestion: shows after the first move'
-    : toAdd === 0
-      ? `AI suggests ${shown}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`
-      : added
-        ? `AI suggests ${shown} (score ${score.toFixed(2)}): all on your sheet. Tap to take them off`
-        : `AI suggests ${shown} (score ${score.toFixed(2)}): tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
+  // Like the quick buttons: +0.50 / −0.40; nothing to add is 0.00 (not −0.00). "~": a move is still held.
+  const shown = total === null ? '–' : `${held !== null ? '~' : ''}${total === 0 ? '0.00' : signed(role, total)}`;
+  let what: string;
+  if (held !== null) what = `AI estimate ${shown}, with the move being held now. It can be added when the move ends`;
+  else if (total === null || score === null) what = 'AI suggestion: shows after the first move';
+  else if (toAdd === 0) what = `AI suggests ${shown}: ${role === 'D' ? 'no difficulty to add yet' : 'no points lost so far'}`;
+  else if (added) what = `AI suggests ${shown} (score ${score.toFixed(2)}): all on your sheet. Tap to take them off`;
+  else what = `AI suggests ${shown} (score ${score.toFixed(2)}): tap to add its ${toAdd} suggestion${toAdd === 1 ? '' : 's'} to your sheet`;
   return (
     <button
       type="button"

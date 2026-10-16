@@ -33,6 +33,13 @@ test('a shape too far off has no difficulty value; a move the organizer rejected
 test('the pose being held is sent; "Watching…" is not', () => {
   assertEqual(buildLiveState('p', [], new Map(), { pose: 'Attitude', showDots: true, text: 'Looks good' }, null, 0).now?.pose, 'Attitude');
   assertEqual(buildLiveState('p', [], new Map(), { pose: 'Watching', showDots: false, text: 'Ready' }, null, 0).now, null);
+  // The held balance's estimate goes along; without one it is null (Firestore refuses undefined).
+  const held = buildLiveState('p', [], new Map(), { pose: 'Attitude', showDots: true, text: '', estimate: { dbValue: 0.3, deduction: 0.1 } }, null, 0).now;
+  assertEqual(held?.dbValue, 0.3);
+  assertEqual(held?.deduction, 0.1);
+  const none = buildLiveState('p', [], new Map(), { pose: 'Attitude', showDots: true, text: '' }, null, 0).now;
+  assertEqual(none?.dbValue, null);
+  assertEqual(none?.deduction, null);
 });
 
 /** A fake clock and timer queue. */

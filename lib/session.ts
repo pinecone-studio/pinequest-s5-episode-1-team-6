@@ -15,7 +15,7 @@ import { legLengthRatios, type Landmarks } from './geometry';
 import { SplitLeapDetector, legsFullLength } from './elements/splitLeap';
 import { PasseDetector } from './elements/passe';
 import { AttitudePivotDetector } from './elements/attitudePivot';
-import { BalanceDetector, setPoseLibrary } from './elements/balances';
+import { BalanceDetector, liveEstimate, setPoseLibrary, type LiveEstimate } from './elements/balances';
 import { Scoreboard, type JudgeInputs } from './scoring';
 import { ELEMENTS, RULE_SOURCE } from './rules';
 import { cheerAngles, drawLegAngles, drawSkeleton, legAngles, type AnglesFn } from './draw';
@@ -58,6 +58,8 @@ export interface LiveView {
   dots: number; // 0..4, fill in one second
   tone: Tone | 'idle';
   text: string;
+  /** Rhythmic gymnastics balance being held: what it is worth so far (for competition mode). */
+  estimate?: LiveEstimate | null;
 }
 
 /** A card shown on the video for a few seconds after each judged move. */
@@ -564,7 +566,10 @@ export class JudgingSession {
       live = { pose: m.pose, showDots: false, dots: 0, tone: m.tone, text: m.text };
     } else {
       const m = liveMessage(this.balance.live);
-      live = { pose: m.pose ?? 'Watching', showDots: Boolean(m.pose), dots: m.dots, tone: m.tone, text: m.text };
+      live = {
+        pose: m.pose ?? 'Watching', showDots: Boolean(m.pose), dots: m.dots, tone: m.tone, text: m.text,
+        estimate: liveEstimate(this.balance.live),
+      };
     }
     if (this.state.source === 'file') live = { ...live, text: forVideo(live.text) };
     const key = JSON.stringify(live);
